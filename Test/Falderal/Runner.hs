@@ -1,11 +1,15 @@
 module Test.Falderal.Runner where
 
--- Nothing here yet but some dreams, really.  Just some code I extracted
--- from Rho that I want to use for writing test suites for some of the
--- other languages I've implemented in Haskell.
+-- Nothing much here yet but some dreams, really.  Based on some code
+-- I extracted from Rho that I want to use for writing test suites for some
+-- of the other languages I've implemented in Haskell.
 
 import System
 import qualified Control.Exception as Exc
+
+--
+-- Definitions.
+--
 
 data Block = Test String
            | ExpectedResult String
@@ -16,6 +20,14 @@ data Block = Test String
 data Result = Success String
             | Failed String String String
             deriving (Show, Eq, Ord)
+
+--
+-- File loading functions.
+--
+
+-- A hack for now.
+run fileName [(_, testFun)] =
+    loadTests fileName testFun
 
 loadTests fileName testFun = do
     testText <- readFile fileName
@@ -31,9 +43,9 @@ transformLines lines =
         lines'''
 
 transformLine line
-    | prefix == "> " = Test suffix
+    | prefix == "| " = Test suffix
     | prefix == "= " = ExpectedResult suffix
-    | prefix == "! " = ExpectedError suffix
+    | prefix == "? " = ExpectedError suffix
     | otherwise = Comment line
     where
         prefix = take 2 line
@@ -55,37 +67,49 @@ stripLines [] = []
 stripLines ((Comment _):lines) = stripLines lines
 stripLines (line:lines) = (line:(stripLines lines))
 
+--
+-- The main test-running engine of Falderal:
+--
+
 runTests testFun [] failures total = do
     putStrLn ("Total tests: " ++ (show total) ++ ", failures: " ++ (show failures))
     return []
+
 runTests testFun ((Test testText):((ExpectedResult expected):rest)) failures total = do
-    result <- eeval (testFun) testText
-    if result == expected then do
-        runTests (testFun) rest failures (total + 1)
-      else do
-        putStrLn (show (Failed testText expected result))
-        remainder <- runTests (testFun) rest (failures + 1) (total + 1)
-        return ((Failed testText expected result):remainder)
+    r <- Exc.try (do return (testFun testText))
+    case r of
+        Right result -> do
+            if result == expected then do
+                runTests (testFun) rest failures (total + 1)
+              else do
+                markFailure (testFun) testText expected result rest failures total
+        Left exception ->
+            let
+                result = "*** Exception: " ++ (show (exception :: Exc.SomeException))
+            in do
+                markFailure (testFun) testText expected result rest failures total
+
 runTests testFun ((Test testText):((ExpectedError expected):rest)) failures total = do
-    result <- eeval (testFun) testText
-    if (take 1 result) == "$" then do
-        runTests (testFun) rest failures (total + 1)
-      else do
-        putStrLn (show (Failed testText expected result))
-        remainder <- runTests (testFun) rest (failures + 1) (total + 1)
-        return ((Failed testText expected result):remainder)
+    r <- Exc.try (do return (testFun testText))
+    case r of
+        Right result -> do
+            markFailure (testFun) testText expected result rest failures total
+        Left exception ->
+            let
+                result = (show (exception :: Exc.SomeException))
+            in
+                if
+                    result == expected
+                then do
+                    runTests (testFun) rest failures (total + 1)
+                else do
+                    markFailure (testFun) testText expected result rest failures total
+
 runTests testFun (x:rest) failures total = do
     putStrLn ("??? Unexpected " ++ (show x))
     runTests (testFun) rest failures total
 
-eeval :: (String -> String) -> String -> IO String
-eeval testFun x = do
-    r <- Exc.try (do return (testFun x))
-    case r of
-        Right a -> return (show a)
-        Left e -> return ("$" ++ (pretty (show (e :: Exc.SomeException))))
-
-pretty string
-    | (length string) <= 78 = string
-    | otherwise             = (take 75 string) ++ "..."
-
+markFailure testFun testText expected result rest failures total = do
+    putStrLn (show (Failed testText expected result))
+    remainder <- runTests (testFun) rest (failures + 1) (total + 1)
+    return ((Failed testText expected result):remainder)
