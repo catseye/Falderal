@@ -1,5 +1,9 @@
 module Test.Falderal.Runner where
 
+-- Nothing here yet but some dreams, really.  Just some code I extracted
+-- from Rho that I want to use for writing test suites for some of the
+-- other languages I've implemented in Haskell.
+
 import System
 import qualified Control.Exception as Exc
 
