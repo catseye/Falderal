@@ -18,12 +18,15 @@ data Line = TestInput String
           | SectionHeading String
           deriving (Show, Eq, Ord)
 
-data Block = OutputTest String String String
-           | ErrorTest String String String
-          deriving (Show, Eq, Ord)
+data Expectation = Output String
+                 | Errhep String
+                 deriving (Show, Eq, Ord)
 
-data Result = Failure String String String String
-            deriving (Show, Eq, Ord)
+data Block = Test String String Expectation
+             deriving (Show, Eq, Ord)
+
+data Result = Failure String String Expectation Expectation
+              deriving (Show, Eq, Ord)
 
 --
 -- File loading functions.
@@ -107,13 +110,13 @@ coalesceLines (line:lines) last =
     (last:coalesceLines lines line)
 
 convertLinesToBlocks ((LiteralText literalText):(TestInput testText):(ExpectedResult expected):rest) =
-    ((OutputTest literalText testText expected):convertLinesToBlocks rest)
+    ((Test literalText testText (Output expected)):convertLinesToBlocks rest)
 convertLinesToBlocks ((LiteralText literalText):(TestInput testText):(ExpectedError expected):rest) =
-    ((ErrorTest literalText testText expected):convertLinesToBlocks rest)
+    ((Test literalText testText (Errhep expected)):convertLinesToBlocks rest)
 convertLinesToBlocks ((TestInput testText):(ExpectedResult expected):rest) =
-    ((OutputTest "(undescribed output test)" testText expected):convertLinesToBlocks rest)
+    ((Test "(undescribed output test)" testText (Output expected)):convertLinesToBlocks rest)
 convertLinesToBlocks ((TestInput testText):(ExpectedError expected):rest) =
-    ((ErrorTest "(undescribed output test)" testText expected):convertLinesToBlocks rest)
+    ((Test "(undescribed output test)" testText (Errhep expected)):convertLinesToBlocks rest)
 
 -- Invalid sequences (such as an expected result without any preceding test
 -- input) are silently ignored for now, but should be flagged as errors.
@@ -129,41 +132,26 @@ convertLinesToBlocks [] = []
 runTests testFun [] = do
     return []
 
-runTests testFun ((OutputTest literalText testText expected):rest) = do
-    r <- Exc.try (do return (testFun testText))
+runTests testFun ((Test literalText inputText expected):rest) = do
+    actual <- runFun (testFun) inputText
+    case actual == expected of
+        True ->
+            runTests (testFun) rest
+        False -> do
+            remainder <- runTests (testFun) rest
+            return ((Failure literalText inputText expected actual):remainder)
+
+runFun testFun inputText = do
+    r <- Exc.try (do return (testFun inputText))
     case r of
         Right result ->
-            if
-                result == expected
-            then do
-                runTests (testFun) rest
-            else do
-                markFailure (testFun) literalText testText expected result rest
+            return (Output result)
         Left exception ->
-            let
-                result = "*** Exception: " ++ (show (exception :: Exc.SomeException))
-            in do
-                markFailure (testFun) literalText testText expected result rest
+            return (Errhep (show (exception :: Exc.SomeException)))
 
-runTests testFun ((ErrorTest literalText testText expected):rest) = do
-    r <- Exc.try (do return (testFun testText))
-    case r of
-        Right result -> do
-            markFailure (testFun) literalText testText expected result rest
-        Left exception ->
-            let
-                result = (show (exception :: Exc.SomeException))
-            in
-                if
-                    result == expected
-                then do
-                    runTests (testFun) rest
-                else do
-                    markFailure (testFun) literalText testText expected result rest
-
-markFailure testFun literalText testText expected result rest = do
-    remainder <- runTests (testFun) rest
-    return ((Failure literalText testText expected result):remainder)
+-- This may be improved to do pattern-matching of some kind, someday.
+compareTestOutcomes actual expected =
+    actual == expected
 
 reportTests testFun tests = do
     failures <- runTests testFun tests
@@ -174,10 +162,10 @@ reportTests testFun tests = do
 
 reportEachTest [] = do
     return ()
-reportEachTest ((Failure literalText testText expected result):rest) = do
+reportEachTest ((Failure literalText testText expected actual):rest) = do
     putStrLn ("FAILED: " ++ literalText)
     putStrLn ("Input   : " ++ testText)
-    putStrLn ("Expected: " ++ expected)
-    putStrLn ("Actual  : " ++ result)
+    putStrLn ("Expected: " ++ (show expected))
+    putStrLn ("Actual  : " ++ (show actual))
     putStrLn ""
     reportEachTest rest

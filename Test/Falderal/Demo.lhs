@@ -7,6 +7,7 @@ The Function to be Tested
 > everySecond :: String -> String
 > everySecond [] = []
 > everySecond [a] = []
+> everySecond "silly" = head []
 > everySecond (a : b : rest) = (b : everySecond rest)
 
 The Falderal Driver
@@ -41,3 +42,14 @@ present it.
 
 | Something
 = Anything
+
+A test that expects an exception.
+
+| silly
+? Exception
+
+Another intentionally failing test to demonstrate how Falderal will
+present expecting an exception and not getting one.
+
+| ridiculous
+? Exception
