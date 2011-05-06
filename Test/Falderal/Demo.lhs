@@ -35,3 +35,9 @@ empty string with "= ", that is, an equals sign and a space.
 
 | A
 = 
+
+This is an intentionally failing test, to demonstrate how Falderal will
+present it.
+
+| Something
+= Anything

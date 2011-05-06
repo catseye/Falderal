@@ -22,8 +22,7 @@ data Block = OutputTest String String String
            | ErrorTest String String String
           deriving (Show, Eq, Ord)
 
-data Result = Success String
-            | Failed String String String
+data Result = Failure String String String String
             deriving (Show, Eq, Ord)
 
 --
@@ -32,11 +31,11 @@ data Result = Success String
 
 -- A hack for now.
 run fileName [(_, testFun)] =
-    loadTests fileName testFun
+    loadAndRunTests fileName testFun
 
-loadTests fileName testFun = do
+loadAndRunTests fileName testFun = do
     tests <- loadFile fileName
-    runTests testFun tests 0 0
+    reportTests testFun tests
 
 loadFile fileName = do
     testText <- readFile fileName
@@ -127,29 +126,30 @@ convertLinesToBlocks [] = []
 -- The main test-running engine of Falderal:
 --
 
-runTests testFun [] failures total = do
-    putStrLn ("Total tests: " ++ (show total) ++ ", failures: " ++ (show failures))
+runTests testFun [] = do
     return []
 
-runTests testFun ((OutputTest literalText testText expected):rest) failures total = do
+runTests testFun ((OutputTest literalText testText expected):rest) = do
     r <- Exc.try (do return (testFun testText))
     case r of
-        Right result -> do
-            if result == expected then do
-                runTests (testFun) rest failures (total + 1)
-              else do
-                markFailure (testFun) testText expected result rest failures total
+        Right result ->
+            if
+                result == expected
+            then do
+                runTests (testFun) rest
+            else do
+                markFailure (testFun) literalText testText expected result rest
         Left exception ->
             let
                 result = "*** Exception: " ++ (show (exception :: Exc.SomeException))
             in do
-                markFailure (testFun) testText expected result rest failures total
+                markFailure (testFun) literalText testText expected result rest
 
-runTests testFun ((ErrorTest literalText testText expected):rest) failures total = do
+runTests testFun ((ErrorTest literalText testText expected):rest) = do
     r <- Exc.try (do return (testFun testText))
     case r of
         Right result -> do
-            markFailure (testFun) testText expected result rest failures total
+            markFailure (testFun) literalText testText expected result rest
         Left exception ->
             let
                 result = (show (exception :: Exc.SomeException))
@@ -157,11 +157,27 @@ runTests testFun ((ErrorTest literalText testText expected):rest) failures total
                 if
                     result == expected
                 then do
-                    runTests (testFun) rest failures (total + 1)
+                    runTests (testFun) rest
                 else do
-                    markFailure (testFun) testText expected result rest failures total
+                    markFailure (testFun) literalText testText expected result rest
 
-markFailure testFun testText expected result rest failures total = do
-    putStrLn (show (Failed testText expected result))
-    remainder <- runTests (testFun) rest (failures + 1) (total + 1)
-    return ((Failed testText expected result):remainder)
+markFailure testFun literalText testText expected result rest = do
+    remainder <- runTests (testFun) rest
+    return ((Failure literalText testText expected result):remainder)
+
+reportTests testFun tests = do
+    failures <- runTests testFun tests
+    putStrLn "--------------------------------"
+    putStrLn ("Total tests: " ++ (show (length tests)) ++ ", failures: " ++ (show (length failures)))
+    putStrLn "--------------------------------\n"
+    reportEachTest failures
+
+reportEachTest [] = do
+    return ()
+reportEachTest ((Failure literalText testText expected result):rest) = do
+    putStrLn ("FAILED: " ++ literalText)
+    putStrLn ("Input   : " ++ testText)
+    putStrLn ("Expected: " ++ expected)
+    putStrLn ("Actual  : " ++ result)
+    putStrLn ""
+    reportEachTest rest
