@@ -50,34 +50,62 @@ loadLines fileName = do
     return lines
 
 transformLines lines =
-    reduceLines (map classifyLine lines) (LiteralText "0")
+    let
+        lines' = map classifyLine lines
+        lines'' = findSectionHeadings lines' (LiteralText "0")
+    in
+        coalesceLines lines'' (LiteralText "0")
+
+classifyLine line
+    | prefix == "| " = TestInput suffix
+    | prefix == "= " = ExpectedResult suffix
+    | prefix == "? " = ExpectedError suffix
+    | otherwise      = LiteralText line
     where
-        classifyLine line
-            | prefix == "| " = TestInput suffix
-            | prefix == "= " = ExpectedResult suffix
-            | prefix == "? " = ExpectedError suffix
-            | otherwise      = LiteralText line
-            where
-                prefix = take 2 line
-                suffix = drop 2 line
+        prefix = take 2 line
+        suffix = drop 2 line
+
+findSectionHeadings [] last =
+    [last]
+findSectionHeadings ((line@(LiteralText suspectedUnderline)):lines) last@(LiteralText suspectedHeading) =
+    if
+        ((discoverRepeatedCharacter suspectedUnderline) == Just '-') &&
+        ((length suspectedUnderline) == (length suspectedHeading))
+    then
+        findSectionHeadings lines (SectionHeading suspectedHeading)
+    else
+        (last:findSectionHeadings lines line)
+findSectionHeadings (line:lines) last =
+    (last:findSectionHeadings lines line)
+
+discoverRepeatedCharacter [] =
+    Nothing
+discoverRepeatedCharacter (first:rest) =
+    confirmRepeatedCharacter first rest
+
+confirmRepeatedCharacter char [] =
+    Just char
+confirmRepeatedCharacter char (next:rest)
+    | char == next = confirmRepeatedCharacter char rest
+    | otherwise    = Nothing
 
 --
 -- Coalesce neigbouring lines.  For each line, if it is classified the
 -- same way as the line previously examined, combine them.
 --
 
-reduceLines [] last =
+coalesceLines [] last =
     [last]
-reduceLines ((TestInput more):lines) (TestInput last) =
-    reduceLines lines (TestInput (last ++ "\n" ++ more))
-reduceLines ((ExpectedResult more):lines) (ExpectedResult last) =
-    reduceLines lines (ExpectedResult (last ++ "\n" ++ more))
-reduceLines ((ExpectedError more):lines) (ExpectedError last) =
-    reduceLines lines (ExpectedResult (last ++ "\n" ++ more))
-reduceLines ((LiteralText more):lines) (LiteralText last) =
-    reduceLines lines (LiteralText (last ++ "\n" ++ more))
-reduceLines (line:lines) last =
-    (last:reduceLines lines line)
+coalesceLines ((TestInput more):lines) (TestInput last) =
+    coalesceLines lines (TestInput (last ++ "\n" ++ more))
+coalesceLines ((ExpectedResult more):lines) (ExpectedResult last) =
+    coalesceLines lines (ExpectedResult (last ++ "\n" ++ more))
+coalesceLines ((ExpectedError more):lines) (ExpectedError last) =
+    coalesceLines lines (ExpectedResult (last ++ "\n" ++ more))
+coalesceLines ((LiteralText more):lines) (LiteralText last) =
+    coalesceLines lines (LiteralText (last ++ "\n" ++ more))
+coalesceLines (line:lines) last =
+    (last:coalesceLines lines line)
 
 convertLinesToBlocks ((LiteralText literalText):(TestInput testText):(ExpectedResult expected):rest) =
     ((OutputTest literalText testText expected):convertLinesToBlocks rest)
