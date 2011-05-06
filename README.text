@@ -58,11 +58,26 @@ TODO
     (Eq a) => String -> a
   
   The idea is that you give multiple input strings in a set; if the
-  function does not all map them all to the same value, that's a
-  test failure.
+  function does not map them all to the same value, that's a test
+  failure.
+* Test functions of type
+
+    (Show a) => String -> a
+
+  This is just a matter of wrapping them with an "adapter" like
+  the following before testing:
+
+    w f = \x -> show (f x)
 
 * Test monadic functions somehow.
 * Expand on the previous point to test external programs via
   Unix subprocesses; after all, Unix programs are more or less
   functions from Strings to Strings.  In other words, (ab)use
   Falderal as a kind of shunit variant.
+* There is no hard-and-fast requirement to use Markdown.  I originally
+  considered it because its syntax for blockquotes coincides with
+  literate Haskell's syntax for code; however, when I tried it with
+  Burro, preprocessing was still desirable anyway, and with preprocessing,
+  just about any markup format could be used for the literal text.
+  The markup format could be specified in the Haskell source, and the
+  formatting process could be driven by a function call.
