@@ -15,6 +15,7 @@ data Line = TestInput String
           | ExpectedResult String
           | ExpectedError String
           | LiteralText String
+          | SectionHeading String
           deriving (Show, Eq, Ord)
 
 data Block = OutputTest String String String
@@ -49,7 +50,7 @@ loadLines fileName = do
     return lines
 
 transformLines lines =
-    reduceLines (map classifyLine lines) (LiteralText "0") []
+    reduceLines (map classifyLine lines) (LiteralText "0")
     where
         classifyLine line
             | prefix == "| " = TestInput suffix
@@ -65,17 +66,18 @@ transformLines lines =
 -- same way as the line previously examined, combine them.
 --
 
-reduceLines [] last acc = reverse (last:acc)
-reduceLines ((TestInput more):lines) (TestInput last) acc =
-    reduceLines lines (TestInput (last ++ "\n" ++ more)) acc
-reduceLines ((ExpectedResult more):lines) (ExpectedResult last) acc =
-    reduceLines lines (ExpectedResult (last ++ "\n" ++ more)) acc
-reduceLines ((ExpectedError more):lines) (ExpectedError last) acc =
-    reduceLines lines (ExpectedResult (last ++ "\n" ++ more)) acc
-reduceLines ((LiteralText more):lines) (LiteralText last) acc =
-    reduceLines lines (LiteralText (last ++ "\n" ++ more)) acc
-reduceLines (line:lines) last acc =
-    reduceLines lines line (last:acc)
+reduceLines [] last =
+    [last]
+reduceLines ((TestInput more):lines) (TestInput last) =
+    reduceLines lines (TestInput (last ++ "\n" ++ more))
+reduceLines ((ExpectedResult more):lines) (ExpectedResult last) =
+    reduceLines lines (ExpectedResult (last ++ "\n" ++ more))
+reduceLines ((ExpectedError more):lines) (ExpectedError last) =
+    reduceLines lines (ExpectedResult (last ++ "\n" ++ more))
+reduceLines ((LiteralText more):lines) (LiteralText last) =
+    reduceLines lines (LiteralText (last ++ "\n" ++ more))
+reduceLines (line:lines) last =
+    (last:reduceLines lines line)
 
 convertLinesToBlocks ((LiteralText literalText):(TestInput testText):(ExpectedResult expected):rest) =
     ((OutputTest literalText testText expected):convertLinesToBlocks rest)
