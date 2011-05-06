@@ -8,6 +8,7 @@ The Function to be Tested
 > everySecond [] = []
 > everySecond [a] = []
 > everySecond "silly" = head []
+> everySecond "silliness" = error "silliness"
 > everySecond (a : b : rest) = (b : everySecond rest)
 
 The Falderal Driver
@@ -46,10 +47,15 @@ present it.
 A test that expects an exception.
 
 | silly
-? Exception
+? Prelude.head: empty list
+
+Another test that expects an exception.
+
+| silliness
+? silliness
 
 Another intentionally failing test to demonstrate how Falderal will
 present expecting an exception and not getting one.
 
 | ridiculous
-? Exception
+? Prelude.head: empty list

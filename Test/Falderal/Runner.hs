@@ -19,7 +19,7 @@ data Line = TestInput String
           deriving (Show, Eq, Ord)
 
 data Expectation = Output String
-                 | Errhep String
+                 | Exception String
                  deriving (Show, Eq, Ord)
 
 data Block = Test String String Expectation
@@ -112,11 +112,11 @@ coalesceLines (line:lines) last =
 convertLinesToBlocks ((LiteralText literalText):(TestInput testText):(ExpectedResult expected):rest) =
     ((Test literalText testText (Output expected)):convertLinesToBlocks rest)
 convertLinesToBlocks ((LiteralText literalText):(TestInput testText):(ExpectedError expected):rest) =
-    ((Test literalText testText (Errhep expected)):convertLinesToBlocks rest)
+    ((Test literalText testText (Exception expected)):convertLinesToBlocks rest)
 convertLinesToBlocks ((TestInput testText):(ExpectedResult expected):rest) =
     ((Test "(undescribed output test)" testText (Output expected)):convertLinesToBlocks rest)
 convertLinesToBlocks ((TestInput testText):(ExpectedError expected):rest) =
-    ((Test "(undescribed output test)" testText (Errhep expected)):convertLinesToBlocks rest)
+    ((Test "(undescribed output test)" testText (Exception expected)):convertLinesToBlocks rest)
 
 -- Invalid sequences (such as an expected result without any preceding test
 -- input) are silently ignored for now, but should be flagged as errors.
@@ -134,7 +134,7 @@ runTests testFun [] = do
 
 runTests testFun ((Test literalText inputText expected):rest) = do
     actual <- runFun (testFun) inputText
-    case actual == expected of
+    case compareTestOutcomes actual expected of
         True ->
             runTests (testFun) rest
         False -> do
@@ -142,12 +142,8 @@ runTests testFun ((Test literalText inputText expected):rest) = do
             return ((Failure literalText inputText expected actual):remainder)
 
 runFun testFun inputText = do
-    r <- Exc.try (do return (testFun inputText))
-    case r of
-        Right result ->
-            return (Output result)
-        Left exception ->
-            return (Errhep (show (exception :: Exc.SomeException)))
+    Exc.catch (Exc.evaluate (Output $! (testFun inputText)))
+              (\exception -> return (Exception (show (exception :: Exc.SomeException))))
 
 -- This may be improved to do pattern-matching of some kind, someday.
 compareTestOutcomes actual expected =
