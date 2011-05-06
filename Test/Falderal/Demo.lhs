@@ -35,5 +35,3 @@ empty string with "= ", that is, an equals sign and a space.
 
 | A
 = 
-
-End of tests.  Text here is needed for now, but this should be fixed.
