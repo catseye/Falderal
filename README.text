@@ -49,3 +49,20 @@ How to Use it
 * Optionally, preprocess your literate Haskell source with the included
   script before sending it through Markdown to help it come out the
   other end nicely.
+
+TODO
+----
+
+* Equivalency tests: for testing functions of type
+
+    (Eq a) => String -> a
+  
+  The idea is that you give multiple input strings in a set; if the
+  function does not all map them all to the same value, that's a
+  test failure.
+
+* Test monadic functions somehow.
+* Expand on the previous point to test external programs via
+  Unix subprocesses; after all, Unix programs are more or less
+  functions from Strings to Strings.  In other words, (ab)use
+  Falderal as a kind of shunit variant.
