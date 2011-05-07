@@ -1,8 +1,13 @@
 module Test.Falderal.Runner where
 
--- Nothing much here yet but some dreams, really.  Based on some code
--- I extracted from Rho that I want to use for writing test suites for some
--- of the other languages I've implemented in Haskell.
+--
+-- The Falderal Test Runner
+--
+-- This was originally based on some code for running "literate" test suites
+-- on string functions that I extracted from a language project I was working
+-- on called Rho, that I want to use for other languages I've implemented in
+-- Haskell.  Rapidly progressing towards something of more general utility.
+--
 
 import System
 import qualified Control.Exception as Exc
@@ -22,8 +27,16 @@ data Expectation = Output String
                  | Exception String
                  deriving (Show, Eq, Ord)
 
-data Block = Test String String Expectation
-             deriving (Show, Eq, Ord)
+data Block = Section String
+           | Test String String Expectation
+           deriving (Show, Eq, Ord)
+
+--
+-- First element is the literal text preceding the test.
+-- Second element is the textual input to the test.
+-- Third element is the result that we expected from the test.
+-- Fourth element is the actual result of the test.
+--
 
 data Result = Failure String String Expectation Expectation
               deriving (Show, Eq, Ord)
@@ -33,12 +46,12 @@ data Result = Failure String String Expectation Expectation
 --
 
 -- A hack for now.
-run fileName [(_, testFun)] =
-    loadAndRunTests fileName testFun
+run fileName funMap =
+    loadAndRunTests fileName funMap
 
-loadAndRunTests fileName testFun = do
+loadAndRunTests fileName funMap = do
     tests <- loadFile fileName
-    reportTests testFun tests
+    reportTests funMap tests
 
 loadFile fileName = do
     testText <- readFile fileName
@@ -129,17 +142,24 @@ convertLinesToBlocks [] = []
 -- The main test-running engine of Falderal:
 --
 
-runTests testFun [] = do
+runTests funMap testFun [] = do
     return []
-
-runTests testFun ((Test literalText inputText expected):rest) = do
+runTests funMap testFun ((Section sectionText):rest) = do
+    -- select a new testFun from the funMap
+    testFun' <- return $ selectTestFun funMap sectionText
+    runTests funMap testFun' rest
+runTests funMap testFun ((Test literalText inputText expected):rest) = do
     actual <- runFun (testFun) inputText
     case compareTestOutcomes actual expected of
         True ->
-            runTests (testFun) rest
+            runTests funMap testFun rest
         False -> do
-            remainder <- runTests (testFun) rest
+            remainder <- runTests funMap testFun rest
             return ((Failure literalText inputText expected actual):remainder)
+
+selectTestFun ((text, fun):rest) sectionText
+    | text == sectionText = fun
+    | otherwise           = selectTestFun rest sectionText
 
 runFun testFun inputText = do
     Exc.catch (Exc.evaluate (Output $! (testFun inputText)))
@@ -149,8 +169,8 @@ runFun testFun inputText = do
 compareTestOutcomes actual expected =
     actual == expected
 
-reportTests testFun tests = do
-    failures <- runTests testFun tests
+reportTests funMap tests = do
+    failures <- runTests funMap (\x -> error "No test function selected") tests
     putStrLn "--------------------------------"
     putStrLn ("Total tests: " ++ (show (length tests)) ++ ", failures: " ++ (show (length failures)))
     putStrLn "--------------------------------\n"
