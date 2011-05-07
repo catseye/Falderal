@@ -4,6 +4,8 @@
 The Function to be Tested
 -------------------------
 
+A function taking Strings to Strings.
+
 > everySecond :: String -> String
 > everySecond [] = []
 > everySecond [a] = []
@@ -11,12 +13,21 @@ The Function to be Tested
 > everySecond "silliness" = error "silliness"
 > everySecond (a : b : rest) = (b : everySecond rest)
 
+A function taking Strings to Lists of Booleans.  We test this by
+composing it with show.
+
+> parseBits :: String -> [Bool]
+> parseBits [] = []
+> parseBits ('0':rest) = (False:parseBits rest)
+> parseBits ('1':rest) = (True:parseBits rest)
+
 The Falderal Driver
 -------------------
 
 > testDemo = Runner.run "Test/Falderal/Demo.lhs" [
->                         ("Tests for everySecond", everySecond)
->                       ]
+>              ("Tests for everySecond", everySecond),
+>              ("Tests for parseBits",   show . parseBits)
+>            ]
 
 Tests for everySecond
 ---------------------
@@ -59,3 +70,26 @@ present expecting an exception and not getting one.
 
 | ridiculous
 ? Prelude.head: empty list
+
+Tests for parseBits
+-------------------
+
+We can test functions of type
+
+    f :: (Show a) => String -> a
+
+by simply composing them with show, i.e.
+
+    show . f :: String -> String
+
+| 01
+= [False,True]
+
+An intentionally failing test to demonstrate that it is important
+to get the formatting of the output right, when testing with show.
+
+| 01
+= [False, True]
+
+| 
+= []
