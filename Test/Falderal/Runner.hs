@@ -45,7 +45,6 @@ data Result = Failure String String Expectation Expectation
 -- File loading functions.
 --
 
--- A hack for now.
 run fileName funMap =
     loadAndRunTests fileName funMap
 
@@ -130,6 +129,10 @@ convertLinesToBlocks ((TestInput testText):(ExpectedResult expected):rest) =
     ((Test "(undescribed output test)" testText (Output expected)):convertLinesToBlocks rest)
 convertLinesToBlocks ((TestInput testText):(ExpectedError expected):rest) =
     ((Test "(undescribed output test)" testText (Exception expected)):convertLinesToBlocks rest)
+convertLinesToBlocks ((SectionHeading text):rest) =
+    ((Section text):convertLinesToBlocks rest)
+convertLinesToBlocks ((LiteralText _):(SectionHeading text):rest) =
+    ((Section text):convertLinesToBlocks rest)
 
 -- Invalid sequences (such as an expected result without any preceding test
 -- input) are silently ignored for now, but should be flagged as errors.
@@ -157,6 +160,8 @@ runTests funMap testFun ((Test literalText inputText expected):rest) = do
             remainder <- runTests funMap testFun rest
             return ((Failure literalText inputText expected actual):remainder)
 
+-- This ought to be more forgiving;
+-- if no fun could be found in this section, skip the tests.
 selectTestFun ((text, fun):rest) sectionText
     | text == sectionText = fun
     | otherwise           = selectTestFun rest sectionText
@@ -169,12 +174,17 @@ runFun testFun inputText = do
 compareTestOutcomes actual expected =
     actual == expected
 
-reportTests funMap tests = do
-    failures <- runTests funMap (\x -> error "No test function selected") tests
-    putStrLn "--------------------------------"
-    putStrLn ("Total tests: " ++ (show (length tests)) ++ ", failures: " ++ (show (length failures)))
-    putStrLn "--------------------------------\n"
-    reportEachTest failures
+isTest (Test _ _ _) = True
+isTest _ = False
+
+reportTests funMap tests = let
+        numTests = length (filter (isTest) tests)
+    in do
+        failures <- runTests funMap (\x -> error "No test function selected") tests
+        putStrLn "--------------------------------"
+        putStrLn ("Total tests: " ++ (show numTests) ++ ", failures: " ++ (show (length failures)))
+        putStrLn "--------------------------------\n"
+        reportEachTest failures
 
 reportEachTest [] = do
     return ()
