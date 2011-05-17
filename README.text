@@ -1,74 +1,51 @@
 Falderal
 ========
 
+Falderal is a framework for writing, running, and formatting "doctest"-like
+literate test suites for Haskell functions.  It is particularly suited for
+testing and documenting functions which interpret or compile programming
+languages -- especially esoteric ones.
+
 Here's the situation:
 
 * You have a Haskell program, formatted in literate Haskell.
 * You have some Haskell functions which take Strings to Strings.
-* You have some unit tests for those functions that you want to
-  include them in the literate Haskell source in a nicely readable
-  fashion.
-* You want to be able to optionally treat the literate Haskell
-  source as being in Markdown format, to convert it to HTML, etc.
+* You have some unit tests for those functions that you want to present in
+  a nicely readable fashion, possibly included right in the literate Haskell
+  source.
 
-If this describes you, then Falderal might help.  The particular need
-I had that encouraged me to write it is having implemented several
+If this describes you, then Falderal might help.  The particular need I had
+that encouraged me to write it is having implemented several esoteric
 programming languages in Haskell, and wanting to write nicely formatted
 tests suites for them.
 
-How to Use it
--------------
+Current Version
+---------------
 
-* Write a literate Haskell program as usual.
-* Define a section for each function you want to test.  Delimit
-  the section just as you would with Markdown.
-* In that section, write whatever text you like describing the
-  tests.  Generally, you would preface each test with text revelant
-  to it; this text will be output if the test fails.
-* Write a test by prefixing each line of input with a | character in
-  the first column, and prefixing each line of output with a = character.
-  For example,
+The current version of Falderal is 0.1.  The API should not be expected to
+be stable through the 0.x series, however Test.Falderal.Runner.run is not
+expected to change its type signature (it takes a "property list" of options,
+although no options are currently honoured.)
 
-    | 2+2
-    = 4
+Development
+-----------
 
-* If you expect your test to fail, you can include the name of an
-  exception to expect, prefixed with a ? character, instead of
-  expected output.  For example,
+Falderal development is hosted on BitBucket:
 
-    | 1/0
-    ? DivideByZeroError
+    https://bitbucket.org/catseye/falderal/
 
-* Write a driver for the tests.  The driver can be included in the
-  selfsame literate Haskell file, or it can be located elsewhere.
-  It will typically set up some configuration, then call one of the
-  Falderal test runners.  The main piece of configuration to set up
-  is a mapping between section names and the functions that are to be
-  tested in those sections.  How and when your driver is called is
-  up to you.
-* Optionally, preprocess your literate Haskell source with the included
-  script before sending it through Markdown to help it come out the
-  other end nicely.
+Bugs may be reported (and features requested) on the Issue Tracker:
 
-TODO
-----
+    https://bitbucket.org/catseye/falderal/issues
 
-* Equivalency tests: for testing functions of type
+Official release distfiles may at some point be available through Falderal's
+project page on Cat's Eye Technologies' website:
 
-    (Eq a) => String -> a
-  
-  The idea is that you give multiple input strings in a set; if the
-  function does not map them all to the same value, that's a test
-  failure.
-* Test monadic functions somehow.
-* Expand on the previous point to test external programs via
-  Unix subprocesses; after all, Unix programs are more or less
-  functions from Strings to Strings.  In other words, (ab)use
-  Falderal as a kind of shunit variant.
-* There is no hard-and-fast requirement to use Markdown.  I originally
-  considered it because its syntax for blockquotes coincides with
-  literate Haskell's syntax for code; however, when I tried it with
-  Burro, preprocessing was still desirable anyway, and with preprocessing,
-  just about any markup format could be used for the literal text.
-  The markup format could be specified in the Haskell source, and the
-  formatting process could be driven by a function call.
+    http://catseye.tc/project/falderal/
+
+For Further Information
+-----------------------
+
+Please see the Falderal wiki on BitBucket:
+
+    https://bitbucket.org/catseye/falderal/wiki/
