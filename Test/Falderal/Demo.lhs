@@ -24,7 +24,11 @@ composing it with show.
 The Falderal Driver
 -------------------
 
-> testDemo = Runner.run "Test/Falderal/Demo.lhs" [
+Naming the test function "test" makes testing the file as simple as:
+
+    ghc Test/Falderal/Demo.lhs -e test
+
+> test = Runner.run ["Test/Falderal/Demo.lhs"] [] [
 >              ("Tests for everySecond", everySecond),
 >              ("Tests for parseBits",   show . parseBits)
 >            ]

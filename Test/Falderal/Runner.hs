@@ -1,4 +1,4 @@
-module Test.Falderal.Runner where
+module Test.Falderal.Runner (run) where
 
 --
 -- The Falderal Test Runner
@@ -42,11 +42,26 @@ data Result = Failure String String Expectation Expectation
               deriving (Show, Eq, Ord)
 
 --
--- File loading functions.
+-- Main entry point to test runner.
+--
+-- First argument is a list of filenames to harvest and run tests from.
+-- Second argument is a "property list" of options in String format,
+--   currently not used.
+-- Third argument maps section headers to the function to be tested in
+--   that section.
 --
 
-run fileName funMap =
-    loadAndRunTests fileName funMap
+run :: [String] -> [(String, String)] -> [(String, String -> String)] -> IO ()
+
+run [] options funMap =
+    return ()
+run (filename:filenames) options funMap = do
+    loadAndRunTests filename funMap
+    run filenames options funMap
+
+--
+-- File loading functions.
+--
 
 loadAndRunTests fileName funMap = do
     tests <- loadFile fileName
