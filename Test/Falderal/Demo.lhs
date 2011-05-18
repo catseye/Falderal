@@ -1,6 +1,15 @@
 > module Demo where
 > import qualified Test.Falderal.Runner as Runner
 
+Test.Falderal.Demo
+==================
+
+This literate Haskell source is simply a demonstration of how Falderal
+can be used to define and run some tests on some Haskell functions.
+
+This module was written by Chris Pressey.  It is hereby placed in
+the public domain.
+
 The Function to be Tested
 -------------------------
 
