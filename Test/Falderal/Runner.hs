@@ -82,7 +82,7 @@ loadAndRunTests fileName funMap = do
 loadFile fileName = do
     testText <- readFile fileName
     lines <- return $ transformLines $ lines testText
-    blocks <- return $ convertLinesToBlocks $ lines
+    blocks <- return $ reDescribeBlocks $ convertLinesToBlocks $ lines
     return blocks
 
 loadLines fileName = do
@@ -151,6 +151,10 @@ coalesceLines ((QuotedCode more):lines) (QuotedCode last) =
 coalesceLines (line:lines) last =
     (last:coalesceLines lines line)
 
+--
+-- Convert lines to blocks.
+--
+
 convertLinesToBlocks ((LiteralText literalText):(TestInput testText):(ExpectedResult expected):rest) =
     ((Test literalText testText (Output expected)):convertLinesToBlocks rest)
 convertLinesToBlocks ((LiteralText literalText):(TestInput testText):(ExpectedError expected):rest) =
@@ -167,6 +171,34 @@ convertLinesToBlocks ((LiteralText _):(SectionHeading text):rest) =
 convertLinesToBlocks (_:rest) =
     convertLinesToBlocks rest
 convertLinesToBlocks [] = []
+
+--
+-- Give blocks that don't have a description, the description of the previous
+-- block that did have a description.  Note that when we encounter a new
+-- section, we do not remember the previous description, as it will surely
+-- be irrelevant now.
+--
+
+reDescribeBlocks blocks = reDescribeBlocks' blocks "" 2
+
+reDescribeBlocks' [] desc n =
+    []
+reDescribeBlocks' (block@(Test literalText inp exp):rest) desc n
+    | allWhitespace literalText = (Test numberedDesc inp exp):(reDescribeBlocks' rest desc (n+1))
+    | otherwise                 = (block):(reDescribeBlocks' rest literalText 2)
+    where numberedDesc = "(#" ++ (show n) ++ ") " ++ (stripLeading '\n' desc)
+reDescribeBlocks' (block:rest) desc n =
+    block:(reDescribeBlocks' rest "" 2)
+
+--
+-- This could use Char.isSpace
+--
+
+allWhitespace [] = True
+allWhitespace (' ':rest) = allWhitespace rest
+allWhitespace ('\n':rest) = allWhitespace rest
+allWhitespace ('\t':rest) = allWhitespace rest
+allWhitespace (_:rest) = False
 
 --
 -- The main test-running engine of Falderal:
@@ -221,6 +253,7 @@ reportEachTest ((Failure literalText testText expected actual):rest) = do
     putStrLn ""
     reportEachTest rest
 
+stripLeading y [] = []
 stripLeading y all@(x:xs)
     | x == y    = stripLeading y xs
     | otherwise = all

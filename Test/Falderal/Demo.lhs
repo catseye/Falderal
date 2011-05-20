@@ -112,3 +112,19 @@ looks like on multi-line input.
 | 01
 | 10
 = [False,False,True,True]
+
+If we have a set of tests where the tests after the first one have no
+descriptions of their own, we can take this to suggest they are all
+testing the same thing.  In this case, the literal text that is displayed
+when any of them fails is the text that comes before the first of them,
+annotated with the number of the test in the set that failed.  The
+intentionally-failing third test below demonstrates this.
+
+| 00
+= [False,False]
+
+| 000
+= [False,False,False]
+
+| 0000
+= [False,False,False,Flse]

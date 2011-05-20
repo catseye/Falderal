@@ -1,5 +1,5 @@
 --------------------------------
-Total tests: 12, failures: 4
+Total tests: 15, failures: 5
 --------------------------------
 
 FAILED:
@@ -35,4 +35,16 @@ Input:
 10
 Expected: Output "[False,False,True,True]"
 Actual  : Output "[False,True,True,False]"
+
+FAILED:
+(#3) If we have a set of tests where the tests after the first one have no
+descriptions of their own, we can take this to suggest they are all
+testing the same thing.  In this case, the literal text that is displayed
+when any of them fails is the text that comes before the first of them,
+annotated with the number of the test in the set that failed.  The
+intentionally-failing third test below demonstrates this.
+
+Input   : 0000
+Expected: Output "[False,False,False,Flse]"
+Actual  : Output "[False,False,False,False]"
 
