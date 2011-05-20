@@ -1,0 +1,38 @@
+--------------------------------
+Total tests: 12, failures: 4
+--------------------------------
+
+FAILED:
+This is an intentionally failing test, to demonstrate how Falderal will
+present it.
+
+Input   : Something
+Expected: Output "Anything"
+Actual  : Output "oehn"
+
+FAILED:
+Another intentionally failing test to demonstrate how Falderal will
+present expecting an exception and not getting one.
+
+Input   : ridiculous
+Expected: Exception "Prelude.head: empty list"
+Actual  : Output "iiuos"
+
+FAILED:
+An intentionally failing test to demonstrate that it is important
+to get the formatting of the output right, when testing with show.
+
+Input   : 01
+Expected: Output "[False, True]"
+Actual  : Output "[False,True]"
+
+FAILED:
+An intentionally failing test to demonstrate show what a failure
+looks like on multi-line input.
+
+Input:
+01
+10
+Expected: Output "[False,False,True,True]"
+Actual  : Output "[False,True,True,False]"
+

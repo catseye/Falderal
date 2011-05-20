@@ -13,6 +13,17 @@ import System
 import qualified Control.Exception as Exc
 
 --
+-- collecting TODOs here because I don't have access to the issue tracker atm
+--
+-- TODO: in convertLinesToBlocks, Invalid sequences (such as an expected
+-- result without any preceding test input) should be flagged as errors
+-- instead of being silently ignored
+--
+-- TODO: selectTestFun ought to be more forgiving: if no fun could be found
+-- in this section, skip the tests.  This necessitates a "skip" result.
+--
+
+--
 -- Definitions.
 --
 
@@ -20,6 +31,7 @@ data Line = TestInput String
           | ExpectedResult String
           | ExpectedError String
           | LiteralText String
+          | QuotedCode String
           | SectionHeading String
           deriving (Show, Eq, Ord)
 
@@ -89,6 +101,7 @@ classifyLine line
     | prefix == "| " = TestInput suffix
     | prefix == "= " = ExpectedResult suffix
     | prefix == "? " = ExpectedError suffix
+    | prefix == "> " = QuotedCode suffix
     | otherwise      = LiteralText line
     where
         prefix = take 2 line
@@ -133,6 +146,8 @@ coalesceLines ((ExpectedError more):lines) (ExpectedError last) =
     coalesceLines lines (ExpectedResult (last ++ "\n" ++ more))
 coalesceLines ((LiteralText more):lines) (LiteralText last) =
     coalesceLines lines (LiteralText (last ++ "\n" ++ more))
+coalesceLines ((QuotedCode more):lines) (QuotedCode last) =
+    coalesceLines lines (QuotedCode (last ++ "\n" ++ more))
 coalesceLines (line:lines) last =
     (last:coalesceLines lines line)
 
@@ -148,9 +163,6 @@ convertLinesToBlocks ((SectionHeading text):rest) =
     ((Section text):convertLinesToBlocks rest)
 convertLinesToBlocks ((LiteralText _):(SectionHeading text):rest) =
     ((Section text):convertLinesToBlocks rest)
-
--- Invalid sequences (such as an expected result without any preceding test
--- input) are silently ignored for now, but should be flagged as errors.
 
 convertLinesToBlocks (_:rest) =
     convertLinesToBlocks rest
@@ -175,8 +187,6 @@ runTests funMap testFun ((Test literalText inputText expected):rest) = do
             remainder <- runTests funMap testFun rest
             return ((Failure literalText inputText expected actual):remainder)
 
--- This ought to be more forgiving;
--- if no fun could be found in this section, skip the tests.
 selectTestFun ((text, fun):rest) sectionText
     | text == sectionText = fun
     | otherwise           = selectTestFun rest sectionText
@@ -204,9 +214,32 @@ reportTests funMap tests = let
 reportEachTest [] = do
     return ()
 reportEachTest ((Failure literalText testText expected actual):rest) = do
-    putStrLn ("FAILED: " ++ literalText)
-    putStrLn ("Input   : " ++ testText)
-    putStrLn ("Expected: " ++ (show expected))
-    putStrLn ("Actual  : " ++ (show actual))
+    reportText 8 "FAILED"   (stripLeading '\n' literalText)
+    reportText 8 "Input"    testText
+    reportText 8 "Expected" (show expected)
+    reportText 8 "Actual"   (show actual)
     putStrLn ""
     reportEachTest rest
+
+stripLeading y all@(x:xs)
+    | x == y    = stripLeading y xs
+    | otherwise = all
+
+reportText width fieldName text =
+    if
+        contains text '\n'
+      then do
+        putStrLn (fieldName ++ ":")
+        putStrLn text
+      else do
+        putStrLn ((pad fieldName width) ++ ": " ++ text)
+
+contains [] _ = False
+contains (x:xs) y
+    | x == y    = True
+    | otherwise = contains xs y
+
+pad s n = padFrom s (n-(length s))
+padFrom s n
+    | n <= 0    = s
+    | otherwise = padFrom (s ++ " ") (n-1)

@@ -20,6 +20,7 @@ composing it with show.
 > parseBits [] = []
 > parseBits ('0':rest) = (False:parseBits rest)
 > parseBits ('1':rest) = (True:parseBits rest)
+> parseBits ('\n':rest) = parseBits rest
 
 The Falderal Driver
 -------------------
@@ -97,3 +98,17 @@ to get the formatting of the output right, when testing with show.
 
 | 
 = []
+
+Input can consist of multiple lines of text.  These are joined together
+with intervening newline characters.
+
+| 00
+| 11
+= [False,False,True,True]
+
+An intentionally failing test to demonstrate show what a failure
+looks like on multi-line input.
+
+| 01
+| 10
+= [False,False,True,True]
