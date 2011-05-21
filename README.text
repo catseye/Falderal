@@ -19,13 +19,31 @@ that encouraged me to write it is having implemented several esoteric
 programming languages in Haskell, and wanting to write nicely formatted
 tests suites for them.
 
-Current Version
----------------
+History
+-------
 
-The current version of Falderal is 0.1.  The API should not be expected to
-be stable through the 0.x series, however Test.Falderal.Runner.run is not
-expected to change its type signature (it takes a "property list" of options,
-although no options are currently honoured.)
+The current released version of Falderal is 0.1.  It introduced the following
+features:
+
+* Provision of a framework for writing and running literate tests which may
+  be embedded in literate Haskell source code.
+* Testing Haskell functions of type String -> String.  A test specifies input
+  to the function, and may expect a particular output, or that a particular
+  exception is thrown.
+* Through simple adapters, testing functions of other types such as
+  (Show a) => String -> a. 
+
+The current version under development is 0.2.  It will introduce the following
+features:
+
+* Improved formatting of failure reports.  Multi-line input text or expected
+  output is always presented starting on its own line.
+* Tests may be organized into groups; the entire group is preceded by some
+  literal text, but there is no literal text between the tests in the group.
+  When one of these tests fails, the literal text for the group is reported,
+  along with the number of the test within the group.
+
+The API should not be expected to be stable through the 0.x series.
 
 Development
 -----------
@@ -38,14 +56,15 @@ Bugs may be reported (and features requested) on the Issue Tracker:
 
     https://bitbucket.org/catseye/falderal/issues
 
-Official release distfiles may at some point be available through Falderal's
-project page on Cat's Eye Technologies' website:
+Official release distfiles are available on the [Falderal
+project page][] at [Cat's Eye Technologies'][].
 
-    http://catseye.tc/project/falderal/
+[Falderal project page]: http://catseye.tc/projects/falderal/
+[Cat's Eye Technologies]: http://catseye.tc/
 
 For Further Information
 -----------------------
 
-Please see the Falderal wiki on Bitbucket:
+Please see the [Falderal wiki][] on Bitbucket.
 
-    https://bitbucket.org/catseye/falderal/wiki/
+[Falderal wiki]: https://bitbucket.org/catseye/falderal/wiki/
