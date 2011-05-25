@@ -166,7 +166,7 @@ coalesceLines ((TestInput more):lines) (TestInput last) =
 coalesceLines ((ExpectedResult more):lines) (ExpectedResult last) =
     coalesceLines lines (ExpectedResult (last ++ "\n" ++ more))
 coalesceLines ((ExpectedError more):lines) (ExpectedError last) =
-    coalesceLines lines (ExpectedResult (last ++ "\n" ++ more))
+    coalesceLines lines (ExpectedError (last ++ "\n" ++ more))
 coalesceLines ((LiteralText more):lines) (LiteralText last) =
     coalesceLines lines (LiteralText (last ++ "\n" ++ more))
 coalesceLines ((QuotedCode more):lines) (QuotedCode last) =

@@ -1,5 +1,5 @@
 --------------------------------
-Total tests: 15, failures: 5
+Total tests: 17, failures: 5
 --------------------------------
 
 FAILED:

@@ -20,6 +20,8 @@ A function taking Strings to Strings.
 > everySecond [a] = []
 > everySecond "silly" = head []
 > everySecond "silliness" = error "silliness"
+> everySecond "supercilious" = error "not\non\nmy\nwatch"
+> everySecond "suoilic\nrepus" = "not\non\nmy\nwatch"
 > everySecond (a : b : rest) = (b : everySecond rest)
 
 A function taking Strings to Lists of Booleans.  We test this by
@@ -78,6 +80,23 @@ Another test that expects an exception.
 
 | silliness
 ? silliness
+
+The expected text of an exception can extend over several lines.
+
+| supercilious
+? not
+? on
+? my
+? watch
+
+The input and expected text and extend over several lines, too.
+
+| suoilic
+| repus
+= not
+= on
+= my
+= watch
 
 Another intentionally failing test to demonstrate how Falderal will
 present expecting an exception and not getting one.
