@@ -22,7 +22,22 @@ tests suites for them.
 History
 -------
 
-The current released version of Falderal is 0.1.  It introduced the following
+The current released version of Falderal is 0.2.  It introduced the following
+features:
+
+* Added a test harness for Falderal itself, in the form of a simple shell
+  script which diffs the output of Test.Falderal.Demo against a text file
+  containing the expected content.
+* Improved formatting of failure reports.  Multi-line input text or expected
+  output is always presented starting on its own line.
+* Tests may be organized into groups; the entire group is preceded by some
+  literal text, but there is no literal text between the tests in the group.
+  When one of these tests fails, the literal text for the group is reported,
+  along with the number of the test within the group.
+* Fixed a bug where exception text which extended over multiple lines
+  could not be expected correctly.
+
+The previous released version of Falderal is 0.1.  It introduced the following
 features:
 
 * Provision of a framework for writing and running literate tests which may
@@ -33,15 +48,9 @@ features:
 * Through simple adapters, testing functions of other types such as
   (Show a) => String -> a. 
 
-The current version under development is 0.2.  It will introduce the following
-features:
-
-* Improved formatting of failure reports.  Multi-line input text or expected
-  output is always presented starting on its own line.
-* Tests may be organized into groups; the entire group is preceded by some
-  literal text, but there is no literal text between the tests in the group.
-  When one of these tests fails, the literal text for the group is reported,
-  along with the number of the test within the group.
+The current version under development is 0.3.  It will likely mark the
+start of a transition away from being specific to Haskell, and thus will
+involve a few very significant changes.
 
 The API should not be expected to be stable through the 0.x series.
 
