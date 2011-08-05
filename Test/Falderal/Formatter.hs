@@ -47,11 +47,12 @@ formatFile fileName = do
     testText <- readFile fileName
     lines <- return $ transformLines $ lines testText
     blocks <- return $ convertLinesToBlocks $ lines
-    outputText <- return $ formatBlocks blocks
+    outputText <- return $ formatBlocks (formatBlock) blocks
     putStr outputText
 
-formatBlocks [] = ""
-formatBlocks ((Section sectionText):rest) =
-    sectionText ++ (formatBlocks rest)
-formatBlocks ((Test literalText inputText expected):rest) =
-    literalText ++ inputText ++ (show expected) ++ (formatBlocks rest)
+formatBlocks formatter blocks = foldl (++) "" (map (formatter) blocks)
+
+formatBlock (Section sectionText) =
+    sectionText ++ "\n"
+formatBlock (Test literalText inputText expected) =
+    literalText ++ "\n" ++ "| " ++ inputText ++ "\n> " ++ (show expected) ++ "\n"
