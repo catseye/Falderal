@@ -1,5 +1,7 @@
 module Test.Falderal.Loader where
 
+-- TODO: export a more restricted interface
+
 --
 -- Test.Falderal.Loader -- The Falderal Test Loader
 -- Copyright (c)2011 Cat's Eye Technologies.  All rights reserved.
@@ -45,6 +47,8 @@ data Line = TestInput String
           | QuotedCode String
           | SectionHeading String
           deriving (Show, Eq, Ord)
+
+-- TODO: move these datatypes to a common module?
 
 data Expectation = Output String
                  | Exception String
@@ -158,6 +162,8 @@ convertLinesToBlocks [] = []
 -- be irrelevant now.
 --
 
+-- TODO: move this to a common module where Block is defined?
+
 reDescribeBlocks blocks = reDescribeBlocks' blocks "" 2
 
 reDescribeBlocks' [] desc n =
@@ -172,6 +178,9 @@ reDescribeBlocks' (block:rest) desc n =
 --
 -- This could use Char.isSpace
 --
+
+-- TODO: move these to a common utility module?
+-- TODO: can these be replaced by standard Haskell functions?
 
 allWhitespace [] = True
 allWhitespace (' ':rest) = allWhitespace rest
