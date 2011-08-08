@@ -135,7 +135,7 @@ coalesceLines (line:lines) last =
     (last:coalesceLines lines line)
 
 --
--- Convert lines to blocks.
+-- Convert (coalesced) lines to blocks.
 --
 
 convertLinesToBlocks ((LiteralText literalText):(TestInput testText):(ExpectedResult expected):rest) =

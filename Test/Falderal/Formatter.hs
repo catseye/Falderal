@@ -43,16 +43,31 @@ import Test.Falderal.Loader
 -- to show what we can do.
 --
 
+--
+-- We format by (coalesced) lines, instead of by blocks, because by the time
+-- the file has been parsed into blocks, some content has been dropped.
+--
+
 formatFile fileName = do
     testText <- readFile fileName
     lines <- return $ transformLines $ lines testText
-    blocks <- return $ convertLinesToBlocks $ lines
-    outputText <- return $ formatBlocks (formatBlock) blocks
+    outputText <- return $ formatLines (formatLine) lines
     putStr outputText
 
-formatBlocks formatter blocks = foldl (++) "" (map (formatter) blocks)
+formatLines formatter lines = foldl (++) "" (map (formatter) lines)
 
-formatBlock (Section sectionText) =
-    sectionText ++ "\n"
-formatBlock (Test literalText inputText expected) =
-    literalText ++ "\n" ++ "| " ++ inputText ++ "\n> " ++ (show expected) ++ "\n"
+formatLine (TestInput text) =
+    (prefixEachLine "| " text)
+formatLine (ExpectedResult text) =
+    (prefixEachLine "= " text) ++ "\n"
+formatLine (ExpectedError text) =
+    (prefixEachLine "? " text) ++ "\n"
+formatLine (LiteralText text) =
+    (prefixEachLine "" text) ++ "\n"
+formatLine (QuotedCode text) =
+    (prefixEachLine "> " text) ++ "\n"
+formatLine (SectionHeading text) =
+    (prefixEachLine "# " text) ++ "\n" -- atx-style for now
+
+prefixEachLine prefix text =
+    foldl (++) "" (map (\x -> prefix ++ x ++ "\n") (lines text))
