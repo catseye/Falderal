@@ -56,18 +56,20 @@ formatFile fileName = do
 
 formatLines formatter lines = foldl (++) "" (map (formatter) lines)
 
+-- TODO: find out what's stripping out empty lines and stop it!
+
 formatLine (TestInput text) =
     (prefixEachLine "| " text)
 formatLine (ExpectedResult text) =
-    (prefixEachLine "= " text) ++ "\n"
+    (prefixEachLine "= " text)
 formatLine (ExpectedError text) =
-    (prefixEachLine "? " text) ++ "\n"
+    (prefixEachLine "? " text)
 formatLine (LiteralText text) =
     (prefixEachLine "" text) ++ "\n"
 formatLine (QuotedCode text) =
-    (prefixEachLine "> " text) ++ "\n"
+    (prefixEachLine "> " text)
 formatLine (SectionHeading text) =
-    (prefixEachLine "# " text) ++ "\n" -- atx-style for now
+    text ++ "\n" ++ (take (length text) (repeat '-')) ++ "\n"
 
 prefixEachLine prefix text =
     foldl (++) "" (map (\x -> prefix ++ x ++ "\n") (lines text))
