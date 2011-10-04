@@ -35,7 +35,7 @@ module Test.Falderal.Runner (run, runTests) where
 import System
 import qualified Control.Exception as Exc
 
-import Test.Falderal.Loader
+import Test.Falderal.Common
 
 --
 -- Definitions.

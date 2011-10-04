@@ -36,28 +36,7 @@ module Test.Falderal.Loader where
 
 import System
 
---
--- Definitions for the structure of a test suite in Falderal format.
---
-
-data Line = TestInput String
-          | ExpectedResult String
-          | ExpectedError String
-          | LiteralText String
-          | QuotedCode String
-          | SectionHeading String
-          | Placeholder
-          deriving (Show, Eq, Ord)
-
--- TODO: move these datatypes to a common module?
-
-data Expectation = Output String
-                 | Exception String
-                 deriving (Show, Eq, Ord)
-
-data Block = Section String
-           | Test String String Expectation
-           deriving (Show, Eq, Ord)
+import Test.Falderal.Common
 
 --
 -- File loading functions.
@@ -108,17 +87,6 @@ findSectionHeadings ((line@(LiteralText suspectedUnderline)):lines) last@(Litera
         (last:findSectionHeadings lines line)
 findSectionHeadings (line:lines) last =
     (last:findSectionHeadings lines line)
-
-discoverRepeatedCharacter [] =
-    Nothing
-discoverRepeatedCharacter (first:rest) =
-    confirmRepeatedCharacter first rest
-
-confirmRepeatedCharacter char [] =
-    Just char
-confirmRepeatedCharacter char (next:rest)
-    | char == next = confirmRepeatedCharacter char rest
-    | otherwise    = Nothing
 
 --
 -- Coalesce neigbouring lines.  For each line, if it is classified the
@@ -182,38 +150,3 @@ reDescribeBlocks' (block@(Test literalText inp exp):rest) desc n
     where numberedDesc = "(#" ++ (show n) ++ ") " ++ (stripLeading '\n' desc)
 reDescribeBlocks' (block:rest) desc n =
     block:(reDescribeBlocks' rest "" 2)
-
---
--- This could use Char.isSpace
---
-
--- TODO: move these to a common utility module?
--- TODO: can these be replaced by standard Haskell functions?
-
-allWhitespace [] = True
-allWhitespace (' ':rest) = allWhitespace rest
-allWhitespace ('\n':rest) = allWhitespace rest
-allWhitespace ('\t':rest) = allWhitespace rest
-allWhitespace (_:rest) = False
-
-stripLeading y [] = []
-stripLeading y all@(x:xs)
-    | x == y    = stripLeading y xs
-    | otherwise = all
-
-stripTrailing y str = reverse (stripLeading y (reverse str))
-
---
--- A version of `lines` that always considers the input "" to
--- represent a single, blank line.
---
-
-allLines x =
-    case (lines x) of
-        []    -> [""]
-        other -> other
-
-prefixEachLine prefix text =
-    foldl (++) "" (map (\x -> prefix ++ x ++ "\n") (allLines text))
-
-formatLines formatter lines = foldl (++) "" (map (formatter) lines)
