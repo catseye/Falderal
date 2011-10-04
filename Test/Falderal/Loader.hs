@@ -74,6 +74,7 @@ classifyLine line
     | prefix == "= " = ExpectedResult suffix
     | prefix == "? " = ExpectedError suffix
     | prefix == "> " = QuotedCode suffix
+    | prefix == "->" = Pragma suffix
     | otherwise      = LiteralText line
     where
         prefix = take 2 line
@@ -128,6 +129,8 @@ convertLinesToBlocks ((TestInput testText):(ExpectedError expected):rest) =
     ((Test "(undescribed output test)" testText (Exception expected)):convertLinesToBlocks rest)
 convertLinesToBlocks ((SectionHeading text):rest) =
     ((Section text):convertLinesToBlocks rest)
+convertLinesToBlocks ((Pragma text):rest) = -- XXX parse the pragma text here
+    ((Directive text):convertLinesToBlocks rest)
 convertLinesToBlocks ((LiteralText _):(SectionHeading text):rest) =
     ((Section text):convertLinesToBlocks rest)
 

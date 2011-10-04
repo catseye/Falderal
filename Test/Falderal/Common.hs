@@ -46,6 +46,7 @@ data Line = TestInput String
           | LiteralText String
           | QuotedCode String
           | SectionHeading String
+          | Pragma String
           | Placeholder
           deriving (Show, Eq, Ord)
 
@@ -58,6 +59,7 @@ data Expectation = Output String
                  deriving (Show, Eq, Ord)
 
 data Block = Section String
+           | Directive String -- XXX should be more structured
            | Test String String Expectation
            deriving (Show, Eq, Ord)
 
