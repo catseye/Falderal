@@ -32,22 +32,37 @@ module Test.Falderal.Formatter.Haskell (format) where
 -- POSSIBILITY OF SUCH DAMAGE.
 --
 
-import System
-
 import Test.Falderal.Loader
 
 --
 -- Formatting function which compiles a Falderal file to Haskell source.
--- XXX this is woefully incomplete right now.
 --
 
-format ((TestInput text):(ExpectedResult result):rest) =
-    "test " ++ (show text) ++ " " ++ (show result) ++ "\n" ++ (format rest)
-format ((TestInput text):(ExpectedError result):rest) =
-    "testErr " ++ (show text) ++ " " ++ (show result) ++ "\n" ++ (format rest)
-format ((TestInput text):foo:rest) =
-    "-- malformed Falderal: no expectation for " ++ (show text) ++ (format (foo:rest))
-format (_:rest) =
-    format rest
-format [] =
+formatBlocks (test@(Test desc text expectation):rest) =
+    "    " ++ (show test) ++ ",\n" ++ (formatBlocks rest)
+formatBlocks (_:rest) =
+    formatBlocks rest
+formatBlocks [] =
     ""
+
+format lines =
+    let
+        lines' = coalesceLines lines Placeholder
+        blocks = reDescribeBlocks $ convertLinesToBlocks $ lines'
+    in
+        prelude ++ (formatBlocks blocks) ++ postlude
+
+--
+-- XXX this hard-codes some stuff, just to see things running
+--
+
+prelude = "module GeneratedFalderalTests where\n\
+          \\n\
+          \import Test.Falderal.Loader\n\
+          \import Test.Falderal.Runner\n\
+          \import Test.Falderal.Demo\n\
+          \\n\
+          \testModule = runTests [] (everySecond) [\n"
+
+postlude = "    (Section \"DONE\")\n\
+           \    ]\n"

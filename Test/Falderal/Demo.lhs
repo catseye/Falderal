@@ -1,4 +1,4 @@
-> module Demo where
+> module Test.Falderal.Demo where
 > import qualified Test.Falderal.Runner as Runner
 
 Test.Falderal.Demo

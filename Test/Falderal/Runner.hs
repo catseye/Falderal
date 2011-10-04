@@ -1,4 +1,4 @@
-module Test.Falderal.Runner (run) where
+module Test.Falderal.Runner (run, runTests) where
 
 --
 -- Test.Falderal.Runner -- The Falderal Test Runner
