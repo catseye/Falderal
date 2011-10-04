@@ -1,9 +1,9 @@
-module Test.Falderal.Formatter where
+module Test.Falderal.Formatter.Identity where
 
 -- TODO: export a more restricted interface
 
 --
--- Test.Falderal.Formatter -- The Falderal Test Suite Formatter
+-- Test.Falderal.Formatter.Identity -- Identity formatter for Falderal format
 -- Copyright (c)2011 Cat's Eye Technologies.  All rights reserved.
 --
 -- Redistribution and use in source and binary forms, with or without
@@ -37,28 +37,31 @@ module Test.Falderal.Formatter where
 import System
 
 import Test.Falderal.Loader
-import qualified Test.Falderal.Formatter.Identity as Identity
 
 --
--- Driver for Falderal file formatting.
+-- Formatting function which formats a Falderal file to an identical
+-- Falderal file.
 --
 
---
--- Map from names of formats to formatter functions.
---
+formatLine (TestInput text) =
+    (prefixEachLine "| " text)
+formatLine (ExpectedResult text) =
+    (prefixEachLine "= " text)
+formatLine (ExpectedError text) =
+    (prefixEachLine "? " text)
+formatLine (LiteralText text) =
+    (prefixEachLine "" text)
+formatLine (QuotedCode text) =
+    (prefixEachLine "> " text)
+formatLine (SectionHeading text) =
+    text ++ "\n" ++ (take (length text) (repeat '-')) ++ "\n"
 
-getFormatter "identity" = Identity.formatLine
-getFormatter "dump"     = \x -> (show x) ++ "\n"
+-- Fix lines so that it acts on "" appropriately
 
---
--- We format by (coalesced) lines, instead of by blocks, because by the time
--- the file has been parsed into blocks, some content has been dropped.
---
+allLines x =
+    case (lines x) of
+        []    -> [""]
+        other -> other
 
-formatFile format fileName = do
-    testText <- readFile fileName
-    lines <- return $ transformLines $ lines testText
-    outputText <- return $ formatLines (getFormatter format) lines
-    putStr outputText
-
-formatLines formatter lines = foldl (++) "" (map (formatter) lines)
+prefixEachLine prefix text =
+    foldl (++) "" (map (\x -> prefix ++ x ++ "\n") (allLines text))
