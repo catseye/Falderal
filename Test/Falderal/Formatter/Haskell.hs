@@ -1,7 +1,7 @@
-module Test.Falderal.Formatter.Markdown (format) where
+module Test.Falderal.Formatter.Haskell (format) where
 
 --
--- Test.Falderal.Formatter.Identity -- Markdown formatter for Falderal format
+-- Test.Falderal.Formatter.Haskell -- Haskell compiler for Falderal
 -- Copyright (c)2011 Cat's Eye Technologies.  All rights reserved.
 --
 -- Redistribution and use in source and binary forms, with or without
@@ -37,22 +37,17 @@ import System
 import Test.Falderal.Loader
 
 --
--- Formatting function which formats a Falderal file to vanilla Markdown
--- file.  Falderal-specific sections (test input, expected results) are still
--- presented with Falderal syntax.
+-- Formatting function which compiles a Falderal file to Haskell source.
+-- XXX this is woefully incomplete right now.
 --
 
-formatLine (TestInput text) =
-    (prefixEachLine "    | " text)
-formatLine (ExpectedResult text) =
-    (prefixEachLine "    = " text)
-formatLine (ExpectedError text) =
-    (prefixEachLine "    ? " text)
-formatLine (LiteralText text) =
-    (prefixEachLine "" text)
-formatLine (QuotedCode text) =
-    (prefixEachLine "    " text)
-formatLine (SectionHeading text) =
-    text ++ "\n" ++ (take (length text) (repeat '-')) ++ "\n"
-
-format = formatLines (formatLine)
+format ((TestInput text):(ExpectedResult result):rest) =
+    "test " ++ (show text) ++ " " ++ (show result) ++ "\n" ++ (format rest)
+format ((TestInput text):(ExpectedError result):rest) =
+    "testErr " ++ (show text) ++ " " ++ (show result) ++ "\n" ++ (format rest)
+format ((TestInput text):foo:rest) =
+    "-- malformed Falderal: no expectation for " ++ (show text) ++ (format (foo:rest))
+format (_:rest) =
+    format rest
+format [] =
+    ""

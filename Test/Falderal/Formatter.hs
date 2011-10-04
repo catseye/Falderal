@@ -1,6 +1,4 @@
-module Test.Falderal.Formatter where
-
--- TODO: export a more restricted interface
+module Test.Falderal.Formatter (formatFile) where
 
 --
 -- Test.Falderal.Formatter -- The Falderal Test Suite Formatter
@@ -39,6 +37,7 @@ import System
 import Test.Falderal.Loader
 import qualified Test.Falderal.Formatter.Identity as Identity
 import qualified Test.Falderal.Formatter.Markdown as Markdown
+import qualified Test.Falderal.Formatter.Haskell as Haskell
 
 --
 -- Driver for Falderal file formatting.
@@ -48,9 +47,10 @@ import qualified Test.Falderal.Formatter.Markdown as Markdown
 -- Map from names of formats to formatter functions.
 --
 
-getFormatter "identity" = Identity.formatLine
-getFormatter "markdown" = Markdown.formatLine
-getFormatter "dump"     = \x -> (show x) ++ "\n"
+getFormatter "identity" = Identity.format
+getFormatter "markdown" = Markdown.format
+getFormatter "haskell"  = Haskell.format
+getFormatter "dump"     = formatLines (\x -> (show x) ++ "\n")
 
 --
 -- We format by (coalesced) lines, instead of by blocks, because by the time
@@ -60,7 +60,5 @@ getFormatter "dump"     = \x -> (show x) ++ "\n"
 formatFile format fileName = do
     testText <- readFile fileName
     lines <- return $ transformLines $ lines testText
-    outputText <- return $ formatLines (getFormatter format) lines
+    outputText <- return $ (getFormatter format) lines
     putStr outputText
-
-formatLines formatter lines = foldl (++) "" (map (formatter) lines)

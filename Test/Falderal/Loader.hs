@@ -215,3 +215,5 @@ allLines x =
 
 prefixEachLine prefix text =
     foldl (++) "" (map (\x -> prefix ++ x ++ "\n") (allLines text))
+
+formatLines formatter lines = foldl (++) "" (map (formatter) lines)

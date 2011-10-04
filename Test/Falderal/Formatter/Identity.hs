@@ -1,4 +1,4 @@
-module Test.Falderal.Formatter.Identity where
+module Test.Falderal.Formatter.Identity (format) where
 
 --
 -- Test.Falderal.Formatter.Identity -- Identity formatter for Falderal format
@@ -53,3 +53,5 @@ formatLine (QuotedCode text) =
     (prefixEachLine "> " text)
 formatLine (SectionHeading text) =
     text ++ "\n" ++ (take (length text) (repeat '-')) ++ "\n"
+
+format = formatLines (formatLine)
