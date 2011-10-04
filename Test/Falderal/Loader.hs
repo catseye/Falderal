@@ -137,6 +137,8 @@ coalesceLines ((LiteralText more):lines) (LiteralText last) =
     coalesceLines lines (LiteralText (last ++ "\n" ++ more))
 coalesceLines ((QuotedCode more):lines) (QuotedCode last) =
     coalesceLines lines (QuotedCode (last ++ "\n" ++ more))
+coalesceLines (line:lines) (LiteralText last) =
+    ((LiteralText (last ++ "\n")):coalesceLines lines line)
 coalesceLines (line:lines) last =
     (last:coalesceLines lines line)
 
@@ -198,3 +200,6 @@ stripLeading y [] = []
 stripLeading y all@(x:xs)
     | x == y    = stripLeading y xs
     | otherwise = all
+
+stripTrailing y str = reverse (stripLeading y (reverse str))
+

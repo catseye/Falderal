@@ -65,7 +65,7 @@ formatLine (ExpectedResult text) =
 formatLine (ExpectedError text) =
     (prefixEachLine "? " text)
 formatLine (LiteralText text) =
-    (prefixEachLine "" text) ++ "\n"
+    (prefixEachLine "" text)
 formatLine (QuotedCode text) =
     (prefixEachLine "> " text)
 formatLine (SectionHeading text) =

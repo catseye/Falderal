@@ -118,7 +118,8 @@ reportTests funMap tests = let
 reportEachTest [] = do
     return ()
 reportEachTest ((Failure literalText testText expected actual):rest) = do
-    reportText 8 "FAILED"   (stripLeading '\n' literalText)
+    reportText 8 "FAILED"   (stripLeading '\n' (stripTrailing '\n' literalText))
+    putStrLn ""
     reportText 8 "Input"    testText
     reportText 8 "Expected" (show expected)
     reportText 8 "Actual"   (show actual)
