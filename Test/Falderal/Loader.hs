@@ -1,6 +1,4 @@
-module Test.Falderal.Loader where
-
--- TODO: export a more restricted interface
+module Test.Falderal.Loader (loadFile, loadText) where
 
 --
 -- Test.Falderal.Loader -- The Falderal Test Loader

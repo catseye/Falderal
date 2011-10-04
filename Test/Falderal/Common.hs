@@ -109,3 +109,13 @@ prefixEachLine prefix text =
     foldl (++) "" (map (\x -> prefix ++ x ++ "\n") (allLines text))
 
 formatLines formatter lines = foldl (++) "" (map (formatter) lines)
+
+contains [] _ = False
+contains (x:xs) y
+    | x == y    = True
+    | otherwise = contains xs y
+
+pad s n = padFrom s (n-(length s))
+padFrom s n
+    | n <= 0    = s
+    | otherwise = padFrom (s ++ " ") (n-1)

@@ -70,8 +70,7 @@ run (filename:filenames) options funMap = do
 
 loadAndRunTests fileName funMap = do
     (_, blocks) <- loadFile fileName
-    tests <- return $ reDescribeBlocks blocks
-    reportTests funMap tests
+    reportTests funMap blocks
 
 --
 -- The main test-running engine of Falderal:
@@ -135,13 +134,3 @@ reportText width fieldName text =
         putStrLn text
       else do
         putStrLn ((pad fieldName width) ++ ": " ++ text)
-
-contains [] _ = False
-contains (x:xs) y
-    | x == y    = True
-    | otherwise = contains xs y
-
-pad s n = padFrom s (n-(length s))
-padFrom s n
-    | n <= 0    = s
-    | otherwise = padFrom (s ++ " ") (n-1)
