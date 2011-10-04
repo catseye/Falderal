@@ -33,6 +33,8 @@ composing it with show.
 > parseBits ('1':rest) = (True:parseBits rest)
 > parseBits ('\n':rest) = parseBits rest
 
+> showParseBits = show . parseBits
+
 The Falderal Driver
 -------------------
 
@@ -111,7 +113,7 @@ present expecting an exception and not getting one.
 Tests for parseBits
 -------------------
 
--> Tests for Haskell function Test.Falderal.Demo:parseBits
+-> Tests for Haskell function Test.Falderal.Demo:showParseBits
 
 We can test functions of type
 

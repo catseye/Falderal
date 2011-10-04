@@ -1,4 +1,4 @@
-module Test.Falderal.Runner (run, runTests) where
+module Test.Falderal.Runner (run, runTests, runTests') where
 
 --
 -- Test.Falderal.Runner -- The Falderal Test Runner
@@ -137,3 +137,22 @@ reportText width fieldName text =
         putStrLn text
       else do
         putStrLn ((pad fieldName width) ++ ": " ++ text)
+
+--
+-- This is the new interface
+--
+
+runTests' [] = do
+    return []
+runTests' ((fun, Section sectionText):rest) = do
+    runTests' rest
+runTests' ((fun, HaskellDirective _ _):rest) = do
+    runTests' rest
+runTests' ((testFun, Test literalText inputText expected):rest) = do
+    actual <- runFun (testFun) inputText
+    case compareTestOutcomes actual expected of
+        True ->
+            runTests' rest
+        False -> do
+            remainder <- runTests' rest
+            return ((Failure literalText inputText expected actual):remainder)

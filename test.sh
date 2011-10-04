@@ -65,3 +65,6 @@ E=$?
 rm -f formatted.txt
 
 exit $E
+
+# ghc Test/Falderal/Formatter.hs -e 'formatFile "haskell" "Test/Falderal/Demo.lhs"' > GeneratedFalderalTests.hs
+# ghc GeneratedFalderalTests.hs -e testModule

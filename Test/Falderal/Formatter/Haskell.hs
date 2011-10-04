@@ -38,29 +38,31 @@ import Test.Falderal.Common
 -- Formatting function which compiles a Falderal file to Haskell source.
 --
 
-formatBlocks (test@(Test desc text expectation):rest) =
-    "    " ++ (show test) ++ ",\n" ++ (formatBlocks rest)
+formatBlocks ((functionName, test@(Test desc text expectation)):rest) =
+    "    (" ++ functionName ++ ", " ++ (show test) ++ "),\n" ++ (formatBlocks rest)
 formatBlocks (_:rest) =
     formatBlocks rest
 formatBlocks [] =
     ""
 
 format _ blocks =
-    (prelude blocks) ++ (formatBlocks blocks) ++ postlude
+    (prelude blocks) ++ (formatBlocks (transformBlocks blocks "")) ++ postlude
 
 gatherImports ((HaskellDirective moduleName functionName):rest) =
-    "import " ++ moduleName ++ "\n" ++ gatherImports rest
+    "import qualified " ++ moduleName ++ "\n" ++ gatherImports rest
 gatherImports (_:rest) =
     gatherImports rest
 gatherImports [] =
     ""
 
---
--- XXX this hard-codes some stuff, just to see things running
--- XXX instead, scan list for HaskellDirectives, pluck out module
--- names and turn them into imports.  Put function names in
--- list somehow.
---
+transformBlocks ((HaskellDirective moduleName functionName):rest) _ =
+    transformBlocks rest (moduleName ++ "." ++ functionName)
+transformBlocks (test@(Test _ _ _):rest) functionName =
+    (functionName, test):(transformBlocks rest functionName)
+transformBlocks (_:rest) functionName =
+    transformBlocks rest functionName
+transformBlocks [] _ =
+    []
 
 prelude blocks =
     "module GeneratedFalderalTests where\n\
@@ -68,8 +70,8 @@ prelude blocks =
     \import Test.Falderal.Common\n\
     \import Test.Falderal.Runner\n" ++ (gatherImports blocks) ++ "\
     \\n\
-    \testModule = runTests [] (everySecond) [\n"
+    \testModule = runTests' [\n"
 
 postlude =
-    "    (Section \"DONE\")\n\
+    "    (id, (Section \"DONE\"))\n\
     \    ]\n"
