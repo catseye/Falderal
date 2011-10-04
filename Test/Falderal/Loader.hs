@@ -203,3 +203,15 @@ stripLeading y all@(x:xs)
 
 stripTrailing y str = reverse (stripLeading y (reverse str))
 
+--
+-- A version of `lines` that always considers the input "" to
+-- represent a single, blank line.
+--
+
+allLines x =
+    case (lines x) of
+        []    -> [""]
+        other -> other
+
+prefixEachLine prefix text =
+    foldl (++) "" (map (\x -> prefix ++ x ++ "\n") (allLines text))

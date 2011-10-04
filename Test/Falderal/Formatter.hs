@@ -38,6 +38,7 @@ import System
 
 import Test.Falderal.Loader
 import qualified Test.Falderal.Formatter.Identity as Identity
+import qualified Test.Falderal.Formatter.Markdown as Markdown
 
 --
 -- Driver for Falderal file formatting.
@@ -48,6 +49,7 @@ import qualified Test.Falderal.Formatter.Identity as Identity
 --
 
 getFormatter "identity" = Identity.formatLine
+getFormatter "markdown" = Markdown.formatLine
 getFormatter "dump"     = \x -> (show x) ++ "\n"
 
 --

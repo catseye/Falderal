@@ -1,7 +1,7 @@
-module Test.Falderal.Formatter.Identity where
+module Test.Falderal.Formatter.Markdown where
 
 --
--- Test.Falderal.Formatter.Identity -- Identity formatter for Falderal format
+-- Test.Falderal.Formatter.Identity -- Markdown formatter for Falderal format
 -- Copyright (c)2011 Cat's Eye Technologies.  All rights reserved.
 --
 -- Redistribution and use in source and binary forms, with or without
@@ -37,19 +37,20 @@ import System
 import Test.Falderal.Loader
 
 --
--- Formatting function which formats a Falderal file to an identical
--- Falderal file.
+-- Formatting function which formats a Falderal file to vanilla Markdown
+-- file.  Falderal-specific sections (test input, expected results) are still
+-- presented with Falderal syntax.
 --
 
 formatLine (TestInput text) =
-    (prefixEachLine "| " text)
+    (prefixEachLine "    | " text)
 formatLine (ExpectedResult text) =
-    (prefixEachLine "= " text)
+    (prefixEachLine "    = " text)
 formatLine (ExpectedError text) =
-    (prefixEachLine "? " text)
+    (prefixEachLine "    ? " text)
 formatLine (LiteralText text) =
     (prefixEachLine "" text)
 formatLine (QuotedCode text) =
-    (prefixEachLine "> " text)
+    (prefixEachLine "    " text)
 formatLine (SectionHeading text) =
     text ++ "\n" ++ (take (length text) (repeat '-')) ++ "\n"
