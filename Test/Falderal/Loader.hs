@@ -46,6 +46,7 @@ data Line = TestInput String
           | LiteralText String
           | QuotedCode String
           | SectionHeading String
+          | Placeholder
           deriving (Show, Eq, Ord)
 
 -- TODO: move these datatypes to a common module?
@@ -76,9 +77,14 @@ loadLines fileName = do
 transformLines lines =
     let
         lines' = map classifyLine lines
-        lines'' = findSectionHeadings lines' (LiteralText "0")
+        lines'' = findSectionHeadings lines' Placeholder
+        lines''' = coalesceLines lines'' Placeholder
     in
-        coalesceLines lines'' (LiteralText "0")
+        stripPlaceholders lines'''
+
+stripPlaceholders [] = []
+stripPlaceholders (Placeholder:rest) = stripPlaceholders rest
+stripPlaceholders (other:rest) = other:(stripPlaceholders rest)
 
 classifyLine line
     | prefix == "| " = TestInput suffix

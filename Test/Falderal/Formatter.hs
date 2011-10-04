@@ -54,9 +54,9 @@ formatFile fileName = do
     outputText <- return $ formatLines (formatLine) lines
     putStr outputText
 
-formatLines formatter lines = foldl (++) "" (map (formatter) lines)
+dumpLine x = (show x) ++ "\n"
 
--- TODO: find out what's stripping out empty lines and stop it!
+formatLines formatter lines = foldl (++) "" (map (formatter) lines)
 
 formatLine (TestInput text) =
     (prefixEachLine "| " text)
@@ -71,5 +71,12 @@ formatLine (QuotedCode text) =
 formatLine (SectionHeading text) =
     text ++ "\n" ++ (take (length text) (repeat '-')) ++ "\n"
 
+-- Fix lines so that it acts on "" appropriately
+
+allLines x =
+    case (lines x) of
+        []    -> [""]
+        other -> other
+
 prefixEachLine prefix text =
-    foldl (++) "" (map (\x -> prefix ++ x ++ "\n") (lines text))
+    foldl (++) "" (map (\x -> prefix ++ x ++ "\n") (allLines text))

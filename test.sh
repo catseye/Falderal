@@ -58,4 +58,10 @@ ghc Test/Falderal/Demo.lhs -e test >actual.txt
 diff -u expected.txt actual.txt
 E=$?
 rm -f expected.txt actual.txt
+
+ghc Test/Falderal/Formatter.hs -e 'formatFile "Test/Falderal/Demo.lhs"' >formatted.txt
+diff -u Test/Falderal/Demo.lhs formatted.txt
+E=$?
+rm -f formatted.txt
+
 exit $E
