@@ -50,6 +50,8 @@ formatLine (LiteralText text) =
     (prefixEachLine "" text)
 formatLine (QuotedCode text) =
     (prefixEachLine "    " text)
+formatLine (Pragma text) =
+    (prefixEachLine "    ->" text)
 formatLine (SectionHeading text) =
     text ++ "\n" ++ (take (length text) (repeat '-')) ++ "\n"
 

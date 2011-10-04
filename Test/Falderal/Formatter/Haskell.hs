@@ -50,6 +50,9 @@ format _ blocks =
 
 --
 -- XXX this hard-codes some stuff, just to see things running
+-- XXX instead, scan list for HaskellDirectives, pluck out module
+-- names and turn them into imports.  Put function names in
+-- list somehow.
 --
 
 prelude = "module GeneratedFalderalTests where\n\

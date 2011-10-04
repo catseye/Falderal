@@ -32,6 +32,7 @@ module Test.Falderal.Loader (loadFile, loadText) where
 -- POSSIBILITY OF SUCH DAMAGE.
 --
 
+import Data.List
 import System
 
 import Test.Falderal.Common
@@ -129,8 +130,8 @@ convertLinesToBlocks ((TestInput testText):(ExpectedError expected):rest) =
     ((Test "(undescribed output test)" testText (Exception expected)):convertLinesToBlocks rest)
 convertLinesToBlocks ((SectionHeading text):rest) =
     ((Section text):convertLinesToBlocks rest)
-convertLinesToBlocks ((Pragma text):rest) = -- XXX parse the pragma text here
-    ((Directive text):convertLinesToBlocks rest)
+convertLinesToBlocks ((Pragma text):rest) =
+    ((parsePragma (stripLeading ' ' text)):convertLinesToBlocks rest)
 convertLinesToBlocks ((LiteralText _):(SectionHeading text):rest) =
     ((Section text):convertLinesToBlocks rest)
 
@@ -155,3 +156,16 @@ reDescribeBlocks' (block@(Test literalText inp exp):rest) desc n
     where numberedDesc = "(#" ++ (show n) ++ ") " ++ (stripLeading '\n' desc)
 reDescribeBlocks' (block:rest) desc n =
     block:(reDescribeBlocks' rest "" 2)
+
+--
+-- Parse a pragma.
+--
+
+parsePragma text =
+    case stripPrefix "Tests for " text of
+        Just rest ->
+            case stripPrefix "Haskell function " rest of
+                Just specifier -> HaskellDirective specifier
+                Nothing        -> error "bad pragma"
+        Nothing ->
+            error "bad pragma"

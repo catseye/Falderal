@@ -36,6 +36,8 @@ composing it with show.
 The Falderal Driver
 -------------------
 
+Note: this is legacy interface.
+
 Naming the test function "test" makes testing the file as simple as:
 
     ghc Test/Falderal/Demo.lhs -e test
@@ -47,6 +49,8 @@ Naming the test function "test" makes testing the file as simple as:
 
 Tests for everySecond
 ---------------------
+
+-> Tests for Haskell function Test.Falderal.Demo:everySecond
 
 Every second symbol in the string is retained.
 
@@ -106,6 +110,8 @@ present expecting an exception and not getting one.
 
 Tests for parseBits
 -------------------
+
+-> Tests for Haskell function Test.Falderal.Demo:parseBits
 
 We can test functions of type
 

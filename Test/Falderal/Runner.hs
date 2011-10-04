@@ -82,6 +82,9 @@ runTests funMap testFun ((Section sectionText):rest) = do
     -- select a new testFun from the funMap
     testFun' <- return $ selectTestFun funMap sectionText
     runTests funMap testFun' rest
+runTests funMap testFun ((HaskellDirective _):rest) = do
+    -- XXX ignored for now
+    runTests funMap testFun rest
 runTests funMap testFun ((Test literalText inputText expected):rest) = do
     actual <- runFun (testFun) inputText
     case compareTestOutcomes actual expected of
