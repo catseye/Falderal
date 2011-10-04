@@ -44,22 +44,28 @@ import Test.Falderal.Common
 
 loadFile fileName = do
     testText <- readFile fileName
-    lines <- return $ transformLines $ lines testText
-    blocks <- return $ convertLinesToBlocks $ lines
-    return blocks
+    (ls, bs) <- return $ loadText testText
+    return (ls, bs)
 
-loadLines fileName = do
-    testText <- readFile fileName
-    lines <- return $ transformLines $ lines testText
-    return lines
+--
+-- Returns both the (coaslesced) lines and the (redescribed) blocks,
+-- allowing the caller to choose which one they want to look at.
+--
 
-transformLines lines =
+loadText text =
     let
-        lines' = map classifyLine lines
-        lines'' = findSectionHeadings lines' Placeholder
-        lines''' = coalesceLines lines'' Placeholder
+        ls = transformLines $ lines text
+        bs = reDescribeBlocks $ convertLinesToBlocks $ ls
     in
-        stripPlaceholders lines'''
+        (ls, bs)
+
+transformLines ls =
+    let
+        ls' = map classifyLine ls
+        ls'' = findSectionHeadings ls' Placeholder
+        ls''' = coalesceLines ls'' Placeholder
+    in
+        stripPlaceholders ls'''
 
 stripPlaceholders [] = []
 stripPlaceholders (Placeholder:rest) = stripPlaceholders rest
@@ -137,8 +143,6 @@ convertLinesToBlocks [] = []
 -- section, we do not remember the previous description, as it will surely
 -- be irrelevant now.
 --
-
--- TODO: move this to a common module where Block is defined?
 
 reDescribeBlocks blocks = reDescribeBlocks' blocks "" 2
 

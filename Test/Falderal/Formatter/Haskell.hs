@@ -32,7 +32,7 @@ module Test.Falderal.Formatter.Haskell (format) where
 -- POSSIBILITY OF SUCH DAMAGE.
 --
 
-import Test.Falderal.Loader
+import Test.Falderal.Common
 
 --
 -- Formatting function which compiles a Falderal file to Haskell source.
@@ -45,12 +45,8 @@ formatBlocks (_:rest) =
 formatBlocks [] =
     ""
 
-format lines =
-    let
-        lines' = coalesceLines lines Placeholder
-        blocks = reDescribeBlocks $ convertLinesToBlocks $ lines'
-    in
-        prelude ++ (formatBlocks blocks) ++ postlude
+format _ blocks =
+    prelude ++ (formatBlocks blocks) ++ postlude
 
 --
 -- XXX this hard-codes some stuff, just to see things running

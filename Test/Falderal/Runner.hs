@@ -36,6 +36,7 @@ import System
 import qualified Control.Exception as Exc
 
 import Test.Falderal.Common
+import Test.Falderal.Loader -- XXX
 
 --
 -- Definitions.
@@ -68,7 +69,7 @@ run (filename:filenames) options funMap = do
     run filenames options funMap
 
 loadAndRunTests fileName funMap = do
-    blocks <- loadFile fileName
+    (_, blocks) <- loadFile fileName
     tests <- return $ reDescribeBlocks blocks
     reportTests funMap tests
 

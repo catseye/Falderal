@@ -34,6 +34,7 @@ module Test.Falderal.Formatter (formatFile) where
 
 import System
 
+import Test.Falderal.Common
 import Test.Falderal.Loader
 import qualified Test.Falderal.Formatter.Identity as Identity
 import qualified Test.Falderal.Formatter.Markdown as Markdown
@@ -50,7 +51,9 @@ import qualified Test.Falderal.Formatter.Haskell as Haskell
 getFormatter "identity" = Identity.format
 getFormatter "markdown" = Markdown.format
 getFormatter "haskell"  = Haskell.format
-getFormatter "dump"     = formatLines (\x -> (show x) ++ "\n")
+getFormatter "dump"     = dumpLines
+
+dumpLines lines blocks = formatLines (\x -> (show x) ++ "\n") lines
 
 --
 -- We format by (coalesced) lines, instead of by blocks, because by the time
@@ -58,7 +61,6 @@ getFormatter "dump"     = formatLines (\x -> (show x) ++ "\n")
 --
 
 formatFile format fileName = do
-    testText <- readFile fileName
-    lines <- return $ transformLines $ lines testText
-    outputText <- return $ (getFormatter format) lines
+    (lines, blocks) <- loadFile fileName
+    outputText <- return $ (getFormatter format) lines blocks
     putStr outputText

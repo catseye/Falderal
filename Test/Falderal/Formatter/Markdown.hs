@@ -1,7 +1,7 @@
 module Test.Falderal.Formatter.Markdown (format) where
 
 --
--- Test.Falderal.Formatter.Identity -- Markdown formatter for Falderal format
+-- Test.Falderal.Formatter.Markdown -- Markdown formatter for Falderal format
 -- Copyright (c)2011 Cat's Eye Technologies.  All rights reserved.
 --
 -- Redistribution and use in source and binary forms, with or without
@@ -32,9 +32,7 @@ module Test.Falderal.Formatter.Markdown (format) where
 -- POSSIBILITY OF SUCH DAMAGE.
 --
 
-import System
-
-import Test.Falderal.Loader
+import Test.Falderal.Common
 
 --
 -- Formatting function which formats a Falderal file to vanilla Markdown
@@ -55,4 +53,4 @@ formatLine (QuotedCode text) =
 formatLine (SectionHeading text) =
     text ++ "\n" ++ (take (length text) (repeat '-')) ++ "\n"
 
-format = formatLines (formatLine)
+format lines _ = formatLines (formatLine) lines

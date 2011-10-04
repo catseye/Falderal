@@ -1,7 +1,7 @@
 module Test.Falderal.Common where
 
 --
--- Test.Falderal.Common -- Common data and functions for Falderal
+-- Test.Falderal.Common -- Common data def'n and functions for Falderal
 -- Copyright (c)2011 Cat's Eye Technologies.  All rights reserved.
 --
 -- Redistribution and use in source and binary forms, with or without

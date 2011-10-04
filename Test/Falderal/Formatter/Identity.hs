@@ -32,9 +32,7 @@ module Test.Falderal.Formatter.Identity (format) where
 -- POSSIBILITY OF SUCH DAMAGE.
 --
 
-import System
-
-import Test.Falderal.Loader
+import Test.Falderal.Common
 
 --
 -- Formatting function which formats a Falderal file to an identical
@@ -54,4 +52,4 @@ formatLine (QuotedCode text) =
 formatLine (SectionHeading text) =
     text ++ "\n" ++ (take (length text) (repeat '-')) ++ "\n"
 
-format = formatLines (formatLine)
+format lines _ = formatLines (formatLine) lines
