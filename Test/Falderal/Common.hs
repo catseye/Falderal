@@ -59,7 +59,7 @@ data Expectation = Output String
                  deriving (Show, Eq, Ord)
 
 data Block = Section String
-           | HaskellDirective String -- XXX should be more structured
+           | HaskellDirective String String -- module name, function name
            | Test String String Expectation
            deriving (Show, Eq, Ord)
 

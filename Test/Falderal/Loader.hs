@@ -165,7 +165,17 @@ parsePragma text =
     case stripPrefix "Tests for " text of
         Just rest ->
             case stripPrefix "Haskell function " rest of
-                Just specifier -> HaskellDirective specifier
+                Just specifier ->
+                    let
+                        (moduleName, functionName) = parseSpecifier specifier
+                    in
+                        HaskellDirective moduleName functionName
                 Nothing        -> error "bad pragma"
         Nothing ->
             error "bad pragma"
+
+parseSpecifier specifier =
+    let
+        (m, f) = break (\y -> y == ':') specifier
+    in
+        (m, stripLeading ':' f)

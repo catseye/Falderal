@@ -46,7 +46,14 @@ formatBlocks [] =
     ""
 
 format _ blocks =
-    prelude ++ (formatBlocks blocks) ++ postlude
+    (prelude blocks) ++ (formatBlocks blocks) ++ postlude
+
+gatherImports ((HaskellDirective moduleName functionName):rest) =
+    "import " ++ moduleName ++ "\n" ++ gatherImports rest
+gatherImports (_:rest) =
+    gatherImports rest
+gatherImports [] =
+    ""
 
 --
 -- XXX this hard-codes some stuff, just to see things running
@@ -55,13 +62,15 @@ format _ blocks =
 -- list somehow.
 --
 
-prelude = "module GeneratedFalderalTests where\n\
-          \\n\
-          \import Test.Falderal.Loader\n\
-          \import Test.Falderal.Runner\n\
-          \import Test.Falderal.Demo\n\
-          \\n\
-          \testModule = runTests [] (everySecond) [\n"
+prelude blocks =
+    "module GeneratedFalderalTests where\n\
+    \\n\
+    \import Test.Falderal.Common\n\
+    \import Test.Falderal.Runner\n\
+    \import Test.Falderal.Demo\n" ++ (gatherImports blocks) ++ "\
+    \\n\
+    \testModule = runTests [] (everySecond) [\n"
 
-postlude = "    (Section \"DONE\")\n\
-           \    ]\n"
+postlude =
+    "    (Section \"DONE\")\n\
+    \    ]\n"
