@@ -1,5 +1,4 @@
 > module Test.Falderal.Demo where
-> import qualified Test.Falderal.Runner as Runner
 
 Test.Falderal.Demo
 ==================
@@ -34,20 +33,6 @@ composing it with show.
 > parseBits ('\n':rest) = parseBits rest
 
 > showParseBits = show . parseBits
-
-The Falderal Driver
--------------------
-
-Note: this is legacy interface.
-
-Naming the test function "test" makes testing the file as simple as:
-
-    ghc Test/Falderal/Demo.lhs -e test
-
-> test = Runner.run ["Test/Falderal/Demo.lhs"] [] [
->              ("Tests for everySecond", everySecond),
->              ("Tests for parseBits",   show . parseBits)
->            ]
 
 Tests for everySecond
 ---------------------

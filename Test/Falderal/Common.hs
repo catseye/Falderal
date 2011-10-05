@@ -64,6 +64,18 @@ data Block = Section String
            deriving (Show, Eq, Ord)
 
 --
+-- Data type for test results.
+--
+-- First element is the literal text preceding the test.
+-- Second element is the textual input to the test.
+-- Third element is the result that we expected from the test.
+-- Fourth element is the actual result of the test.
+--
+
+data Result = Failure String String Expectation Expectation
+              deriving (Show, Eq, Ord)
+
+--
 -- Common functions.
 --
 

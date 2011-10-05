@@ -2,6 +2,11 @@
 
 # A tiny test harness for Falderal itself.
 
+ghc Test/Falderal/Driver.hs -e 'format "identity" "Test/Falderal/Demo.lhs"' >formatted.txt
+diff -u Test/Falderal/Demo.lhs formatted.txt
+E1=$?
+rm -f formatted.txt
+
 cat >expected.txt <<EOF
 --------------------------------
 Total tests: 17, failures: 5
@@ -54,17 +59,14 @@ Expected: Output "[False,False,False,Flse]"
 Actual  : Output "[False,False,False,False]"
 
 EOF
-ghc Test/Falderal/Demo.lhs -e test >actual.txt
-diff -u expected.txt actual.txt
-E=$?
+ghc Test/Falderal/Driver.hs -e 'format "haskell" "Test/Falderal/Demo.lhs"' > GeneratedFalderalTests.hs
+ghc GeneratedFalderalTests.hs -e testModule >actual.txt
+E2=$?
 rm -f expected.txt actual.txt
 
-ghc Test/Falderal/Formatter.hs -e 'formatFile "identity" "Test/Falderal/Demo.lhs"' >formatted.txt
-diff -u Test/Falderal/Demo.lhs formatted.txt
-E=$?
-rm -f formatted.txt
-
-exit $E
-
-# ghc Test/Falderal/Formatter.hs -e 'formatFile "haskell" "Test/Falderal/Demo.lhs"' > GeneratedFalderalTests.hs
-# ghc GeneratedFalderalTests.hs -e testModule
+if [ $E1 != 0 -o $E2 != 0 ]
+  then
+    exit 1
+  else
+    exit 0
+fi

@@ -68,9 +68,9 @@ prelude blocks =
     "module GeneratedFalderalTests where\n\
     \\n\
     \import Test.Falderal.Common\n\
-    \import Test.Falderal.Runner\n" ++ (gatherImports blocks) ++ "\
+    \import Test.Falderal.Driver\n" ++ (gatherImports blocks) ++ "\
     \\n\
-    \testModule = runTests' [\n"
+    \testModule = test [\n"
 
 postlude =
     "    (id, (Section \"DONE\"))\n\

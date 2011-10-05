@@ -1,7 +1,7 @@
-module Test.Falderal.Runner (runTests) where
+module Test.Falderal.Driver (test, format) where
 
 --
--- Test.Falderal.Runner -- The Falderal Test Runner
+-- Test.Falderal.Driver -- Driver for Falderal Testing and Formatting
 -- Copyright (c)2011 Cat's Eye Technologies.  All rights reserved.
 --
 -- Redistribution and use in source and binary forms, with or without
@@ -32,32 +32,53 @@ module Test.Falderal.Runner (runTests) where
 -- POSSIBILITY OF SUCH DAMAGE.
 --
 
-import qualified Control.Exception as Exc
+import System
 
 import Test.Falderal.Common
+import Test.Falderal.Loader
+import Test.Falderal.Runner
+import Test.Falderal.Formatter
 
 --
--- Test-running engine.  Takes a list of (function, block) tuples;
--- any block that is not a Test is simply ignored.
+-- Entry point for test runner.
+-- XXX This is still in flux.
 --
 
-runTests [] = do
-    return []
-runTests ((testFun, Test literalText inputText expected):rest) = do
-    actual <- runFun (testFun) inputText
-    case compareTestOutcomes actual expected of
-        True ->
-            runTests rest
-        False -> do
-            remainder <- runTests rest
-            return ((Failure literalText inputText expected actual):remainder)
-runTests (_:rest) = do
-    runTests rest
+test testTuples = let
+        numTests = length (filter (isTest) testTuples)
+    in do
+        failures <- runTests testTuples
+        putStrLn "--------------------------------"
+        putStrLn ("Total tests: " ++ (show numTests) ++ ", failures: " ++ (show (length failures)))
+        putStrLn "--------------------------------\n"
+        reportEachTest failures
 
-runFun testFun inputText = do
-    Exc.catch (Exc.evaluate (Output $! (testFun inputText)))
-              (\exception -> return (Exception (show (exception :: Exc.SomeException))))
+reportEachTest [] = do
+    return ()
+reportEachTest ((Failure literalText testText expected actual):rest) = do
+    reportText 8 "FAILED"   (stripLeading '\n' (stripTrailing '\n' literalText))
+    putStrLn ""
+    reportText 8 "Input"    testText
+    reportText 8 "Expected" (show expected)
+    reportText 8 "Actual"   (show actual)
+    putStrLn ""
+    reportEachTest rest
 
--- This may be improved to do pattern-matching of some kind, someday.
-compareTestOutcomes actual expected =
-    actual == expected
+reportText width fieldName text =
+    if
+        contains text '\n'
+      then do
+        putStrLn (fieldName ++ ":")
+        putStrLn text
+      else do
+        putStrLn ((pad fieldName width) ++ ": " ++ text)
+
+isTest (_, (Test _ _ _)) = True
+isTest _ = False
+
+--
+-- Entry point for formatter.
+--
+
+format formatName fileName =
+    formatFile formatName fileName
