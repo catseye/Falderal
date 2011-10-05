@@ -1,7 +1,7 @@
-module Test.Falderal.Driver (test, format) where
+module Test.Falderal.Reporter.Standard (report) where
 
 --
--- Test.Falderal.Driver -- Driver for Falderal Testing and Formatting
+-- Test.Falderal.Reporter.Standard -- Std. report for Falderal test results
 -- Copyright (c)2011 Cat's Eye Technologies.  All rights reserved.
 --
 -- Redistribution and use in source and binary forms, with or without
@@ -33,28 +33,34 @@ module Test.Falderal.Driver (test, format) where
 --
 
 import Test.Falderal.Common
-import Test.Falderal.Loader
-import Test.Falderal.Runner
-import Test.Falderal.Formatter
-import Test.Falderal.Reporter.Standard
 
---
--- This module contains entry points to Falderal functionality intended
--- for use by users.
---
+report testTuples failures = let
+        numTests = length (filter (isTest) testTuples)
+    in do
+        putStrLn "--------------------------------"
+        putStrLn ("Total tests: " ++ (show numTests) ++ ", failures: " ++ (show (length failures)))
+        putStrLn "--------------------------------\n"
+        reportEachTest failures
 
---
--- Entry point for test runner.
--- XXX This is still in flux.
---
+reportEachTest [] = do
+    return ()
+reportEachTest ((Failure literalText testText expected actual):rest) = do
+    reportText 8 "FAILED"   (stripLeading '\n' (stripTrailing '\n' literalText))
+    putStrLn ""
+    reportText 8 "Input"    testText
+    reportText 8 "Expected" (show expected)
+    reportText 8 "Actual"   (show actual)
+    putStrLn ""
+    reportEachTest rest
 
-test testTuples = do
-        failures <- runTests testTuples
-        report testTuples failures
+reportText width fieldName text =
+    if
+        contains text '\n'
+      then do
+        putStrLn (fieldName ++ ":")
+        putStrLn text
+      else do
+        putStrLn ((pad fieldName width) ++ ": " ++ text)
 
---
--- Entry point for formatter.
---
-
-format formatName fileName =
-    formatFile formatName fileName
+isTest (_, (Test _ _ _)) = True
+isTest _ = False
