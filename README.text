@@ -1,18 +1,21 @@
 Falderal
 ========
 
-Falderal is a framework for writing, running, and formatting "doctest"-like
-literate test suites for Haskell functions.  It is particularly suited for
-testing and documenting functions which interpret or compile programming
-languages -- especially esoteric ones.
+Falderal is a file format for literate test suites.  It is particularly
+suited for testing and documenting functions which interpret or compile
+programming languages. The dumbed-down sound-bite version: "doctests for
+DSLs".  `Test.Falderal` is the reference implementation, in Haskell, of
+tools for formatting and running tests written in Falderal.
 
-Here's the situation:
+Here's the scenario:
 
-* You have a Haskell program, formatted in literate Haskell.
-* You have some Haskell functions which take Strings to Strings.
-* You have some unit tests for those functions that you want to present in
-  a nicely readable fashion, possibly included right in the literate Haskell
-  source.
+* You have a file format, or a language (perhaps a programming language)
+  and some rules for processing it (interpreting it, compiling it, etc.)
+* You have functions written (currently) in Haskell which implement these
+  rules.
+* You have some tests for those rules (e.g. program A always produces
+  output B) that you want to present in a nicely readable fashion,
+  possibly included right in your literate programming source file.
 
 If this describes you, then Falderal might help.  The particular need I had
 that encouraged me to write it is having implemented several esoteric
@@ -22,7 +25,17 @@ tests suites for them.
 History
 -------
 
-The current released version of Falderal is 0.2.  It introduced the following
+The current released version of Falderal is 0.3.  It introduced the following
+features:
+
+* The definition of a Falderal Literate Test Format, distinct from the
+  reference implementation of tools for it in Haskell (`Test.Falderal`).
+* The ability to format a Falderal file to different formats, including
+  Markdown and Haskell.
+* Running tests is now a matter of formatting a Falderal file as a Haskell
+  module and running the function `testModule` in that module.
+
+The previous released version of Falderal is 0.2.  It introduced the following
 features:
 
 * Added a test harness for Falderal itself, in the form of a simple shell
@@ -37,20 +50,11 @@ features:
 * Fixed a bug where exception text which extended over multiple lines
   could not be expected correctly.
 
-The previous released version of Falderal is 0.1.  It introduced the following
-features:
-
-* Provision of a framework for writing and running literate tests which may
-  be embedded in literate Haskell source code.
-* Testing Haskell functions of type String -> String.  A test specifies input
-  to the function, and may expect a particular output, or that a particular
-  exception is thrown.
-* Through simple adapters, testing functions of other types such as
-  (Show a) => String -> a. 
-
-The current version under development is 0.3.  It will likely mark the
-start of a transition away from being specific to Haskell, and thus will
-involve a few very significant changes.
+The current version under development is 0.4.  It will likely expand upon the
+potential language-independence that was introduced here by including
+formatters for other languages, such as Python functions and shell commands.
+It will likely also attempt to make the usage simpler, possibly by providing
+an executable front-end, possibly also by being a Cabal package.
 
 The API should not be expected to be stable through the 0.x series.
 
