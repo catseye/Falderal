@@ -62,7 +62,7 @@ EOF
 ghc Test/Falderal/Driver.hs -e 'format "haskell" "Test/Falderal/Demo.lhs"' > GeneratedFalderalTests.hs
 ghc GeneratedFalderalTests.hs -e testModule >actual.txt
 E2=$?
-rm -f expected.txt actual.txt
+rm -f expected.txt actual.txt GeneratedFalderalTests.hs
 
 if [ $E1 != 0 -o $E2 != 0 ]
   then
