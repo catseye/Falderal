@@ -1,7 +1,7 @@
 -- encoding: UTF-8
 name:            Falderal
 version:         0.3
-cabal-version:   >= 1.2
+cabal-version:   >= 1.8
 build-type:      Simple
 license:         BSD3
 category:        Testing
@@ -19,9 +19,8 @@ description:
     tools that format or run tests written in Falderal.
 
 library
-  build-depends: base, haskell98
-  exposed-modules: Test.Falderal.Driver
-                   Test.Falderal.Runner
+  build-depends: base >= 4.0, haskell98
+  exposed-modules: Test.Falderal.Runner
                    Test.Falderal.Common
                    Test.Falderal.Loader
                    Test.Falderal.Formatter
@@ -30,9 +29,14 @@ library
                    Test.Falderal.Formatter.Haskell
                    Test.Falderal.Formatter.Markdown
 
--- executable falderal
---   main-is:       falderal.hs
---   build-depends: base
+executable falderal
+  main-is:        falderal.hs
+  build-depends:  base >= 4.0, haskell98
+  other-modules:  Test.Falderal.Common
+                  Test.Falderal.Loader
+                  Test.Falderal.Runner
+                  Test.Falderal.Formatter
+                  Test.Falderal.Reporter.Standard
 
 -- test-suite test-falderal
 --   type:          exitcode-stdio-1.0
