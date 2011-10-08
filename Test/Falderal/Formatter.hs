@@ -32,7 +32,7 @@ module Test.Falderal.Formatter (formatFile) where
 -- POSSIBILITY OF SUCH DAMAGE.
 --
 
-import System
+import System.IO
 
 import Test.Falderal.Common
 import Test.Falderal.Loader
@@ -58,11 +58,17 @@ getFormatter "dump"     = dumpLines
 dumpLines lines blocks = formatLines (\x -> (show x) ++ "\n") lines
 
 --
--- We format by (coalesced) lines, instead of by blocks, because by the time
--- the file has been parsed into blocks, some content has been dropped.
+-- Some formats, mainly the "human-readable" ones, format by (coalesced)
+-- lines, because by the time the file has been parsed into blocks, some
+-- content has been dropped.
+--
+-- Other formats, mainly the "run these tests" ones, format by blocks,
+-- because they contain the most relevant information for testing.
+--
+-- This is why loadFile returns both.
 --
 
-formatFile format fileName = do
+formatFile format fileName outputFileHandle = do
     (lines, blocks) <- loadFile fileName
     outputText <- return $ (getFormatter format) lines blocks
-    putStr outputText
+    hPutStr outputFileHandle outputText

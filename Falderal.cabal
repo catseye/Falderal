@@ -24,10 +24,11 @@ library
                    Test.Falderal.Common
                    Test.Falderal.Loader
                    Test.Falderal.Formatter
-                   Test.Falderal.Reporter.Standard
-                   Test.Falderal.Formatter.Identity
+                   Test.Falderal.Reporter
+  other-modules:   Test.Falderal.Formatter.Identity
                    Test.Falderal.Formatter.Haskell
                    Test.Falderal.Formatter.Markdown
+                   Test.Falderal.Reporter.Standard
 
 executable falderal
   main-is:        falderal.hs

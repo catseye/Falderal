@@ -69,7 +69,7 @@ prelude blocks =
     \\n\
     \import Test.Falderal.Common\n\
     \import Test.Falderal.Runner\n\
-    \import Test.Falderal.Reporter.Standard\n" ++ (gatherImports blocks) ++ "\
+    \import Test.Falderal.Reporter\n" ++ (gatherImports blocks) ++ "\
     \\n\
     \tests = [\n"
 
@@ -78,4 +78,4 @@ postlude =
     \    ]\n\
     \testModule = do\n\
     \    failures <- runTests tests\n\
-    \    report tests failures\n"
+    \    report \"standard\" tests failures\n"
