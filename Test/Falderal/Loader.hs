@@ -161,21 +161,54 @@ reDescribeBlocks' (block:rest) desc n =
 -- Parse a pragma.
 --
 
+parseHaskellFunctionality text =
+    case stripPrefix "Haskell function " text of
+        Just specifier ->
+            let
+                (moduleName, functionName) = parseSpecifier specifier
+            in
+                Just $ HaskellDirective moduleName functionName
+        Nothing ->
+            Nothing
+
+parseShellFunctionality text =
+    case stripPrefix "shell command " text of
+        Just specifier ->
+            Just $ ShellDirective $ parseQuotedString specifier
+        Nothing ->
+            Nothing
+
+functionalities = [
+                    parseHaskellFunctionality,
+                    parseShellFunctionality
+                  ]
+
 parsePragma text =
     case stripPrefix "Tests for " text of
         Just rest ->
-            case stripPrefix "Haskell function " rest of
-                Just specifier ->
-                    let
-                        (moduleName, functionName) = parseSpecifier specifier
-                    in
-                        HaskellDirective moduleName functionName
-                Nothing        -> error "bad pragma"
+            tryFunctionalities functionalities rest
         Nothing ->
-            error "bad pragma"
+            error ("bad pragma: " ++ text)
+
+tryFunctionalities [] text =
+    error ("bad functionality: " ++ text)
+tryFunctionalities (func:rest) text =
+    case func text of
+        Just x  -> x 
+        Nothing -> tryFunctionalities rest text
 
 parseSpecifier specifier =
     let
         (m, f) = break (\y -> y == ':') specifier
     in
         (m, stripLeading ':' f)
+
+parseQuotedString ('"':rest) =
+    parseQuotedString' rest
+parseQuotedString (_:rest) =
+    parseQuotedString rest
+
+parseQuotedString' ('"':rest) =
+    ""
+parseQuotedString' (char:rest) =
+    (char:parseQuotedString' rest)

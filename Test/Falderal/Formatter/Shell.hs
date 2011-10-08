@@ -41,16 +41,16 @@ import Test.Falderal.Common
 format _ blocks =
     prelude ++ (formatBlocks $ transformBlocks blocks "") ++ postlude
 
-formatBlocks ((commandString, test):rest) =
+formatBlocks ((commandString, test@(Test desc input expectation)):rest) =
     let
-        Test desc input expectation = test
-        -- ExpectedResult expected = expectation
-        expected = show expectation
+        Output expected = expectation
         inputHereDoc = hereDoc "input.txt" input
         expectedHereDoc = hereDoc "expected.txt" expected
-        command = commandString ++ "\n"
+        command = commandString ++ " <input.txt >output.txt\n"
+        diff = "diff -u expected.txt output.txt\n"
+        formattedBlock = inputHereDoc ++ expectedHereDoc ++ command ++ diff
     in
-        inputHereDoc ++ expectedHereDoc ++ command ++ formatBlocks rest
+        formattedBlock ++ "\n" ++ formatBlocks rest
 formatBlocks (_:rest) =
     formatBlocks rest
 formatBlocks [] =
@@ -68,7 +68,7 @@ transformBlocks [] _ =
 -- XXX derive sentinel from text
 
 hereDoc filename text =
-    "cat >" ++ filename ++ "<<EOF\n" ++ text ++ "\nEOF\n"
+    "cat >" ++ filename ++ " <<EOF\n" ++ text ++ "\nEOF\n"
 
 prelude =
     "#!/bin/sh\n\
