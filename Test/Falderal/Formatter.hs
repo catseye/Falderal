@@ -39,6 +39,7 @@ import Test.Falderal.Loader
 import qualified Test.Falderal.Formatter.Identity as Identity
 import qualified Test.Falderal.Formatter.Markdown as Markdown
 import qualified Test.Falderal.Formatter.Haskell as Haskell
+import qualified Test.Falderal.Formatter.Shell as Shell
 
 --
 -- Driver for Falderal file formatting.
@@ -51,6 +52,7 @@ import qualified Test.Falderal.Formatter.Haskell as Haskell
 getFormatter "identity" = Identity.format
 getFormatter "markdown" = Markdown.format
 getFormatter "haskell"  = Haskell.format
+getFormatter "shell"    = Shell.format
 getFormatter "dump"     = dumpLines
 
 dumpLines lines blocks = formatLines (\x -> (show x) ++ "\n") lines

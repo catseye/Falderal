@@ -1,7 +1,7 @@
-module Test.Falderal.Formatter.Haskell (format) where
+module Test.Falderal.Formatter.Shell (format) where
 
 --
--- Test.Falderal.Formatter.Haskell -- Haskell compiler for Falderal
+-- Test.Falderal.Formatter.Shell -- Shell-script compiler for Falderal
 -- Copyright (c)2011 Cat's Eye Technologies.  All rights reserved.
 --
 -- Redistribution and use in source and binary forms, with or without
@@ -35,47 +35,46 @@ module Test.Falderal.Formatter.Haskell (format) where
 import Test.Falderal.Common
 
 --
--- Formatting function which compiles a Falderal file to Haskell source.
+-- Formatting function which compiles a Falderal file to a shell script.
 --
 
 format _ blocks =
-    (prelude blocks) ++ (formatBlocks $ transformBlocks blocks "") ++ postlude
+    prelude ++ (formatBlocks $ transformBlocks blocks "") ++ postlude
 
-formatBlocks ((functionName, test@(Test desc text expectation)):rest) =
-    "    (" ++ functionName ++ ", " ++ (show test) ++ "),\n" ++ (formatBlocks rest)
+formatBlocks ((commandString, test):rest) =
+    let
+        Test desc input expectation = test
+        -- ExpectedResult expected = expectation
+        expected = show expectation
+        inputHereDoc = hereDoc "input.txt" input
+        expectedHereDoc = hereDoc "expected.txt" expected
+        command = commandString ++ "\n"
+    in
+        inputHereDoc ++ expectedHereDoc ++ command ++ formatBlocks rest
 formatBlocks (_:rest) =
     formatBlocks rest
 formatBlocks [] =
     ""
 
-transformBlocks ((HaskellDirective moduleName functionName):rest) _ =
-    transformBlocks rest (moduleName ++ "." ++ functionName)
-transformBlocks (test@(Test _ _ _):rest) functionName =
-    (functionName, test):(transformBlocks rest functionName)
-transformBlocks (_:rest) functionName =
-    transformBlocks rest functionName
+transformBlocks ((ShellDirective commandString):rest) _ =
+    transformBlocks rest commandString
+transformBlocks (test@(Test _ _ _):rest) commandString =
+    (commandString, test):(transformBlocks rest commandString)
+transformBlocks (_:rest) commandString =
+    transformBlocks rest commandString
 transformBlocks [] _ =
     []
 
-gatherImports ((HaskellDirective moduleName functionName):rest) =
-    "import qualified " ++ moduleName ++ "\n" ++ gatherImports rest
-gatherImports (_:rest) =
-    gatherImports rest
-gatherImports [] =
-    ""
+-- XXX derive sentinel from text
 
-prelude blocks =
-    "module GeneratedFalderalTests where\n\
+hereDoc filename text =
+    "cat >" ++ filename ++ "<<EOF\n" ++ text ++ "\nEOF\n"
+
+prelude =
+    "#!/bin/sh\n\
     \\n\
-    \import Test.Falderal.Common\n\
-    \import Test.Falderal.Runner\n\
-    \import Test.Falderal.Reporter.Standard\n" ++ (gatherImports blocks) ++ "\
-    \\n\
-    \tests = [\n"
+    \\n"
 
 postlude =
-    "    (id, (Section \"DONE\"))\n\
-    \    ]\n\
-    \testModule = do\n\
-    \    failures <- runTests tests\n\
-    \    report tests failures\n"
+    "\n\
+    \\n"

@@ -1,8 +1,11 @@
 #!/bin/sh
 
 # A tiny test harness for Falderal itself.
+# You'll want to make sure the version you're testing is actually
+# installed via Cabal first:
+# $ cabal clean && cabal install --prefix=$HOME --user
 
-ghc Test/Falderal/Driver.hs -e 'format "identity" "Test/Falderal/Demo.lhs"' >formatted.txt
+falderal format identity Test/Falderal/Demo.lhs >formatted.txt
 diff -u Test/Falderal/Demo.lhs formatted.txt
 E1=$?
 rm -f formatted.txt
@@ -59,7 +62,7 @@ Expected: Output "[False,False,False,Flse]"
 Actual  : Output "[False,False,False,False]"
 
 EOF
-ghc Test/Falderal/Driver.hs -e 'format "haskell" "Test/Falderal/Demo.lhs"' > GeneratedFalderalTests.hs
+falderal format haskell Test/Falderal/Demo.lhs > GeneratedFalderalTests.hs
 ghc GeneratedFalderalTests.hs -e testModule >actual.txt
 E2=$?
 rm -f expected.txt actual.txt GeneratedFalderalTests.hs

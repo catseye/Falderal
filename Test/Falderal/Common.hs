@@ -60,6 +60,7 @@ data Expectation = Output String
 
 data Block = Section String
            | HaskellDirective String String -- module name, function name
+           | ShellDirective String
            | Test String String Expectation
            deriving (Show, Eq, Ord)
 
