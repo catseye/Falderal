@@ -145,8 +145,9 @@ convertLinesToBlocks ((SectionHeading text):rest) fn fnMap =
 convertLinesToBlocks ((Pragma text):rest) fn fnMap =
     case parsePragma text of
         TestsFor (NamedFunctionality name) ->
-            -- fn = look up name in fnMap
-            convertLinesToBlocks rest fn fnMap
+            case lookup name fnMap of
+                Just fn' -> convertLinesToBlocks rest fn' fnMap
+                Nothing  -> error ("Can't find " ++ name ++ " in " ++ (show fnMap))
         TestsFor fn' ->
             convertLinesToBlocks rest fn' fnMap
         _ ->
@@ -157,7 +158,6 @@ convertLinesToBlocks ((LiteralText _):(SectionHeading text):rest) fn fnMap =
 convertLinesToBlocks (_:rest) fn fnMap =
     convertLinesToBlocks rest fn fnMap
 convertLinesToBlocks [] _ _ = []
-
 
 collectFunctionalityDefinitions ((Pragma text):rest) =
     case parsePragma text of
@@ -205,7 +205,8 @@ parsePragma text =
 
 functionalities = [
                     parseHaskellFunctionality,
-                    parseShellFunctionality
+                    parseShellFunctionality,
+                    parseNamedFunctionality
                   ]
 
 tryFunctionalities [] text =
@@ -235,6 +236,16 @@ parseShellFunctionality text =
         Nothing ->
             Nothing
 
+parseNamedFunctionality text =
+    case consumeWords ["functionality"] text of
+        Just specifier ->
+            let
+                (name, _) = parseQuotedString specifier
+            in
+                Just $ NamedFunctionality name
+        Nothing ->
+            Nothing
+
 parseSpecifier specifier =
     let
         (m, f) = break (\y -> y == ':') specifier
@@ -250,7 +261,7 @@ parseFuncDefn text =
                 let
                     functionality = tryFunctionalities functionalities funky
                 in
-                    FunctionalityDefinition text functionality
+                    FunctionalityDefinition name functionality
             Nothing ->
                 error $ "bad functionality definition: " ++ text
         

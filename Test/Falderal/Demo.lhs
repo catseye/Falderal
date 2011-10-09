@@ -42,7 +42,7 @@ But they can't currently.
 Tests for everySecond
 ---------------------
 
--> Tests for Haskell function Test.Falderal.Demo:everySecond
+-> Tests for functionality "Retain every second character"
 
 Every second symbol in the string is retained.
 
