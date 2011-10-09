@@ -138,7 +138,7 @@ convertLinesToBlocks ((TestInput testText):(ExpectedError expected):rest) testTy
 convertLinesToBlocks ((SectionHeading text):rest) testType =
     ((Section text):(convertLinesToBlocks rest testType))
 convertLinesToBlocks ((Pragma text):rest) testType =
-    case parsePragma $ stripLeading ' ' text of
+    case parsePragma text of
         TestsFor testType' ->
             convertLinesToBlocks rest testType'
         FunctionalityDefinition name functionality ->
@@ -174,15 +174,15 @@ reDescribeBlocks' (block:rest) desc n =
 --
 
 parsePragma text =
-    case stripPrefix "Tests for " text of
+    case consumeWords ["Tests", "for"] text of
         Just rest ->
             tryFunctionalities functionalities rest
         Nothing ->
-            case stripPrefix "Functionality " text of
+            case consumeWords ["Functionality"] text of
                 Just rest ->
                     parseFuncDefn rest
                 Nothing ->
-                    error ("bad pragma: " ++ text)
+                    error $ "bad pragma: " ++ text
 
 functionalities = [
                     parseHaskellFunctionality,
@@ -190,14 +190,14 @@ functionalities = [
                   ]
 
 tryFunctionalities [] text =
-    error ("bad functionality: " ++ text)
+    error $ "bad functionality: " ++ text
 tryFunctionalities (func:rest) text =
     case func text of
         Just x  -> x
         Nothing -> tryFunctionalities rest text
 
 parseHaskellFunctionality text =
-    case stripPrefix "Haskell function " text of
+    case consumeWords ["Haskell", "function"] text of
         Just specifier ->
             let
                 (moduleName, functionName) = parseSpecifier specifier
@@ -207,7 +207,7 @@ parseHaskellFunctionality text =
             Nothing
 
 parseShellFunctionality text =
-    case stripPrefix "shell command " text of
+    case consumeWords ["shell", "command"] text of
         Just specifier ->
             Just $ TestsFor $ ShellTest $ parseQuotedString specifier
         Nothing ->
@@ -228,10 +228,19 @@ parseFuncDefn text =
 
 parseQuotedString ('"':rest) =
     parseQuotedString' rest
-parseQuotedString (_:rest) =
-    parseQuotedString rest
+parseQuotedString str =
+    error $ "bad quoted string: " ++ str
 
 parseQuotedString' ('"':rest) =
     ""
 parseQuotedString' (char:rest) =
     (char:parseQuotedString' rest)
+
+consumeWords [] text =
+    Just $ stripLeadingWhitespace text
+consumeWords (word:rest) text =
+    case stripPrefix word $ stripLeadingWhitespace text of
+        Just text' ->
+            consumeWords rest text'
+        Nothing ->
+            Nothing

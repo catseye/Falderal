@@ -32,6 +32,8 @@ module Test.Falderal.Common where
 -- POSSIBILITY OF SUCH DAMAGE.
 --
 
+import qualified Char
+
 --
 -- Definitions for the structure of a test suite in Falderal format.
 --
@@ -92,31 +94,17 @@ data Result = Failure String String Expectation Expectation
 
 discoverRepeatedCharacter [] =
     Nothing
-discoverRepeatedCharacter (first:rest) =
-    confirmRepeatedCharacter first rest
+discoverRepeatedCharacter (first:rest)
+    | all (\x -> x == first) rest = Just first
+    | otherwise                   = Nothing
 
-confirmRepeatedCharacter char [] =
-    Just char
-confirmRepeatedCharacter char (next:rest)
-    | char == next = confirmRepeatedCharacter char rest
-    | otherwise    = Nothing
+allWhitespace = all Char.isSpace
 
---
--- This could use Char.isSpace
---
-
-allWhitespace [] = True
-allWhitespace (' ':rest) = allWhitespace rest
-allWhitespace ('\n':rest) = allWhitespace rest
-allWhitespace ('\t':rest) = allWhitespace rest
-allWhitespace (_:rest) = False
-
-stripLeading y [] = []
-stripLeading y all@(x:xs)
-    | x == y    = stripLeading y xs
-    | otherwise = all
+stripLeading y = dropWhile $ \x -> x == y
 
 stripTrailing y str = reverse (stripLeading y (reverse str))
+
+stripLeadingWhitespace = dropWhile $ Char.isSpace
 
 --
 -- A version of `lines` that always considers the input "" to
@@ -132,11 +120,6 @@ prefixEachLine prefix text =
     foldl (++) "" (map (\x -> prefix ++ x ++ "\n") (allLines text))
 
 formatLines formatter lines = foldl (++) "" (map (formatter) lines)
-
-contains [] _ = False
-contains (x:xs) y
-    | x == y    = True
-    | otherwise = contains xs y
 
 pad s n = padFrom s (n-(length s))
 padFrom s n

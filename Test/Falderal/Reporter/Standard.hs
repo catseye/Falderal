@@ -55,7 +55,7 @@ reportEachTest ((Failure literalText testText expected actual):rest) = do
 
 reportText width fieldName text =
     if
-        contains text '\n'
+        elem '\n' text
       then do
         putStrLn (fieldName ++ ":")
         putStrLn text
