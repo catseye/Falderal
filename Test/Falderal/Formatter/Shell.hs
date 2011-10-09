@@ -49,7 +49,7 @@ formatBlocks (test@(Test (ShellTest cmd) desc input expectation):rest) =
         hereDocs = inputHereDoc ++ expectedHereDoc
         command = cmd ++ " <input.txt >output.txt\n"
         diff = "diff -u expected.txt output.txt || echo 'failed'\n"
-        cleanUp = "rm -f input.text expected.txt output.txt\n"
+        cleanUp = "rm -f input.txt expected.txt output.txt\n"
         formattedBlock = hereDocs ++ command ++ diff ++ cleanUp
     in
         formattedBlock ++ "\n" ++ formatBlocks rest
