@@ -43,7 +43,7 @@ import Test.Falderal.Common
 
 runTests [] = do
     return []
-runTests ((testFun, Test literalText inputText expected):rest) = do
+runTests ((testFun, Test testType literalText inputText expected):rest) = do
     actual <- runFun (testFun) inputText
     case compareTestOutcomes actual expected of
         True ->

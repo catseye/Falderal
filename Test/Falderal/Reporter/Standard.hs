@@ -62,5 +62,5 @@ reportText width fieldName text =
       else do
         putStrLn ((pad fieldName width) ++ ": " ++ text)
 
-isTest (_, (Test _ _ _)) = True
+isTest (_, (Test _ _ _ _)) = True
 isTest _ = False

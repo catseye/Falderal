@@ -39,25 +39,16 @@ import Test.Falderal.Common
 --
 
 format _ blocks =
-    (prelude blocks) ++ (formatBlocks $ transformBlocks blocks "") ++ postlude
+    (prelude blocks) ++ (formatBlocks blocks) ++ postlude
 
-formatBlocks ((functionName, test@(Test desc text expectation)):rest) =
-    "    (" ++ functionName ++ ", " ++ (show test) ++ "),\n" ++ (formatBlocks rest)
+formatBlocks (test@(Test (HaskellTest moduleName functionName) desc text expectation):rest) =
+    "    (" ++ moduleName ++ "." ++ functionName ++ ", " ++ (show test) ++ "),\n" ++ (formatBlocks rest)
 formatBlocks (_:rest) =
     formatBlocks rest
 formatBlocks [] =
     ""
 
-transformBlocks ((HaskellDirective moduleName functionName):rest) _ =
-    transformBlocks rest (moduleName ++ "." ++ functionName)
-transformBlocks (test@(Test _ _ _):rest) functionName =
-    (functionName, test):(transformBlocks rest functionName)
-transformBlocks (_:rest) functionName =
-    transformBlocks rest functionName
-transformBlocks [] _ =
-    []
-
-gatherImports ((HaskellDirective moduleName functionName):rest) =
+gatherImports ((Test (HaskellTest moduleName functionName) _ _ _):rest) =
     "import qualified " ++ moduleName ++ "\n" ++ gatherImports rest
 gatherImports (_:rest) =
     gatherImports rest

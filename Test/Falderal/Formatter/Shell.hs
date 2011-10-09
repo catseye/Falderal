@@ -39,14 +39,14 @@ import Test.Falderal.Common
 --
 
 format _ blocks =
-    prelude ++ (formatBlocks $ transformBlocks blocks "") ++ postlude
+    prelude ++ (formatBlocks blocks) ++ postlude
 
-formatBlocks ((commandString, test@(Test desc input expectation)):rest) =
+formatBlocks (test@(Test (ShellTest cmd) desc input expectation):rest) =
     let
         Output expected = expectation
         inputHereDoc = hereDoc "input.txt" input
         expectedHereDoc = hereDoc "expected.txt" expected
-        command = commandString ++ " <input.txt >output.txt\n"
+        command = cmd ++ " <input.txt >output.txt\n"
         diff = "diff -u expected.txt output.txt\n"
         formattedBlock = inputHereDoc ++ expectedHereDoc ++ command ++ diff
     in
@@ -55,15 +55,6 @@ formatBlocks (_:rest) =
     formatBlocks rest
 formatBlocks [] =
     ""
-
-transformBlocks ((ShellDirective commandString):rest) _ =
-    transformBlocks rest commandString
-transformBlocks (test@(Test _ _ _):rest) commandString =
-    (commandString, test):(transformBlocks rest commandString)
-transformBlocks (_:rest) commandString =
-    transformBlocks rest commandString
-transformBlocks [] _ =
-    []
 
 -- XXX derive sentinel from text
 

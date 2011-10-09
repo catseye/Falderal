@@ -54,7 +54,7 @@ loadFile fileName = do
 loadText text =
     let
         ls = transformLines $ lines text
-        bs = reDescribeBlocks $ convertLinesToBlocks $ ls
+        bs = reDescribeBlocks $ convertLinesToBlocks ls UndefinedTestType
     in
         (ls, bs)
 
@@ -120,24 +120,27 @@ coalesceLines (line:lines) last =
 -- Convert (coalesced) lines to blocks.
 --
 
-convertLinesToBlocks ((LiteralText literalText):(TestInput testText):(ExpectedResult expected):rest) =
-    ((Test literalText testText (Output expected)):convertLinesToBlocks rest)
-convertLinesToBlocks ((LiteralText literalText):(TestInput testText):(ExpectedError expected):rest) =
-    ((Test literalText testText (Exception expected)):convertLinesToBlocks rest)
-convertLinesToBlocks ((TestInput testText):(ExpectedResult expected):rest) =
-    ((Test "(undescribed output test)" testText (Output expected)):convertLinesToBlocks rest)
-convertLinesToBlocks ((TestInput testText):(ExpectedError expected):rest) =
-    ((Test "(undescribed output test)" testText (Exception expected)):convertLinesToBlocks rest)
-convertLinesToBlocks ((SectionHeading text):rest) =
-    ((Section text):convertLinesToBlocks rest)
-convertLinesToBlocks ((Pragma text):rest) =
-    ((parsePragma (stripLeading ' ' text)):convertLinesToBlocks rest)
-convertLinesToBlocks ((LiteralText _):(SectionHeading text):rest) =
-    ((Section text):convertLinesToBlocks rest)
+convertLinesToBlocks ((LiteralText literalText):(TestInput testText):(ExpectedResult expected):rest) testType =
+    ((Test testType literalText testText (Output expected)):(convertLinesToBlocks rest testType))
+convertLinesToBlocks ((LiteralText literalText):(TestInput testText):(ExpectedError expected):rest) testType =
+    ((Test testType literalText testText (Exception expected)):(convertLinesToBlocks rest testType))
+convertLinesToBlocks ((TestInput testText):(ExpectedResult expected):rest) testType =
+    ((Test testType "(undescribed output test)" testText (Output expected)):(convertLinesToBlocks rest testType))
+convertLinesToBlocks ((TestInput testText):(ExpectedError expected):rest) testType =
+    ((Test testType "(undescribed output test)" testText (Exception expected)):(convertLinesToBlocks rest testType))
+convertLinesToBlocks ((SectionHeading text):rest) testType =
+    ((Section text):(convertLinesToBlocks rest testType))
+convertLinesToBlocks ((Pragma text):rest) testType =
+    let
+        testType' = parsePragma $ stripLeading ' ' text
+    in
+        convertLinesToBlocks rest testType'
+convertLinesToBlocks ((LiteralText _):(SectionHeading text):rest) testType =
+    ((Section text):(convertLinesToBlocks rest testType))
 
-convertLinesToBlocks (_:rest) =
-    convertLinesToBlocks rest
-convertLinesToBlocks [] = []
+convertLinesToBlocks (_:rest) testType =
+    convertLinesToBlocks rest testType
+convertLinesToBlocks [] _ = []
 
 --
 -- Give blocks that don't have a description, the description of the previous
@@ -150,8 +153,8 @@ reDescribeBlocks blocks = reDescribeBlocks' blocks "" 2
 
 reDescribeBlocks' [] desc n =
     []
-reDescribeBlocks' (block@(Test literalText inp exp):rest) desc n
-    | allWhitespace literalText = (Test numberedDesc inp exp):(reDescribeBlocks' rest desc (n+1))
+reDescribeBlocks' (block@(Test testType literalText inp exp):rest) desc n
+    | allWhitespace literalText = (Test testType numberedDesc inp exp):(reDescribeBlocks' rest desc (n+1))
     | otherwise                 = (block):(reDescribeBlocks' rest literalText 2)
     where numberedDesc = "(#" ++ (show n) ++ ") " ++ (stripLeading '\n' desc)
 reDescribeBlocks' (block:rest) desc n =
@@ -167,14 +170,14 @@ parseHaskellFunctionality text =
             let
                 (moduleName, functionName) = parseSpecifier specifier
             in
-                Just $ HaskellDirective moduleName functionName
+                Just $ HaskellTest moduleName functionName
         Nothing ->
             Nothing
 
 parseShellFunctionality text =
     case stripPrefix "shell command " text of
         Just specifier ->
-            Just $ ShellDirective $ parseQuotedString specifier
+            Just $ ShellTest $ parseQuotedString specifier
         Nothing ->
             Nothing
 
@@ -194,7 +197,7 @@ tryFunctionalities [] text =
     error ("bad functionality: " ++ text)
 tryFunctionalities (func:rest) text =
     case func text of
-        Just x  -> x 
+        Just x  -> x
         Nothing -> tryFunctionalities rest text
 
 parseSpecifier specifier =

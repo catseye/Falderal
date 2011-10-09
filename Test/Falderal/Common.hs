@@ -58,10 +58,13 @@ data Expectation = Output String
                  | Exception String
                  deriving (Show, Eq, Ord)
 
+data TestType = HaskellTest String String -- module name, function name
+              | ShellTest String -- command
+              | UndefinedTestType
+              deriving (Show, Eq, Ord)
+
 data Block = Section String
-           | HaskellDirective String String -- module name, function name
-           | ShellDirective String
-           | Test String String Expectation
+           | Test TestType String String Expectation
            deriving (Show, Eq, Ord)
 
 --
