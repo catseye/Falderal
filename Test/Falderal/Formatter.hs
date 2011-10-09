@@ -1,4 +1,4 @@
-module Test.Falderal.Formatter (formatFile) where
+module Test.Falderal.Formatter (format) where
 
 --
 -- Test.Falderal.Formatter -- The Falderal Test Suite Formatter
@@ -35,7 +35,6 @@ module Test.Falderal.Formatter (formatFile) where
 import System.IO
 
 import Test.Falderal.Common
-import Test.Falderal.Loader
 import qualified Test.Falderal.Formatter.Identity as Identity
 import qualified Test.Falderal.Formatter.Markdown as Markdown
 import qualified Test.Falderal.Formatter.Haskell as Haskell
@@ -68,7 +67,5 @@ dumpLines lines blocks = formatLines (\x -> (show x) ++ "\n") lines
 -- This is why loadFile returns both.
 --
 
-formatFile format fileName outputFileHandle = do
-    (lines, blocks) <- loadFile fileName
-    outputText <- return $ (getFormatter format) lines blocks
-    hPutStr outputFileHandle outputText
+format format lines blocks =
+    (getFormatter format) lines blocks

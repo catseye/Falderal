@@ -3,10 +3,10 @@ import System.IO
 import System.Environment
 
 import Test.Falderal.Common
-import Test.Falderal.Loader
+import Test.Falderal.Loader (loadFile)
 import Test.Falderal.Runner
-import Test.Falderal.Formatter
-import Test.Falderal.Reporter
+import Test.Falderal.Formatter (format)
+import Test.Falderal.Reporter (report)
 
 --
 -- This module contains entry points to Falderal functionality intended
@@ -19,7 +19,9 @@ main = do
     dispatch args
 
 dispatch ("format":formatName:fileName:[]) = do
-    formatFile formatName fileName stdout
+    (lines, blocks) <- loadFile fileName
+    text <- return $ format formatName lines blocks
+    putStr outputText
 
 --
 -- Requires ghc.  Requires Test.Falderal is in the package path
@@ -31,12 +33,52 @@ dispatch ("format":formatName:fileName:[]) = do
 --
 
 dispatch ("test":reportFormat:fileName:[]) = do
+    (lines, blocks) <- loadFile fileName
+    haskellBlocks <- return $ getHaskellBlocks blocks
+    shellBlocks <- return $ getShellBlocks blocks
+    testHaskell haskellBlocks reportFormat fileName
+    testShell shellBlocks reportFormat fileName
+    -- exitWith exitCode
+
+testHaskell [] _ _ = do
+    return 0
+testHaskell blocks reportFormat fileName = do
     outputFileHandle <- openFile "GeneratedFalderalTests.hs" WriteMode
-    formatFile "haskell" fileName outputFileHandle
+    text <- return $ format "haskell" lines haskellBlocks
+    hPutStr outputFileHandle text
     hClose outputFileHandle
     exitCode <- system "ghc GeneratedFalderalTests.hs -e testModule"
     system "rm -f GeneratedFalderalTests.hs"
-    exitWith exitCode
+    return exitCode
+
+testShell [] _ _ = do
+    return 0
+testShell blocks reportFormat fileName = do
+    outputFileHandle <- openFile "GeneratedFalderalTests.sh" WriteMode
+    text <- return $ format "shell" lines haskellBlocks
+    hPutStr outputFileHandle text
+    hClose outputFileHandle
+    exitCode <- system "bash GeneratedFalderalTests.sh"
+    system "rm -f GeneratedFalderalTests.sh"
+    return exitCode
+
+getHaskellBlocks (test@(Test (HaskellTest _ _) _ _ _):rest) =
+    (test:(getHaskellBlocks rest))
+getHaskellBlocks (_:rest) =
+    getHaskellBlocks rest
+getHaskellBlocks [] =
+    []
+
+getShellBlocks (test@(Test (ShellTest _ _) _ _ _):rest) =
+    (test:(getShellBlocks rest))
+getShellBlocks (_:rest) =
+    getShellBlocks rest
+getShellBlocks [] =
+    []
+
+data Block = Section String
+           | Test TestType String String Expectation
+           deriving (Show, Eq, Ord)
 
 dispatch _ = do
     putStrLn "Usage: falderal command {args}"
