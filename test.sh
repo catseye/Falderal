@@ -62,8 +62,7 @@ Expected: Output "[False,False,False,Flse]"
 Actual  : Output "[False,False,False,False]"
 
 EOF
-falderal format haskell Test/Falderal/Demo.lhs > GeneratedFalderalTests.hs
-ghc GeneratedFalderalTests.hs -e testModule >actual.txt
+falderal test standard Test/Falderal/Demo.lhs >actual.txt
 E2=$?
 rm -f expected.txt actual.txt GeneratedFalderalTests.hs
 
