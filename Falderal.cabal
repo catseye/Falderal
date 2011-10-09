@@ -7,7 +7,7 @@ license:         BSD3
 category:        Testing
 author:          Chris Pressey <cpressey@gmail.com>
 maintainer:      Chris Pressey <cpressey@gmail.com>
-stability:       experimental
+stability:       alpha
 tested-with:     GHC == 6.12.1
 synopsis:        Framework for running and formatting literate test suites
 homepage:        http://catseye.tc/projects/falderal/
@@ -27,6 +27,7 @@ library
                    Test.Falderal.Reporter
   other-modules:   Test.Falderal.Formatter.Identity
                    Test.Falderal.Formatter.Haskell
+                   Test.Falderal.Formatter.Shell
                    Test.Falderal.Formatter.Markdown
                    Test.Falderal.Reporter.Standard
 
