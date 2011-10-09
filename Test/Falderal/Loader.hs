@@ -33,6 +33,7 @@ module Test.Falderal.Loader (loadFile, loadFiles, loadText) where
 --
 
 import Data.List
+-- import qualified Data.Map as Map
 import System
 
 import Test.Falderal.Common
@@ -61,7 +62,9 @@ loadFiles (fileName:rest) = do
 loadText text =
     let
         ls = transformLines $ lines text
-        bs = reDescribeBlocks $ convertLinesToBlocks ls UndefinedFunctionality
+        fds = collectFunctionalityDefinitions ls
+        bs = convertLinesToBlocks ls UndefinedFunctionality fds
+        bs' = reDescribeBlocks bs
     in
         (ls, bs)
 
@@ -127,29 +130,45 @@ coalesceLines (line:lines) last =
 -- Convert (coalesced) lines to blocks.
 --
 
-convertLinesToBlocks ((LiteralText literalText):(TestInput testText):(ExpectedResult expected):rest) testType =
-    ((Test testType literalText testText (Output expected)):(convertLinesToBlocks rest testType))
-convertLinesToBlocks ((LiteralText literalText):(TestInput testText):(ExpectedError expected):rest) testType =
-    ((Test testType literalText testText (Exception expected)):(convertLinesToBlocks rest testType))
-convertLinesToBlocks ((TestInput testText):(ExpectedResult expected):rest) testType =
-    ((Test testType "(undescribed output test)" testText (Output expected)):(convertLinesToBlocks rest testType))
-convertLinesToBlocks ((TestInput testText):(ExpectedError expected):rest) testType =
-    ((Test testType "(undescribed output test)" testText (Exception expected)):(convertLinesToBlocks rest testType))
-convertLinesToBlocks ((SectionHeading text):rest) testType =
-    ((Section text):(convertLinesToBlocks rest testType))
-convertLinesToBlocks ((Pragma text):rest) testType =
-    case parsePragma text of
-        TestsFor testType' ->
-            convertLinesToBlocks rest testType'
-        FunctionalityDefinition name functionality ->
-            -- XXX add it to the map
-            convertLinesToBlocks rest testType
-convertLinesToBlocks ((LiteralText _):(SectionHeading text):rest) testType =
-    ((Section text):(convertLinesToBlocks rest testType))
+convertLinesToBlocks :: [Line] -> Functionality -> [(String, Functionality)] -> [Block]
 
-convertLinesToBlocks (_:rest) testType =
-    convertLinesToBlocks rest testType
-convertLinesToBlocks [] _ = []
+convertLinesToBlocks ((LiteralText literalText):(TestInput testText):(ExpectedResult expected):rest) fn fnMap =
+    ((Test fn literalText testText (Output expected)):(convertLinesToBlocks rest fn fnMap))
+convertLinesToBlocks ((LiteralText literalText):(TestInput testText):(ExpectedError expected):rest) fn fnMap =
+    ((Test fn literalText testText (Exception expected)):(convertLinesToBlocks rest fn fnMap))
+convertLinesToBlocks ((TestInput testText):(ExpectedResult expected):rest) fn fnMap =
+    ((Test fn "(undescribed output test)" testText (Output expected)):(convertLinesToBlocks rest fn fnMap))
+convertLinesToBlocks ((TestInput testText):(ExpectedError expected):rest) fn fnMap =
+    ((Test fn "(undescribed output test)" testText (Exception expected)):(convertLinesToBlocks rest fn fnMap))
+convertLinesToBlocks ((SectionHeading text):rest) fn fnMap =
+    ((Section text):(convertLinesToBlocks rest fn fnMap))
+convertLinesToBlocks ((Pragma text):rest) fn fnMap =
+    case parsePragma text of
+        TestsFor (NamedFunctionality name) ->
+            -- fn = look up name in fnMap
+            convertLinesToBlocks rest fn fnMap
+        TestsFor fn' ->
+            convertLinesToBlocks rest fn' fnMap
+        _ ->
+            convertLinesToBlocks rest fn fnMap
+convertLinesToBlocks ((LiteralText _):(SectionHeading text):rest) fn fnMap =
+    ((Section text):(convertLinesToBlocks rest fn fnMap))
+
+convertLinesToBlocks (_:rest) fn fnMap =
+    convertLinesToBlocks rest fn fnMap
+convertLinesToBlocks [] _ _ = []
+
+
+collectFunctionalityDefinitions ((Pragma text):rest) =
+    case parsePragma text of
+        FunctionalityDefinition name functionality ->
+            ((name, functionality):collectFunctionalityDefinitions rest)
+        _ ->
+            collectFunctionalityDefinitions rest
+collectFunctionalityDefinitions (_:rest) =
+    collectFunctionalityDefinitions rest
+collectFunctionalityDefinitions [] =
+    []
 
 --
 -- Give blocks that don't have a description, the description of the previous
@@ -162,8 +181,8 @@ reDescribeBlocks blocks = reDescribeBlocks' blocks "" 2
 
 reDescribeBlocks' [] desc n =
     []
-reDescribeBlocks' (block@(Test testType literalText inp exp):rest) desc n
-    | allWhitespace literalText = (Test testType numberedDesc inp exp):(reDescribeBlocks' rest desc (n+1))
+reDescribeBlocks' (block@(Test fn literalText inp exp):rest) desc n
+    | allWhitespace literalText = (Test fn numberedDesc inp exp):(reDescribeBlocks' rest desc (n+1))
     | otherwise                 = (block):(reDescribeBlocks' rest literalText 2)
     where numberedDesc = "(#" ++ (show n) ++ ") " ++ (stripLeading '\n' desc)
 reDescribeBlocks' (block:rest) desc n =
