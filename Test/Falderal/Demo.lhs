@@ -34,6 +34,11 @@ composing it with show.
 
 > showParseBits = show . parseBits
 
+Pragmas should be able extend over multiple lines, just like anything else.
+But they can't currently.
+
+-> Functionality "Retain every second character" is implemented by Haskell function Test.Falderal.Demo:everySecond
+
 Tests for everySecond
 ---------------------
 

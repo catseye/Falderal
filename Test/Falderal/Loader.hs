@@ -176,7 +176,7 @@ reDescribeBlocks' (block:rest) desc n =
 parsePragma text =
     case consumeWords ["Tests", "for"] text of
         Just rest ->
-            tryFunctionalities functionalities rest
+            TestsFor $ tryFunctionalities functionalities rest
         Nothing ->
             case consumeWords ["Functionality"] text of
                 Just rest ->
@@ -202,14 +202,17 @@ parseHaskellFunctionality text =
             let
                 (moduleName, functionName) = parseSpecifier specifier
             in
-                Just $ TestsFor $ HaskellTest moduleName functionName
+                Just $ HaskellTest moduleName functionName
         Nothing ->
             Nothing
 
 parseShellFunctionality text =
     case consumeWords ["shell", "command"] text of
         Just specifier ->
-            Just $ TestsFor $ ShellTest $ parseQuotedString specifier
+            let
+                (command, _) = parseQuotedString specifier
+            in
+                Just $ ShellTest command
         Nothing ->
             Nothing
 
@@ -221,10 +224,17 @@ parseSpecifier specifier =
 
 parseFuncDefn text =
     let
-        x = parseQuotedString text
-        -- XXX wow, so incomplete
+        (name, rest) = parseQuotedString text
     in
-        FunctionalityDefinition text $ HaskellTest "GUH" ""
+        case consumeWords ["is", "implemented", "by"] rest of
+            Just funky ->
+                let
+                    functionality = tryFunctionalities functionalities funky
+                in
+                    FunctionalityDefinition text functionality
+            Nothing ->
+                error $ "bad functionality definition: " ++ text
+        
 
 parseQuotedString ('"':rest) =
     parseQuotedString' rest
@@ -232,9 +242,12 @@ parseQuotedString str =
     error $ "bad quoted string: " ++ str
 
 parseQuotedString' ('"':rest) =
-    ""
+    ("", rest)
 parseQuotedString' (char:rest) =
-    (char:parseQuotedString' rest)
+    let
+        (next, remainder) = parseQuotedString' rest
+    in
+        (char:next, remainder)
 
 consumeWords [] text =
     Just $ stripLeadingWhitespace text
