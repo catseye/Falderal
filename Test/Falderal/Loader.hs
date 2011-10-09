@@ -1,4 +1,4 @@
-module Test.Falderal.Loader (loadFile, loadText) where
+module Test.Falderal.Loader (loadFile, loadFiles, loadText) where
 
 --
 -- Test.Falderal.Loader -- The Falderal Test Loader
@@ -45,6 +45,13 @@ loadFile fileName = do
     testText <- readFile fileName
     (ls, bs) <- return $ loadText testText
     return (ls, bs)
+
+loadFiles [] = do
+    return ([], [])
+loadFiles (fileName:rest) = do
+    (ls, bs) <- loadFile fileName
+    (restLs, restBs) <- loadFiles rest
+    return (ls ++ restLs, bs ++ restBs)
 
 --
 -- Returns both the (coaslesced) lines and the (redescribed) blocks,
