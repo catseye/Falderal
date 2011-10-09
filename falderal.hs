@@ -20,8 +20,7 @@ main = do
 
 dispatch ("format":formatName:fileName:[]) = do
     (lines, blocks) <- loadFile fileName
-    text <- return $ format formatName lines blocks
-    putStr outputText
+    putStr $ format formatName lines blocks
 
 --
 -- Requires ghc.  Requires Test.Falderal is in the package path
@@ -38,24 +37,29 @@ dispatch ("test":reportFormat:fileName:[]) = do
     shellBlocks <- return $ getShellBlocks blocks
     testHaskell haskellBlocks reportFormat fileName
     testShell shellBlocks reportFormat fileName
-    -- exitWith exitCode
+    exitWith ExitSuccess
+
+dispatch _ = do
+    putStrLn "Usage: falderal command {args}"
+    putStrLn "where command is one of:"
+    putStrLn "    format format-name input-falderal-filename"
+    putStrLn "    test report-style input-falderal-filename"
 
 testHaskell [] _ _ = do
-    return 0
+    return ExitSuccess
 testHaskell blocks reportFormat fileName = do
     outputFileHandle <- openFile "GeneratedFalderalTests.hs" WriteMode
-    text <- return $ format "haskell" lines haskellBlocks
-    hPutStr outputFileHandle text
+    hPutStr outputFileHandle $ format "haskell" [] blocks
     hClose outputFileHandle
     exitCode <- system "ghc GeneratedFalderalTests.hs -e testModule"
     system "rm -f GeneratedFalderalTests.hs"
     return exitCode
 
 testShell [] _ _ = do
-    return 0
+    return ExitSuccess
 testShell blocks reportFormat fileName = do
     outputFileHandle <- openFile "GeneratedFalderalTests.sh" WriteMode
-    text <- return $ format "shell" lines haskellBlocks
+    text <- return $ format "shell" [] blocks
     hPutStr outputFileHandle text
     hClose outputFileHandle
     exitCode <- system "bash GeneratedFalderalTests.sh"
@@ -69,19 +73,9 @@ getHaskellBlocks (_:rest) =
 getHaskellBlocks [] =
     []
 
-getShellBlocks (test@(Test (ShellTest _ _) _ _ _):rest) =
+getShellBlocks (test@(Test (ShellTest _) _ _ _):rest) =
     (test:(getShellBlocks rest))
 getShellBlocks (_:rest) =
     getShellBlocks rest
 getShellBlocks [] =
     []
-
-data Block = Section String
-           | Test TestType String String Expectation
-           deriving (Show, Eq, Ord)
-
-dispatch _ = do
-    putStrLn "Usage: falderal command {args}"
-    putStrLn "where command is one of:"
-    putStrLn "    format format-name input-falderal-filename"
-    putStrLn "    test report-style input-falderal-filename"
