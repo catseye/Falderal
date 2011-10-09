@@ -61,7 +61,7 @@ loadFiles (fileName:rest) = do
 loadText text =
     let
         ls = transformLines $ lines text
-        bs = reDescribeBlocks $ convertLinesToBlocks ls UndefinedTestType
+        bs = reDescribeBlocks $ convertLinesToBlocks ls UndefinedFunctionality
     in
         (ls, bs)
 
@@ -138,10 +138,12 @@ convertLinesToBlocks ((TestInput testText):(ExpectedError expected):rest) testTy
 convertLinesToBlocks ((SectionHeading text):rest) testType =
     ((Section text):(convertLinesToBlocks rest testType))
 convertLinesToBlocks ((Pragma text):rest) testType =
-    let
-        testType' = parsePragma $ stripLeading ' ' text
-    in
-        convertLinesToBlocks rest testType'
+    case parsePragma $ stripLeading ' ' text of
+        TestsFor testType' ->
+            convertLinesToBlocks rest testType'
+        FunctionalityDefinition name functionality ->
+            -- XXX add it to the map
+            convertLinesToBlocks rest testType
 convertLinesToBlocks ((LiteralText _):(SectionHeading text):rest) testType =
     ((Section text):(convertLinesToBlocks rest testType))
 
@@ -171,34 +173,21 @@ reDescribeBlocks' (block:rest) desc n =
 -- Parse a pragma.
 --
 
-parseHaskellFunctionality text =
-    case stripPrefix "Haskell function " text of
-        Just specifier ->
-            let
-                (moduleName, functionName) = parseSpecifier specifier
-            in
-                Just $ HaskellTest moduleName functionName
-        Nothing ->
-            Nothing
-
-parseShellFunctionality text =
-    case stripPrefix "shell command " text of
-        Just specifier ->
-            Just $ ShellTest $ parseQuotedString specifier
-        Nothing ->
-            Nothing
-
-functionalities = [
-                    parseHaskellFunctionality,
-                    parseShellFunctionality
-                  ]
-
 parsePragma text =
     case stripPrefix "Tests for " text of
         Just rest ->
             tryFunctionalities functionalities rest
         Nothing ->
-            error ("bad pragma: " ++ text)
+            case stripPrefix "Functionality " text of
+                Just rest ->
+                    parseFuncDefn rest
+                Nothing ->
+                    error ("bad pragma: " ++ text)
+
+functionalities = [
+                    parseHaskellFunctionality,
+                    parseShellFunctionality
+                  ]
 
 tryFunctionalities [] text =
     error ("bad functionality: " ++ text)
@@ -207,11 +196,35 @@ tryFunctionalities (func:rest) text =
         Just x  -> x
         Nothing -> tryFunctionalities rest text
 
+parseHaskellFunctionality text =
+    case stripPrefix "Haskell function " text of
+        Just specifier ->
+            let
+                (moduleName, functionName) = parseSpecifier specifier
+            in
+                Just $ TestsFor $ HaskellTest moduleName functionName
+        Nothing ->
+            Nothing
+
+parseShellFunctionality text =
+    case stripPrefix "shell command " text of
+        Just specifier ->
+            Just $ TestsFor $ ShellTest $ parseQuotedString specifier
+        Nothing ->
+            Nothing
+
 parseSpecifier specifier =
     let
         (m, f) = break (\y -> y == ':') specifier
     in
         (m, stripLeading ':' f)
+
+parseFuncDefn text =
+    let
+        x = parseQuotedString text
+        -- XXX wow, so incomplete
+    in
+        FunctionalityDefinition text $ HaskellTest "GUH" ""
 
 parseQuotedString ('"':rest) =
     parseQuotedString' rest
