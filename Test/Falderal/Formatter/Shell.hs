@@ -43,7 +43,9 @@ format _ blocks =
 
 formatBlocks (test@(Test (ShellTest cmd) desc input expectation):rest) =
     let
-        Output expected = expectation
+        expected = case expectation of
+            Output e -> e
+            Exception e -> e -- XXX should we expect this on stderr?
         inputHereDoc = hereDoc "input.txt" input
         expectedHereDoc = hereDoc "expected.txt" expected
         hereDocs = inputHereDoc ++ expectedHereDoc
