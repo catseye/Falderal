@@ -1,6 +1,6 @@
 -- encoding: UTF-8
 name:            Falderal
-version:         0.3
+version:         0.4
 cabal-version:   >= 1.8
 build-type:      Simple
 license:         BSD3
@@ -14,9 +14,10 @@ homepage:        http://catseye.tc/projects/falderal/
 bug-reports:     https://bitbucket.org/catseye/falderal/issues
 description:
     Falderal is a file format for literate test suites.  It is particularly
-    suited for testing and documenting functions which interpret or compile
-    programming languages.  Test.Falderal is a reference implementation for
-    tools that format or run tests written in Falderal.
+    suited for documenting programming languages (or other specifications of
+    ways to transform text) and testing their implementation(s) in a
+    language-agnostic fashion.  Test.Falderal is a reference implementation,
+    written in Haskell, of tools for formatting and running Falderal tests.
 
 library
   build-depends: base >= 4.0, haskell98
@@ -39,11 +40,6 @@ executable falderal
                   Test.Falderal.Runner
                   Test.Falderal.Formatter
                   Test.Falderal.Reporter.Standard
-
--- test-suite test-falderal
---   type:          exitcode-stdio-1.0
---   main-is:       test-falderal.hs
---   build-depends: base
 
 source-repository head
   type:     mercurial
