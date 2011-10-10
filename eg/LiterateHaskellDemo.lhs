@@ -1,10 +1,10 @@
-> module Test.Falderal.Demo where
+> module LiterateHaskellDemo where
 
-Test.Falderal.Demo
-==================
+Falderal in Literate Haskell
+============================
 
-This literate Haskell source is simply a demonstration of how Falderal
-can be used to define and run some tests on some Haskell functions.
+This file demonstrates how Falderal tests can be embedded in a
+Bird-style Literate Haskell source file.
 
 This module was written by Chris Pressey.  It is hereby placed in
 the public domain.
@@ -40,7 +40,7 @@ significant; you can have as many as you like.
 
 -> Functionality "Retain every second character"
 -> is         implemented
--> by Haskell function Test.Falderal.Demo:everySecond
+-> by Haskell function LiterateHaskellDemo:everySecond
 
 Tests for everySecond
 ---------------------
@@ -106,7 +106,7 @@ present expecting an exception and not getting one.
 Tests for parseBits
 -------------------
 
--> Tests for Haskell function Test.Falderal.Demo:showParseBits
+-> Tests for Haskell function LiterateHaskellDemo:showParseBits
 
 We can test functions of type
 

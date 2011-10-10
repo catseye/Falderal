@@ -5,8 +5,8 @@
 # installed via Cabal first:
 # $ cabal clean && cabal install --prefix=$HOME --user
 
-falderal format identity Test/Falderal/Demo.lhs >formatted.txt
-diff -u Test/Falderal/Demo.lhs formatted.txt
+falderal format identity eg/LiterateHaskellDemo.lhs >formatted.txt
+diff -u eg/LiterateHaskellDemo.lhs formatted.txt
 E1=$?
 rm -f formatted.txt
 
@@ -62,9 +62,11 @@ Expected: Output "[False,False,False,Flse]"
 Actual  : Output "[False,False,False,False]"
 
 EOF
-falderal test standard Test/Falderal/Demo.lhs >actual.txt
+cd eg
+falderal test standard LiterateHaskellDemo.lhs >../actual.txt
 E2=$?
-rm -f expected.txt actual.txt GeneratedFalderalTests.hs
+cd ..
+rm -f expected.txt actual.txt
 
 if [ $E1 != 0 -o $E2 != 0 ]
   then
