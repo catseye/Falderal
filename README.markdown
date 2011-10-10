@@ -78,13 +78,11 @@ Bugs may be reported (and features requested) on the Issue Tracker:
     https://bitbucket.org/catseye/falderal/issues
 
 Official release distfiles are available on the [Falderal
-project page][] at [Cat's Eye Technologies'][].
+project page][http://catseye.tc/projects/falderal/] at
+[Cat's Eye Technologies'][http://catseye.tc/].
 
 For Further Information
 -----------------------
 
-Please see the [Falderal wiki][] on Bitbucket.
-
-[Falderal project page]: http://catseye.tc/projects/falderal/
-[Cat's Eye Technologies]: http://catseye.tc/
-[Falderal wiki]: https://bitbucket.org/catseye/falderal/wiki/
+Please see the [Falderal wiki][https://bitbucket.org/catseye/falderal/wiki/]
+on Bitbucket.
