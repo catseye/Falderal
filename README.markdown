@@ -50,11 +50,19 @@ features:
 * Fixed a bug where exception text which extended over multiple lines
   could not be expected correctly.
 
-The current version under development is 0.4.  It will likely expand upon the
-potential language-independence that was introduced here by including
-formatters for other languages, such as Python functions and shell commands.
-It will likely also attempt to make the usage simpler, possibly by providing
-an executable front-end, possibly also by being a Cabal package.
+The current version under development is 0.4.  It is introducing the
+following features:
+
+* For ease of installation, the project is presented as a Cabal package.
+* A driver executable, `falderal`, is built as part of installing the
+  Cabal package.  It provides a command-line interface to formatting
+  Falderal files and, in a limited fashion, running the tests in them.
+* A shell script formatter has been written, enabling testing of shell
+  commands.  One caveat is that reporting for these tests is nowhere near
+  as nice as for Haskell functions, but that will change in the next version.
+* The Functionality-definition pragma has been implemented, making it
+  possible to write tests in a more abstract, implementation-independent
+  fashion.
 
 The API should not be expected to be stable through the 0.x series.
 
@@ -72,12 +80,11 @@ Bugs may be reported (and features requested) on the Issue Tracker:
 Official release distfiles are available on the [Falderal
 project page][] at [Cat's Eye Technologies'][].
 
-[Falderal project page]: http://catseye.tc/projects/falderal/
-[Cat's Eye Technologies]: http://catseye.tc/
-
 For Further Information
 -----------------------
 
 Please see the [Falderal wiki][] on Bitbucket.
 
+[Falderal project page]: http://catseye.tc/projects/falderal/
+[Cat's Eye Technologies]: http://catseye.tc/
 [Falderal wiki]: https://bitbucket.org/catseye/falderal/wiki/
