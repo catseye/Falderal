@@ -1,12 +1,16 @@
 import System
 import System.IO
 import System.Environment
+import System.Console.GetOpt
 
 import Test.Falderal.Common
 import Test.Falderal.Loader (loadFiles)
 import Test.Falderal.Runner
 import Test.Falderal.Formatter (format)
 import Test.Falderal.Reporter (report)
+
+data Flag = ReportFormat String
+    deriving (Show, Ord, Eq)
 
 --
 -- This module contains entry points to Falderal functionality intended
@@ -16,13 +20,23 @@ import Test.Falderal.Reporter (report)
 main :: IO ()
 main = do
     args <- getArgs
-    dispatch args
+    case getOpt RequireOrder options args of
+        (flags, [],      [])     -> dispatch args flags
+        (_,     nonOpts, [])     -> error $ "unrecognized arguments: " ++ unwords nonOpts
+        (_,     _,       msgs)   -> error $ concat msgs ++ usageInfo header options
 
-dispatch ("format":formatName:fileNames) = do
+header = "Usage: falderal [OPTION...]"
+
+options :: [OptDescr Flag]
+options = [
+    Option ['r'] ["report"] (ReqArg ReportFormat "FORMAT") "format in which to produce test success/failure report (default: standard)"
+  ]
+
+dispatch ("format":formatName:fileNames) _ = do
     (lines, blocks) <- loadFiles fileNames
     putStr $ format formatName lines blocks
 
-dispatch ("test":reportFormat:fileNames) = do
+dispatch ("test":reportFormat:fileNames) _ = do
     (lines, blocks) <- loadFiles fileNames
     haskellBlocks <- return $ filter (isHaskellTest) blocks
     shellBlocks <- return $ filter (isShellTest) blocks
@@ -30,7 +44,7 @@ dispatch ("test":reportFormat:fileNames) = do
     testShell shellBlocks reportFormat
     exitWith ExitSuccess
 
-dispatch _ = do
+dispatch _ _ = do
     putStrLn "Usage: falderal command {args}"
     putStrLn "where command is one of:"
     putStrLn "    format format-name {falderal-filenames}"
