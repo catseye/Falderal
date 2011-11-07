@@ -20,9 +20,8 @@ data Flag = ReportFormat String
 main :: IO ()
 main = do
     args <- getArgs
-    case getOpt RequireOrder options args of
-        (flags, [],      [])     -> dispatch args flags
-        (_,     nonOpts, [])     -> error $ "unrecognized arguments: " ++ unwords nonOpts
+    case getOpt Permute options args of
+        (flags, newArgs, [])     -> dispatch newArgs flags
         (_,     _,       msgs)   -> error $ concat msgs ++ usageInfo header options
 
 header = "Usage: falderal [OPTION...]"
