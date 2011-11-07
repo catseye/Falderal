@@ -5,7 +5,6 @@ import System.Console.GetOpt
 
 import Test.Falderal.Common
 import Test.Falderal.Loader (loadFiles)
-import Test.Falderal.Runner
 import Test.Falderal.Formatter (format)
 import Test.Falderal.Reporter (report)
 
@@ -59,12 +58,13 @@ dispatch ("format":formatName:fileNames) _ = do
 dispatch ("test":fileNames) flags =
     let
         reportFormat = determineReportFormat flags
+        verbosity = determineVerbosity flags
     in do
         (lines, blocks) <- loadFiles fileNames
         haskellBlocks <- return $ extractBlocks (isHaskellTest) blocks
         shellBlocks <- return $ extractBlocks (isShellTest) blocks
-        testHaskell haskellBlocks reportFormat
-        testShell shellBlocks reportFormat
+        testHaskell haskellBlocks reportFormat verbosity
+        testShell shellBlocks reportFormat verbosity
         exitWith ExitSuccess
 
 dispatch _ _ = putStrLn header
@@ -75,27 +75,32 @@ dispatch _ _ = putStrLn header
 -- TODO: require only runhaskell.
 -- TODO: allow "runhaskell" to be overridden with a cmd line opt.
 --
+testHaskell blocks reportFormat verbosity =
+    runTests blocks reportFormat verbosity
+        ("GeneratedFalderalTests.hs", "haskell", "ghc GeneratedFalderalTests.hs -e testModule")
 
-testHaskell [] _ = do
-    return ExitSuccess
-testHaskell blocks reportFormat = do
-    outputFileHandle <- openFile "GeneratedFalderalTests.hs" WriteMode
-    hPutStr outputFileHandle $ format "haskell" [] blocks
-    hClose outputFileHandle
-    exitCode <- system "ghc GeneratedFalderalTests.hs -e testModule"
-    system "rm -f GeneratedFalderalTests.hs"
-    return exitCode
+testShell blocks reportFormat verbosity =
+    runTests blocks reportFormat verbosity
+        ("GeneratedFalderalTests.sh", "shell", "sh GeneratedFalderalTests.sh")
 
-testShell [] _ = do
+runTests [] _ _ _= do
     return ExitSuccess
-testShell blocks reportFormat = do
-    outputFileHandle <- openFile "GeneratedFalderalTests.sh" WriteMode
-    text <- return $ format "shell" [] blocks
+runTests blocks reportFormat verbosity (filename, formatName, command) = do
+    outputFileHandle <- openFile filename WriteMode
+    text <- return $ format formatName [] blocks
     hPutStr outputFileHandle text
     hClose outputFileHandle
-    exitCode <- system "sh GeneratedFalderalTests.sh"
-    system "rm -f GeneratedFalderalTests.sh"
+    exitCode <- system command
+    system ("rm -f " ++ filename)
     return exitCode
+
+--
+-- This will create separate tests for each functionality named
+-- inside a test.  This is to ease reporting, etc.  This should
+-- maybe even be a different kind of ADT, and unique-id'ing each
+-- test should occur here.  And of course this should all be
+-- somewhere besides falderal.hs...
+--
 
 extractBlocks pred [] =
     []
@@ -104,7 +109,10 @@ extractBlocks pred ((Test fns desc inp exp):rest) =
         [] ->
            extractBlocks (pred) rest
         fns' ->
-           ((Test fns' desc inp exp):(extractBlocks (pred) rest))
+            let
+                tests = map (\fn -> (Test [fn] desc inp exp)) fns'
+            in
+                tests ++ extractBlocks (pred) rest
 extractBlocks pred (_:rest) =
     extractBlocks (pred) rest
 
