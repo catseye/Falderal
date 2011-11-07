@@ -63,7 +63,7 @@ Actual  : Output "[False,False,False,False]"
 
 EOF
 cd eg
-falderal test standard LiterateHaskellDemo.lhs >../actual.txt
+falderal test LiterateHaskellDemo.lhs >../actual.txt
 E2=$?
 cd ..
 rm -f expected.txt actual.txt

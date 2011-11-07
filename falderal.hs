@@ -61,8 +61,8 @@ dispatch ("test":fileNames) flags =
         reportFormat = determineReportFormat flags
     in do
         (lines, blocks) <- loadFiles fileNames
-        haskellBlocks <- return $ filter (isHaskellTest) blocks
-        shellBlocks <- return $ filter (isShellTest) blocks
+        haskellBlocks <- return $ extractBlocks (isHaskellTest) blocks
+        shellBlocks <- return $ extractBlocks (isShellTest) blocks
         testHaskell haskellBlocks reportFormat
         testShell shellBlocks reportFormat
         exitWith ExitSuccess
@@ -97,8 +97,19 @@ testShell blocks reportFormat = do
     system "rm -f GeneratedFalderalTests.sh"
     return exitCode
 
-isHaskellTest (Test [(HaskellTest _ _)] _ _ _) = True
+extractBlocks pred [] =
+    []
+extractBlocks pred ((Test fns desc inp exp):rest) =
+    case filter (pred) fns of
+        [] ->
+           extractBlocks (pred) rest
+        fns' ->
+           ((Test fns' desc inp exp):(extractBlocks (pred) rest))
+extractBlocks pred (_:rest) =
+    extractBlocks (pred) rest
+
+isHaskellTest (HaskellTest _ _) = True
 isHaskellTest _ = False
 
-isShellTest (Test [(ShellTest _)] _ _ _) = True
+isShellTest (ShellTest _) = True
 isShellTest _ = False
