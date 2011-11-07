@@ -9,12 +9,29 @@ import Test.Falderal.Runner
 import Test.Falderal.Formatter (format)
 import Test.Falderal.Reporter (report)
 
-data Flag = ReportFormat String
-    deriving (Show, Ord, Eq)
-
 --
 -- This module contains entry points to Falderal functionality intended
 -- for use by users.
+--
+
+--
+-- Command-line options
+--
+
+data Flag = ReportFormat String
+          | Verbosity Integer
+    deriving (Show, Ord, Eq)
+
+determineReportFormat [] = "standard"
+determineReportFormat (ReportFormat fmt:_) = fmt
+determineReportFormat (_:rest) = determineReportFormat rest
+
+determineVerbosity [] = 0
+determineVerbosity (Verbosity v:_) = v
+determineVerbosity (_:rest) = determineVerbosity rest
+
+--
+-- Command-line entry point
 --
 
 main :: IO ()
@@ -24,30 +41,33 @@ main = do
         (flags, newArgs, [])     -> dispatch newArgs flags
         (_,     _,       msgs)   -> error $ concat msgs ++ usageInfo header options
 
-header = "Usage: falderal [OPTION...]"
+header = "Usage: falderal <command> [<option>...] <filename.falderal>...\n\
+         \where <command> is one of:\n\
+         \    test\n\
+         \    format <format-name>"
 
 options :: [OptDescr Flag]
 options = [
-    Option ['r'] ["report"] (ReqArg ReportFormat "FORMAT") "format in which to produce test success/failure report (default: standard)"
+    Option ['v'] ["verbosity"] (ReqArg ReportFormat "LEVEL") "verbosity level, higher is more verbose (default: 0)",
+    Option ['r'] ["report"] (ReqArg ReportFormat "FORMAT") "success/failure report format (default: standard)"
   ]
 
 dispatch ("format":formatName:fileNames) _ = do
     (lines, blocks) <- loadFiles fileNames
     putStr $ format formatName lines blocks
 
-dispatch ("test":reportFormat:fileNames) _ = do
-    (lines, blocks) <- loadFiles fileNames
-    haskellBlocks <- return $ filter (isHaskellTest) blocks
-    shellBlocks <- return $ filter (isShellTest) blocks
-    testHaskell haskellBlocks reportFormat
-    testShell shellBlocks reportFormat
-    exitWith ExitSuccess
+dispatch ("test":fileNames) flags =
+    let
+        reportFormat = determineReportFormat flags
+    in do
+        (lines, blocks) <- loadFiles fileNames
+        haskellBlocks <- return $ filter (isHaskellTest) blocks
+        shellBlocks <- return $ filter (isShellTest) blocks
+        testHaskell haskellBlocks reportFormat
+        testShell shellBlocks reportFormat
+        exitWith ExitSuccess
 
-dispatch _ _ = do
-    putStrLn "Usage: falderal command {args}"
-    putStrLn "where command is one of:"
-    putStrLn "    format format-name {falderal-filenames}"
-    putStrLn "    test report-style {falderal-filenames}"
+dispatch _ _ = putStrLn header
 
 --
 -- Requires ghc.  Requires Test.Falderal is in the package path
