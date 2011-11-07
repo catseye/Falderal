@@ -37,11 +37,14 @@ import Test.Falderal.Common
 --
 -- Formatting function which compiles a Falderal file to a shell script.
 --
+-- XXX tests should be partitioned before this is called, but this should
+-- be able to handle multiple shell-implemented functionalities.
+--
 
 format _ blocks =
     prelude ++ (formatBlocks blocks) ++ postlude
 
-formatBlocks (test@(Test (ShellTest cmd) desc input expectation):rest) =
+formatBlocks (test@(Test [(ShellTest cmd)] desc input expectation):rest) =
     let
         expected = case expectation of
             Output e -> e

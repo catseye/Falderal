@@ -37,18 +37,21 @@ import Test.Falderal.Common
 --
 -- Formatting function which compiles a Falderal file to Haskell source.
 --
+-- XXX tests should be partitioned before this is called, but this should
+-- be able to handle multiple Haskell-implemented functionalities.
+--
 
 format _ blocks =
     (prelude blocks) ++ (formatBlocks blocks) ++ postlude
 
-formatBlocks (test@(Test (HaskellTest moduleName functionName) desc text expectation):rest) =
+formatBlocks (test@(Test [(HaskellTest moduleName functionName)] desc text expectation):rest) =
     "    (" ++ moduleName ++ "." ++ functionName ++ ", " ++ (show test) ++ "),\n" ++ (formatBlocks rest)
 formatBlocks (_:rest) =
     formatBlocks rest
 formatBlocks [] =
     ""
 
-gatherImports ((Test (HaskellTest moduleName functionName) _ _ _):rest) =
+gatherImports ((Test [(HaskellTest moduleName functionName)] _ _ _):rest) =
     "import qualified " ++ moduleName ++ "\n" ++ gatherImports rest
 gatherImports (_:rest) =
     gatherImports rest

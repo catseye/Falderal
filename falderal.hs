@@ -78,8 +78,8 @@ testShell blocks reportFormat = do
     system "rm -f GeneratedFalderalTests.sh"
     return exitCode
 
-isHaskellTest (Test (HaskellTest _ _) _ _ _) = True
+isHaskellTest (Test [(HaskellTest _ _)] _ _ _) = True
 isHaskellTest _ = False
 
-isShellTest (Test (ShellTest _) _ _ _) = True
+isShellTest (Test [(ShellTest _)] _ _ _) = True
 isShellTest _ = False

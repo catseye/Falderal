@@ -33,7 +33,6 @@ module Test.Falderal.Loader (loadFile, loadFiles, loadText) where
 --
 
 import Data.List
--- import qualified Data.Map as Map
 import System
 
 import Test.Falderal.Common
@@ -63,7 +62,7 @@ loadText text =
     let
         ls = transformLines $ lines text
         fds = collectFunctionalityDefinitions ls
-        bs = convertLinesToBlocks ls UndefinedFunctionality fds
+        bs = convertLinesToBlocks ls [] fds
         bs' = reDescribeBlocks bs
     in
         (ls, bs)
@@ -132,33 +131,33 @@ coalesceLines (line:lines) last =
 -- Convert (coalesced) lines to blocks.
 --
 
-convertLinesToBlocks :: [Line] -> Functionality -> [(String, Functionality)] -> [Block]
+convertLinesToBlocks :: [Line] -> [Functionality] -> [(String, Functionality)] -> [Block]
 
-convertLinesToBlocks ((LiteralText literalText):(TestInput testText):(ExpectedResult expected):rest) fn fnMap =
-    ((Test fn literalText testText (Output expected)):(convertLinesToBlocks rest fn fnMap))
-convertLinesToBlocks ((LiteralText literalText):(TestInput testText):(ExpectedError expected):rest) fn fnMap =
-    ((Test fn literalText testText (Exception expected)):(convertLinesToBlocks rest fn fnMap))
-convertLinesToBlocks ((TestInput testText):(ExpectedResult expected):rest) fn fnMap =
-    ((Test fn "(undescribed output test)" testText (Output expected)):(convertLinesToBlocks rest fn fnMap))
-convertLinesToBlocks ((TestInput testText):(ExpectedError expected):rest) fn fnMap =
-    ((Test fn "(undescribed output test)" testText (Exception expected)):(convertLinesToBlocks rest fn fnMap))
+convertLinesToBlocks ((LiteralText literalText):(TestInput testText):(ExpectedResult expected):rest) fns fnMap =
+    ((Test fns literalText testText (Output expected)):(convertLinesToBlocks rest fns fnMap))
+convertLinesToBlocks ((LiteralText literalText):(TestInput testText):(ExpectedError expected):rest) fns fnMap =
+    ((Test fns literalText testText (Exception expected)):(convertLinesToBlocks rest fns fnMap))
+convertLinesToBlocks ((TestInput testText):(ExpectedResult expected):rest) fns fnMap =
+    ((Test fns "(undescribed output test)" testText (Output expected)):(convertLinesToBlocks rest fns fnMap))
+convertLinesToBlocks ((TestInput testText):(ExpectedError expected):rest) fns fnMap =
+    ((Test fns "(undescribed output test)" testText (Exception expected)):(convertLinesToBlocks rest fns fnMap))
 convertLinesToBlocks ((SectionHeading text):rest) fn fnMap =
     ((Section text):(convertLinesToBlocks rest fn fnMap))
-convertLinesToBlocks ((Pragma text):rest) fn fnMap =
+convertLinesToBlocks ((Pragma text):rest) fns fnMap =
     case parsePragma text of
         TestsFor (NamedFunctionality name) ->
-            case lookup name fnMap of
-                Just fn' -> convertLinesToBlocks rest fn' fnMap
-                Nothing  -> error ("Can't find " ++ name ++ " in " ++ (show fnMap))
-        TestsFor fn' ->
-            convertLinesToBlocks rest fn' fnMap
+            case map (snd) $ filter (\(s,fn) -> s == name) fnMap of
+                []   -> error ("Can't find " ++ name ++ " in " ++ (show fnMap))
+                fns' -> convertLinesToBlocks rest fns' fnMap
+        TestsFor fn ->
+            convertLinesToBlocks rest [fn] fnMap
         _ ->
-            convertLinesToBlocks rest fn fnMap
-convertLinesToBlocks ((LiteralText _):(SectionHeading text):rest) fn fnMap =
-    ((Section text):(convertLinesToBlocks rest fn fnMap))
+            convertLinesToBlocks rest fns fnMap
+convertLinesToBlocks ((LiteralText _):(SectionHeading text):rest) fns fnMap =
+    ((Section text):(convertLinesToBlocks rest fns fnMap))
 
-convertLinesToBlocks (_:rest) fn fnMap =
-    convertLinesToBlocks rest fn fnMap
+convertLinesToBlocks (_:rest) fns fnMap =
+    convertLinesToBlocks rest fns fnMap
 convertLinesToBlocks [] _ _ = []
 
 collectFunctionalityDefinitions ((Pragma text):rest) =
