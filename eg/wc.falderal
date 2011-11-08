@@ -4,14 +4,26 @@ Tests for wc
 This Falderal document was written by Chris Pressey.  It is hereby placed in
 the public domain.
 
--> Tests for shell command "wc -l"
+This test suite demonstrates how Falderal can specify tests for
+functionalities which have multiple implementations.
+
+-> Functionality "Count lines" is implemented by
+-> shell command "wc -l"
+
+-> Functionality "Count lines" is implemented by
+-> Haskell function WordCount:countLines
+
+-> Tests for functionality "Count lines"
 
 | These are eight words
 | that span
 | three lines.
 = 3
 
--> Tests for shell command "wc -w"
+-> Functionality "Count words" is implemented by
+-> shell command "wc -w"
+
+-> Tests for functionality "Count words"
 
 | These are eight words
 | that span
