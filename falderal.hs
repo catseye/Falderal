@@ -9,8 +9,8 @@ import Test.Falderal.Formatter (format)
 import Test.Falderal.Reporter (report)
 
 --
--- This module contains entry points to Falderal functionality intended
--- for use by users.
+-- Main module for the `falderal` tool -- a command-line interface to
+-- `Test.Falderal`.
 --
 
 --
@@ -18,7 +18,10 @@ import Test.Falderal.Reporter (report)
 --
 
 data Flag = ReportFormat String
-          | Verbosity Integer
+          | ShowVersion
+          | HaskellCommand String
+          | ShellCommand String
+          | Verbosity String
     deriving (Show, Ord, Eq)
 
 determineReportFormat [] = "standard"
@@ -26,7 +29,7 @@ determineReportFormat (ReportFormat fmt:_) = fmt
 determineReportFormat (_:rest) = determineReportFormat rest
 
 determineVerbosity [] = 0
-determineVerbosity (Verbosity v:_) = v
+determineVerbosity (Verbosity v:_) = (read v) :: Int
 determineVerbosity (_:rest) = determineVerbosity rest
 
 --
@@ -47,8 +50,11 @@ header = "Usage: falderal <command> [<option>...] <filename.falderal>...\n\
 
 options :: [OptDescr Flag]
 options = [
-    Option ['v'] ["verbosity"] (ReqArg ReportFormat "LEVEL") "verbosity level, higher is more verbose (default: 0)",
-    Option ['r'] ["report"] (ReqArg ReportFormat "FORMAT") "success/failure report format (default: standard)"
+    Option ['h'] ["haskell-command"] (ReqArg HaskellCommand "CMD") "command to run Haskell tests (default: 'ghc -e testModule')",
+    Option ['r'] ["report-format"] (ReqArg ReportFormat "FORMAT") "success/failure report format (default: standard)",
+    Option ['s'] ["shell-command"] (ReqArg ShellCommand "CMD") "command to run shell scripts (default: 'sh')",
+    Option ['v'] ["verbosity"] (ReqArg Verbosity "LEVEL") "verbosity level, higher is more verbose (default: 0)",
+    Option ['V'] ["version"] (NoArg ShowVersion) "show version and exit"
   ]
 
 dispatch ("format":formatName:fileNames) _ = do
@@ -77,7 +83,7 @@ dispatch _ _ = putStrLn header
 --
 testHaskell blocks reportFormat verbosity =
     runTests blocks reportFormat verbosity
-        ("GeneratedFalderalTests.hs", "haskell", "ghc GeneratedFalderalTests.hs -e testModule")
+        ("GeneratedFalderalTests.hs", "haskell", "ghc -e testModule GeneratedFalderalTests.hs")
 
 testShell blocks reportFormat verbosity =
     runTests blocks reportFormat verbosity
