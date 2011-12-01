@@ -193,16 +193,23 @@ reDescribeBlocks' (block:rest) desc n =
 -- Parse a pragma.
 --
 
+possiblePragmas = [
+                    (["Tests", "for"], \rest -> TestsFor $ tryFunctionalities functionalities rest),
+                    (["Functionality"], \rest -> parseFuncDefn rest),
+                    (["encoding:"], \rest -> Encoding rest)
+                  ]
+
 parsePragma text =
-    case consumeWords ["Tests", "for"] text of
-        Just rest ->
-            TestsFor $ tryFunctionalities functionalities rest
-        Nothing ->
-            case consumeWords ["Functionality"] text of
-                Just rest ->
-                    parseFuncDefn rest
-                Nothing ->
-                    error $ "bad pragma: " ++ text
+    parsePossiblePragmas text possiblePragmas
+
+parsePossiblePragmas :: String -> [([String], String -> Directive)] -> Directive
+parsePossiblePragmas text [] =
+    error $ "bad pragma: " ++ text
+parsePossiblePragmas text ((words,f):ps) =
+    case consumeWords words text of
+        Just rest -> f rest
+        Nothing -> parsePossiblePragmas text ps
+
 
 functionalities = [
                     parseHaskellFunctionality,

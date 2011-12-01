@@ -67,6 +67,7 @@ data Functionality = HaskellTest String String -- module name, function name
 
 data Directive = TestsFor Functionality
                | FunctionalityDefinition String Functionality
+               | Encoding String
                deriving (Show, Eq, Ord)
 
 data Block = Section String
