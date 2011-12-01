@@ -75,7 +75,7 @@ data Expectation = Output String
                  deriving (Show, Eq, Ord)
 
 data Block = Section String
-           | Test [Functionality] String String Expectation
+           | Test Int [Functionality] String String Expectation
            deriving (Show, Eq, Ord)
 
 --

@@ -70,8 +70,8 @@ dispatch ("format":formatName:fileNames) _ = do
 
 dispatch ("test":fileNames) flags = do
     (lines, blocks) <- loadFiles fileNames
-    haskellBlocks <- return $ extractBlocks (isHaskellTest) blocks
-    shellBlocks <- return $ extractBlocks (isShellTest) blocks
+    haskellBlocks <- return $ extractBlocks (isHaskellTest) blocks 1
+    shellBlocks <- return $ extractBlocks (isShellTest) blocks 1000 -- HAAAACK
     testHaskell haskellBlocks flags
     testShell shellBlocks flags
     exitWith ExitSuccess
@@ -118,19 +118,19 @@ runTests blocks flags (filename, formatName, command) =
 -- somewhere besides falderal.hs...
 --
 
-extractBlocks pred [] =
+extractBlocks pred [] id =
     []
-extractBlocks pred ((Test fns desc inp exp):rest) =
+extractBlocks pred ((Test _ fns desc inp exp):rest) id =
     case filter (pred) fns of
         [] ->
-           extractBlocks (pred) rest
+           extractBlocks (pred) rest id
         fns' ->
             let
-                tests = map (\fn -> (Test [fn] desc inp exp)) fns'
+                tests = map (\fn -> (Test id [fn] desc inp exp)) fns'
             in
-                tests ++ extractBlocks (pred) rest
-extractBlocks pred (_:rest) =
-    extractBlocks (pred) rest
+                tests ++ extractBlocks (pred) rest (id+1)
+extractBlocks pred (_:rest) id =
+    extractBlocks (pred) rest id
 
 isHaskellTest (HaskellTest _ _) = True
 isHaskellTest _ = False
