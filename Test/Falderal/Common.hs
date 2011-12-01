@@ -48,9 +48,23 @@ data Line = TestInput String
           | LiteralText String
           | QuotedCode String
           | SectionHeading String
-          | Pragma String
+          | Pragma String (Maybe Directive)
           | Placeholder
           deriving (Show, Eq, Ord)
+
+--
+-- ...and in the middle of processing...
+--
+
+data Directive = TestsFor Functionality
+               | FunctionalityDefinition String Functionality
+               | Encoding String
+               deriving (Show, Eq, Ord)
+
+data Functionality = HaskellTest String String -- module name, function name
+                   | ShellTest String -- command
+                   | NamedFunctionality String
+                   deriving (Show, Eq, Ord)
 
 --
 -- ...and after.
@@ -59,16 +73,6 @@ data Line = TestInput String
 data Expectation = Output String
                  | Exception String
                  deriving (Show, Eq, Ord)
-
-data Functionality = HaskellTest String String -- module name, function name
-                   | ShellTest String -- command
-                   | NamedFunctionality String
-                   deriving (Show, Eq, Ord)
-
-data Directive = TestsFor Functionality
-               | FunctionalityDefinition String Functionality
-               | Encoding String
-               deriving (Show, Eq, Ord)
 
 data Block = Section String
            | Test [Functionality] String String Expectation

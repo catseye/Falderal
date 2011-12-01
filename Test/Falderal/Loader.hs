@@ -61,11 +61,12 @@ loadFiles (fileName:rest) = do
 loadText text =
     let
         ls = transformLines $ lines text
-        fds = collectFunctionalityDefinitions ls
-        bs = convertLinesToBlocks ls [] fds
+        ls' = resolvePragmas ls
+        fds = collectFunctionalityDefinitions ls'
+        bs = convertLinesToBlocks ls' [] fds
         bs' = reDescribeBlocks bs
     in
-        (ls, bs)
+        (ls', bs)
 
 transformLines ls =
     let
@@ -84,7 +85,7 @@ classifyLine line
     | prefix == "= " = ExpectedResult suffix
     | prefix == "? " = ExpectedError suffix
     | prefix == "> " = QuotedCode suffix
-    | prefix == "->" = Pragma suffix
+    | prefix == "->" = Pragma suffix Nothing
     | otherwise      = LiteralText line
     where
         prefix = take 2 line
@@ -120,12 +121,17 @@ coalesceLines ((LiteralText more):lines) (LiteralText last) =
     coalesceLines lines (LiteralText (last ++ "\n" ++ more))
 coalesceLines ((QuotedCode more):lines) (QuotedCode last) =
     coalesceLines lines (QuotedCode (last ++ "\n" ++ more))
-coalesceLines ((Pragma more):lines) (Pragma last) =
-    coalesceLines lines (Pragma (last ++ "\n" ++ more))
+coalesceLines ((Pragma more Nothing):lines) (Pragma last Nothing) =
+    coalesceLines lines (Pragma (last ++ "\n" ++ more) Nothing)
 coalesceLines (line:lines) (LiteralText last) =
     ((LiteralText (last ++ "\n")):coalesceLines lines line)
 coalesceLines (line:lines) last =
     (last:coalesceLines lines line)
+
+resolvePragmas ((Pragma text Nothing):rest) =
+    ((Pragma text $ Just $ parsePragma text):resolvePragmas rest)
+resolvePragmas (other:rest) = (other:resolvePragmas rest)
+resolvePragmas [] = []
 
 --
 -- Convert (coalesced) lines to blocks.
@@ -143,16 +149,16 @@ convertLinesToBlocks ((TestInput testText):(ExpectedError expected):rest) fns fn
     ((Test fns "(undescribed output test)" testText (Exception expected)):(convertLinesToBlocks rest fns fnMap))
 convertLinesToBlocks ((SectionHeading text):rest) fn fnMap =
     ((Section text):(convertLinesToBlocks rest fn fnMap))
-convertLinesToBlocks ((Pragma text):rest) fns fnMap =
-    case parsePragma text of
-        TestsFor (NamedFunctionality name) ->
-            case map (snd) $ filter (\(s,fn) -> s == name) fnMap of
-                []   -> error ("Can't find " ++ name ++ " in " ++ (show fnMap))
-                fns' -> convertLinesToBlocks rest fns' fnMap
-        TestsFor fn ->
-            convertLinesToBlocks rest [fn] fnMap
-        _ ->
-            convertLinesToBlocks rest fns fnMap
+convertLinesToBlocks ((Pragma _ (Just (TestsFor (NamedFunctionality name)))):rest) fns fnMap =
+    case map (snd) $ filter (\(s,fn) -> s == name) fnMap of
+        []   -> error ("Can't find " ++ name ++ " in " ++ (show fnMap))
+        fns' -> convertLinesToBlocks rest fns' fnMap
+convertLinesToBlocks ((Pragma _ (Just (TestsFor fn))):rest) fns fnMap =
+    convertLinesToBlocks rest [fn] fnMap
+convertLinesToBlocks ((Pragma _ Nothing):rest) fns fnMap =
+    error $ "should have resolved all pragmas to directives by now"
+convertLinesToBlocks ((Pragma _ _):rest) fns fnMap =
+    convertLinesToBlocks rest fns fnMap
 convertLinesToBlocks ((LiteralText _):(SectionHeading text):rest) fns fnMap =
     ((Section text):(convertLinesToBlocks rest fns fnMap))
 
@@ -160,12 +166,10 @@ convertLinesToBlocks (_:rest) fns fnMap =
     convertLinesToBlocks rest fns fnMap
 convertLinesToBlocks [] _ _ = []
 
-collectFunctionalityDefinitions ((Pragma text):rest) =
-    case parsePragma text of
-        FunctionalityDefinition name functionality ->
-            ((name, functionality):collectFunctionalityDefinitions rest)
-        _ ->
-            collectFunctionalityDefinitions rest
+collectFunctionalityDefinitions ((Pragma _ (Just (FunctionalityDefinition name functionality))):rest) =
+    ((name, functionality):collectFunctionalityDefinitions rest)
+collectFunctionalityDefinitions ((Pragma _ Nothing):rest) =
+    error $ "should have resolved all pragmas to directives by now"
 collectFunctionalityDefinitions (_:rest) =
     collectFunctionalityDefinitions rest
 collectFunctionalityDefinitions [] =
