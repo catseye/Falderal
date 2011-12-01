@@ -51,11 +51,7 @@ formatBlocks (test@(Test id [(ShellTest cmd)] desc input expectation):rest) =
             Exception e -> e -- XXX should we expect this on stderr?
         inputHereDoc = hereDoc "input.txt" input
         expectedHereDoc = hereDoc "expected.txt" expected
-        hereDocs = inputHereDoc ++ expectedHereDoc
-        command = cmd ++ " <input.txt >output.txt\n"
-        diff = "diff -u expected.txt output.txt || echo 'failed'\n"
-        cleanUp = "rm -f input.txt expected.txt output.txt\n"
-        formattedBlock = hereDocs ++ command ++ diff ++ cleanUp
+        formattedBlock = inputHereDoc ++ expectedHereDoc ++ testExecution cmd id
     in
         formattedBlock ++ "\n" ++ formatBlocks rest
 formatBlocks (_:rest) =
@@ -78,3 +74,14 @@ prelude =
 postlude =
     "\n\
     \\n"
+
+testExecution cmd id =
+    cmd ++ " <input.txt >output.txt\n\
+    \diff -q expected.txt output.txt 2>&1 >/dev/null\n\
+    \if [ $? -ne 0 ]\n\
+    \  then\n\
+    \  echo " ++ (show id) ++ "\n\
+    \  echo `wc -l output.txt`\n\
+    \  cat output.txt\n\
+    \fi\n\
+    \rm -f input.txt expected.txt output.txt\n"
