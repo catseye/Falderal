@@ -24,6 +24,7 @@ library
   exposed-modules: Test.Falderal.Runner
                    Test.Falderal.Common
                    Test.Falderal.Loader
+                   Test.Falderal.Partitioner
                    Test.Falderal.Formatter
                    Test.Falderal.Reporter
   other-modules:   Test.Falderal.Formatter.Identity
@@ -37,6 +38,7 @@ executable falderal
   build-depends:  base >= 4.0, haskell98
   other-modules:  Test.Falderal.Common
                   Test.Falderal.Loader
+                  Test.Falderal.Partitioner
                   Test.Falderal.Runner
                   Test.Falderal.Formatter
                   Test.Falderal.Reporter.Standard

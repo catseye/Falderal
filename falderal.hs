@@ -5,6 +5,7 @@ import System.Console.GetOpt
 
 import Test.Falderal.Common
 import Test.Falderal.Loader (loadFiles)
+import Test.Falderal.Partitioner (partitionTests, isHaskellTest, isShellTest)
 import Test.Falderal.Formatter (format)
 import Test.Falderal.Reporter (report)
 
@@ -70,8 +71,7 @@ dispatch ("format":formatName:fileNames) _ = do
 
 dispatch ("test":fileNames) flags = do
     (lines, blocks) <- loadFiles fileNames
-    haskellBlocks <- return $ extractBlocks (isHaskellTest) blocks 1
-    shellBlocks <- return $ extractBlocks (isShellTest) blocks 1000 -- HAAAACK
+    [haskellBlocks, shellBlocks] <- return $ partitionTests [isHaskellTest, isShellTest] blocks
     testHaskell haskellBlocks flags
     testShell shellBlocks flags
     exitWith ExitSuccess
@@ -85,7 +85,6 @@ dispatch _ _ = putStrLn header
 -- Requires ghc.  Requires Test.Falderal is in the package path
 -- (easiest way to ensure this is to install it as a Cabal package)
 -- TODO: require only runhaskell.
--- TODO: allow "runhaskell" to be overridden with a cmd line opt.
 --
 testHaskell blocks flags =
     runTests blocks flags
@@ -109,31 +108,3 @@ runTests blocks flags (filename, formatName, command) =
         exitCode <- system command
         system ("rm -f " ++ filename)
         return exitCode
-
---
--- This will create separate tests for each functionality named
--- inside a test.  This is to ease reporting, etc.  This should
--- maybe even be a different kind of ADT, and unique-id'ing each
--- test should occur here.  And of course this should all be
--- somewhere besides falderal.hs...
---
-
-extractBlocks pred [] id =
-    []
-extractBlocks pred ((Test _ fns desc inp exp):rest) id =
-    case filter (pred) fns of
-        [] ->
-           extractBlocks (pred) rest id
-        fns' ->
-            let
-                tests = map (\fn -> (Test id [fn] desc inp exp)) fns'
-            in
-                tests ++ extractBlocks (pred) rest (id+1)
-extractBlocks pred (_:rest) id =
-    extractBlocks (pred) rest id
-
-isHaskellTest (HaskellTest _ _) = True
-isHaskellTest _ = False
-
-isShellTest (ShellTest _) = True
-isShellTest _ = False
