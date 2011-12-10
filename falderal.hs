@@ -8,7 +8,11 @@ import System.Console.GetOpt
 
 import Test.Falderal.Common
 import Test.Falderal.Loader (loadFiles)
-import Test.Falderal.Partitioner (partitionTests, isHaskellTest, isShellTest)
+import Test.Falderal.Partitioner (
+                                   partitionTests,
+                                   isHaskellFunctionality,
+                                   isShellFunctionality
+                                 )
 import Test.Falderal.Formatter (format)
 import Test.Falderal.Reporter (report)
 
@@ -76,9 +80,10 @@ dispatch ("test":fileNames) flags =
     let
         reportFormat = determineReportFormat flags
         verbosity = determineVerbosity flags
+        preds = [isHaskellFunctionality, isShellFunctionality]
     in do
         (lines, blocks) <- loadFiles fileNames
-        [haskellBlocks, shellBlocks] <- return $ partitionTests [isHaskellTest, isShellTest] blocks
+        [haskellBlocks, shellBlocks] <- return $ partitionTests preds blocks
         haskellFails <- testHaskell haskellBlocks flags
         shellFails <- testShell shellBlocks flags
         tests <- return $ assembleFailingTests (haskellBlocks ++ shellBlocks) (haskellFails ++ shellFails)

@@ -1,4 +1,4 @@
-module Test.Falderal.Partitioner (partitionTests, isHaskellTest, isShellTest) where
+module Test.Falderal.Partitioner (partitionTests, isHaskellFunctionality, isShellFunctionality) where
 
 import Test.Falderal.Common
 
@@ -7,51 +7,65 @@ import Test.Falderal.Common
 --
 
 --
--- Given a list of tests and a list of predicates, create
--- separate lists of tests, one for each predicate.  Also
--- uniquely identify each test.
+-- Given a list of tests and a list of predicates on their functionality,
+-- create separate lists of tests, one for each functionality.  Also
+-- uniquely identify each test by assigning it a unique integer ID.
 --
 
+partitionTests :: [Block -> Bool] -> [Block] -> [[Block]]
 partitionTests preds tests =
-    partitionTests' preds tests 1
+    let
+        tests' = singulate tests
+        testLists = partition preds tests'
+        numberedTests = numberTests testLists 1
+    in
+        numberedTests
 
-partitionTests' [] tests id =
+--
+-- Given a list of tests, each of which might have multiple functionalities
+-- implementing it, return a (possibly longer) list of tests, each of which
+-- is implemented by a single functionality.
+--
+
+singulate :: [Block] -> [Block]
+singulate [] =
     []
-partitionTests' (pred:preds) tests id =
+singulate ((Test id fns desc inp exp result):tests) =
     let
-        (subTests, id') = filterTests pred tests id
+        newTests = map (\fn -> Test id [fn] desc inp exp result) fns
     in
-        (subTests:(partitionTests' preds tests id'))
+        newTests ++ (singulate tests)
+singulate (_:tests) =
+    singulate tests
 
-filterTests pred [] id =
-    ([], id)
-filterTests pred (test@(Test _ fns _ _ _ _):rest) id =
-    case filter (pred) fns of
-        [] ->
-           filterTests (pred) rest id
-        fns' ->
-            let
-                (tests, id') = mapTests test fns' id
-                (remainder, id'') = filterTests (pred) rest (id+1)
-            in
-                (tests ++ remainder, id'')
-filterTests pred (_:rest) id =
-    filterTests (pred) rest id
+partition :: [Block -> Bool] -> [Block] -> [[Block]]
+partition [] tests =
+    []
+partition (pred:preds) tests =
+    (filter (pred) tests:partition preds tests)
 
-mapTests test [] id =
-    ([], id)
-mapTests test@(Test _ _ desc inp exp result) (fn:fns) id =
+numberTests [] id =
+    []
+numberTests (list:lists) id =
     let
-        (remainder, id') = mapTests test fns (id+1)
+        (list', id') = numberTestList list id
     in
-        ((Test id [fn] desc inp exp result):remainder, id')
+        (list':numberTests lists id')
+
+numberTestList [] id =
+    ([], id)
+numberTestList ((Test _ fns desc inp exp result):tests) id =
+    let
+        (remainder, id') = numberTestList tests (id+1)
+    in
+        ((Test id fns desc inp exp result):remainder, id')
 
 --
 -- Useful predicates to use, above.
 --
 
-isHaskellTest (HaskellTest _ _) = True
-isHaskellTest _ = False
+isHaskellFunctionality (Test _ [(HaskellTest _ _)] _ _ _ _) = True
+isHaskellFunctionality _ = False
 
-isShellTest (ShellTest _) = True
-isShellTest _ = False
+isShellFunctionality (Test _ [(ShellTest _)] _ _ _ _) = True
+isShellFunctionality _ = False
