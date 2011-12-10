@@ -126,3 +126,7 @@ pad s n = padFrom s (n-(length s))
 padFrom s n
     | n <= 0    = s
     | otherwise = padFrom (s ++ " ") (n-1)
+
+join _ [] = ""
+join _ [x] = x
+join glue (x:xs) = x ++ glue ++ (join glue xs)

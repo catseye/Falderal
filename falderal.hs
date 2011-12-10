@@ -1,3 +1,5 @@
+import Char (isDigit, ord)
+
 import System
 import System.IO
 import System.Process
@@ -70,12 +72,21 @@ dispatch ("format":formatName:fileNames) _ = do
     (lines, blocks) <- loadFiles fileNames
     putStr $ format formatName lines blocks
 
-dispatch ("test":fileNames) flags = do
-    (lines, blocks) <- loadFiles fileNames
-    [haskellBlocks, shellBlocks] <- return $ partitionTests [isHaskellTest, isShellTest] blocks
-    testHaskell haskellBlocks flags
-    testShell shellBlocks flags
-    exitWith ExitSuccess
+dispatch ("test":fileNames) flags =
+    let
+        reportFormat = determineReportFormat flags
+        verbosity = determineVerbosity flags
+    in do
+        (lines, blocks) <- loadFiles fileNames
+        [haskellBlocks, shellBlocks] <- return $ partitionTests [isHaskellTest, isShellTest] blocks
+        haskellFails <- testHaskell haskellBlocks flags
+        shellFails <- testShell shellBlocks flags
+        tests <- return $ assembleFailingTests (haskellBlocks ++ shellBlocks) (haskellFails ++ shellFails)
+        -- putStrLn (show (haskellFails ++ shellFails))
+        -- putStrLn (show (haskellBlocks ++ shellBlocks))
+        -- putStrLn (show tests)
+        report reportFormat tests
+        exitWith ExitSuccess
 
 dispatch ("version":_) _ = do
     putStrLn "Test.Falderal version 0.4"
@@ -115,8 +126,10 @@ collect handle = do
         remainder <- collect handle
         return (line:remainder)
 
+-- TODO: what to do with exitCode?
+
 runTests [] _ _ = do
-    return ExitSuccess
+    return []
 runTests blocks flags (filename, formatName, command) =
     let
         reportFormat = determineReportFormat flags
@@ -127,6 +140,39 @@ runTests blocks flags (filename, formatName, command) =
         hPutStr outputFileHandle text
         hClose outputFileHandle
         (lines, exitCode) <- captureLines command
-        putStrLn (show lines)
         system ("rm -f " ++ filename)
-        return exitCode
+        return $ collectFails lines
+
+data Fail = Fail Int String
+    deriving (Ord, Eq, Show)
+
+collectFails [] =
+    []
+collectFails (idStr:numLinesStr:rest) =
+    let
+        id = parseNumStr idStr 0
+        numLines = parseNumStr numLinesStr 0
+        failLines = take numLines rest
+        rest' = drop numLines rest
+    in
+        ((Fail id (join "\n" failLines)):collectFails rest')
+collectFails (idStr:rest) =
+    let
+        id = parseNumStr idStr 0
+    in
+        ((Fail id ""):collectFails rest)
+
+parseNumStr [] acc = acc
+parseNumStr (x:xs) acc
+    | isDigit x = parseNumStr xs (acc * 10 + ((ord x) - (ord '0')))
+    | otherwise = acc
+
+assembleFailingTests [] fails = []
+assembleFailingTests (t@(Test testId fns literalText testText expected _):tests) fails =
+    case filter (\(Fail failId _) -> failId == testId) fails of
+        [(Fail _ actualText)] ->
+            (Test testId fns literalText testText expected (Just (Output actualText))):assembleFailingTests tests fails
+        _ ->
+            (t:assembleFailingTests tests fails)
+assembleFailingTests (test:tests) fails =
+    (test:assembleFailingTests tests fails)
