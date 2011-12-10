@@ -1,5 +1,6 @@
 import System
 import System.IO
+import System.Process
 import System.Environment
 import System.Console.GetOpt
 
@@ -19,8 +20,8 @@ import Test.Falderal.Reporter (report)
 --
 
 data Flag = ReportFormat String
-          | HaskellCommand String
-          | ShellCommand String
+          | HaskellRunCommand String
+          | ShellRunCommand String
           | Verbosity String
     deriving (Show, Ord, Eq)
 
@@ -32,13 +33,13 @@ determineVerbosity [] = 0
 determineVerbosity (Verbosity v:_) = (read v) :: Int
 determineVerbosity (_:rest) = determineVerbosity rest
 
-determineHaskellCommand [] = "ghc -e testModule"
-determineHaskellCommand (HaskellCommand s:_) = s
-determineHaskellCommand (_:rest) = determineHaskellCommand rest
+determineHaskellRunCommand [] = "ghc -e testModule"
+determineHaskellRunCommand (HaskellRunCommand s:_) = s
+determineHaskellRunCommand (_:rest) = determineHaskellRunCommand rest
 
-determineShellCommand [] = "sh"
-determineShellCommand (ShellCommand s:_) = s
-determineShellCommand (_:rest) = determineShellCommand rest
+determineShellRunCommand [] = "sh"
+determineShellRunCommand (ShellRunCommand s:_) = s
+determineShellRunCommand (_:rest) = determineShellRunCommand rest
 
 --
 -- Command-line entry point
@@ -59,9 +60,9 @@ header = "Usage: falderal <command> [<option>...] <filename.falderal>...\n\
 
 options :: [OptDescr Flag]
 options = [
-    Option ['h'] ["haskell-command"] (ReqArg HaskellCommand "CMD") "command to run Haskell tests (default: 'ghc -e testModule')",
+    Option ['h'] ["haskell-command"] (ReqArg HaskellRunCommand "CMD") "command to run Haskell tests (default: 'ghc -e testModule')",
     Option ['r'] ["report-format"] (ReqArg ReportFormat "FORMAT") "success/failure report format (default: standard)",
-    Option ['s'] ["shell-command"] (ReqArg ShellCommand "CMD") "command to run shell scripts (default: 'sh')",
+    Option ['s'] ["shell-command"] (ReqArg ShellRunCommand "CMD") "command to run shell scripts (default: 'sh')",
     Option ['v'] ["verbosity"] (ReqArg Verbosity "LEVEL") "verbosity level, higher is more verbose (default: 0)"
   ]
 
@@ -82,17 +83,37 @@ dispatch ("version":_) _ = do
 dispatch _ _ = putStrLn header
 
 --
--- Requires ghc.  Requires Test.Falderal is in the package path
+-- Requires ghc.  Requires Test.Falderal in the package path
 -- (easiest way to ensure this is to install it as a Cabal package)
 -- TODO: require only runhaskell.
 --
 testHaskell blocks flags =
     runTests blocks flags
-        ("GeneratedFalderalTests.hs", "haskell", (determineHaskellCommand flags) ++ " GeneratedFalderalTests.hs")
+        ("GeneratedFalderalTests.hs", "haskell", (determineHaskellRunCommand flags) ++ " GeneratedFalderalTests.hs")
 
 testShell blocks flags =
     runTests blocks flags
-        ("GeneratedFalderalTests.sh", "shell", (determineShellCommand flags) ++ " GeneratedFalderalTests.sh")
+        ("GeneratedFalderalTests.sh", "shell", (determineShellRunCommand flags) ++ " GeneratedFalderalTests.sh")
+
+captureLines command =
+    let
+        procDesc = (shell command){ std_out = CreatePipe }
+    in do
+        (_, Just hStdout, _, proc) <- createProcess procDesc
+        output <- collect hStdout
+        exitCode <- waitForProcess proc
+        return (output, exitCode)
+
+collect handle = do
+    eof <- hIsEOF handle
+    if
+        eof
+      then do
+        return []
+      else do
+        line <- hGetLine handle
+        remainder <- collect handle
+        return (line:remainder)
 
 runTests [] _ _ = do
     return ExitSuccess
@@ -105,6 +126,7 @@ runTests blocks flags (filename, formatName, command) =
         text <- return $ format formatName [] blocks
         hPutStr outputFileHandle text
         hClose outputFileHandle
-        exitCode <- system command
+        (lines, exitCode) <- captureLines command
+        putStrLn (show lines)
         system ("rm -f " ++ filename)
         return exitCode

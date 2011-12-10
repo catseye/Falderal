@@ -20,7 +20,7 @@ description:
     written in Haskell, of tools for formatting and running Falderal tests.
 
 library
-  build-depends: base >= 4.0, haskell98
+  build-depends: base >= 4.0, haskell98, process >= 1.0
   exposed-modules: Test.Falderal.Runner
                    Test.Falderal.Common
                    Test.Falderal.Loader
@@ -36,7 +36,7 @@ library
 
 executable falderal
   main-is:        falderal.hs
-  build-depends:  base >= 4.0, haskell98
+  build-depends:  base >= 4.0, haskell98, process >= 1.0
   other-modules:  Test.Falderal.Common
                   Test.Falderal.Loader
                   Test.Falderal.Partitioner
