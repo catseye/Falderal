@@ -75,4 +75,4 @@ postlude =
     \    ]\n\
     \testModule = do\n\
     \    failures <- runTests tests\n\
-    \    report \"standard\" tests failures\n" -- TODO "failure-dump"
+    \    report \"failure-dump\" tests failures\n"

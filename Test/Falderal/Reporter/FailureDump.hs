@@ -36,7 +36,6 @@ import Test.Falderal.Common
 
 report testTuples failures = do
     -- TODO: need to map test id into each failure here
-    putStrLn (show testTuples)
     reportEachTest failures
 
 reportEachTest [] = do

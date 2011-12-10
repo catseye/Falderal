@@ -6,6 +6,8 @@ module Test.Falderal.Reporter (report) where
 
 import System
 
+import Test.Falderal.Common
+
 import qualified Test.Falderal.Reporter.Standard as Standard
 import qualified Test.Falderal.Reporter.FailureDump as FailureDump
 
@@ -15,6 +17,8 @@ import qualified Test.Falderal.Reporter.FailureDump as FailureDump
 
 getReporter "standard" = Standard.report
 getReporter "failure-dump" = FailureDump.report
+
+report :: String -> [(String -> String, Block)] -> [Result] -> IO ()
 
 report format testTuples failures =
     (getReporter format) testTuples failures
