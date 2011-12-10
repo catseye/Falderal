@@ -41,16 +41,18 @@ import Test.Falderal.Common
 -- any block that is not a Test is simply ignored.
 --
 
+runTests :: [(String -> String, Block)] -> IO [Block]
+
 runTests [] = do
     return []
-runTests ((testFun, Test id testType literalText inputText expected):rest) = do
+runTests ((testFun, Test id fns literalText inputText expected _):rest) = do
     actual <- runFun (testFun) inputText
     case compareTestOutcomes actual expected of
         True ->
             runTests rest
         False -> do
             remainder <- runTests rest
-            return ((Failure literalText inputText expected actual):remainder)
+            return ((Test id fns literalText inputText expected (Just actual)):remainder)
 runTests (_:rest) = do
     runTests rest
 

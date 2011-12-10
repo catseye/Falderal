@@ -74,21 +74,18 @@ data Expectation = Output String
                  | Exception String
                  deriving (Show, Eq, Ord)
 
+--
+-- First element is the test ID.
+-- Second element is a  list of functionalities being tested.
+-- Third element is the literal text preceding the test.
+-- Fourth element is the textual input to the test.
+-- Fifth element is what we expect the test to result in.
+-- Sixth element is the actual result of the test, after it has been run.
+--
+
 data Block = Section String
-           | Test Int [Functionality] String String Expectation
+           | Test Int [Functionality] String String Expectation (Maybe Expectation)
            deriving (Show, Eq, Ord)
-
---
--- Data type for test results.
---
--- First element is the literal text preceding the test.
--- Second element is the textual input to the test.
--- Third element is the result that we expected from the test.
--- Fourth element is the actual result of the test.
---
-
-data Result = Failure String String Expectation Expectation
-              deriving (Show, Eq, Ord)
 
 --
 -- Common functions.

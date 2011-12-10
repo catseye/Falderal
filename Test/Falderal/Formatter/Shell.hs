@@ -44,7 +44,7 @@ import Test.Falderal.Common
 format _ blocks =
     prelude ++ (formatBlocks blocks) ++ postlude
 
-formatBlocks (test@(Test id [(ShellTest cmd)] desc input expectation):rest) =
+formatBlocks (test@(Test id [(ShellTest cmd)] desc input expectation _):rest) =
     let
         expected = case expectation of
             Output e -> e

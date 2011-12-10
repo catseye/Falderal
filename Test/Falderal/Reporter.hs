@@ -18,7 +18,7 @@ import qualified Test.Falderal.Reporter.FailureDump as FailureDump
 getReporter "standard" = Standard.report
 getReporter "failure-dump" = FailureDump.report
 
-report :: String -> [(String -> String, Block)] -> [Result] -> IO ()
+report :: String -> [Block] -> IO ()
 
-report format testTuples failures =
-    (getReporter format) testTuples failures
+report format blocks =
+    (getReporter format) blocks

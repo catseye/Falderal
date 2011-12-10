@@ -44,14 +44,14 @@ import Test.Falderal.Common
 format _ blocks =
     (prelude blocks) ++ (formatBlocks blocks) ++ postlude
 
-formatBlocks (test@(Test id [(HaskellTest moduleName functionName)] desc text expectation):rest) =
+formatBlocks (test@(Test id [(HaskellTest moduleName functionName)] desc text expectation _):rest) =
     "    (" ++ moduleName ++ "." ++ functionName ++ ", " ++ (show test) ++ "),\n" ++ (formatBlocks rest)
 formatBlocks (_:rest) =
     formatBlocks rest
 formatBlocks [] =
     ""
 
-gatherImports ((Test id [(HaskellTest moduleName functionName)] _ _ _):rest) =
+gatherImports ((Test id [(HaskellTest moduleName functionName)] _ _ _ _):rest) =
     "import qualified " ++ moduleName ++ "\n" ++ gatherImports rest
 gatherImports (_:rest) =
     gatherImports rest
@@ -75,4 +75,4 @@ postlude =
     \    ]\n\
     \testModule = do\n\
     \    failures <- runTests tests\n\
-    \    report \"failure-dump\" tests failures\n"
+    \    report \"failure-dump\" failures\n"

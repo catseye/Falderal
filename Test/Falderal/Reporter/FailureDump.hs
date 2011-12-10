@@ -34,20 +34,18 @@ module Test.Falderal.Reporter.FailureDump (report) where
 
 import Test.Falderal.Common
 
-report testTuples failures = do
-    -- TODO: need to map test id into each failure here
-    reportEachTest failures
-
-reportEachTest [] = do
+report [] = do
     return ()
-reportEachTest ((Failure literalText testText expected actual):rest) =
+report (Test id fns literalText testText expected (Just actual):rest) =
     let
         text = getExpectationText actual
         lineCount = length $ lines $ text
     in do
-        putStrLn "0 (the id that we don't know yet)"
+        putStrLn (show id)
         putStrLn ((show lineCount) ++ " output.txt")
         putStrLn text
+report (_:rest) =
+    report rest
 
 getExpectationText (Output text) = text
 getExpectationText (Exception text) = text

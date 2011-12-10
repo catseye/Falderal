@@ -140,13 +140,13 @@ resolvePragmas [] = []
 convertLinesToBlocks :: [Line] -> [Functionality] -> [(String, Functionality)] -> [Block]
 
 convertLinesToBlocks ((LiteralText literalText):(TestInput testText):(ExpectedResult expected):rest) fns fnMap =
-    ((Test 0 fns literalText testText (Output expected)):(convertLinesToBlocks rest fns fnMap))
+    ((Test 0 fns literalText testText (Output expected) Nothing):(convertLinesToBlocks rest fns fnMap))
 convertLinesToBlocks ((LiteralText literalText):(TestInput testText):(ExpectedError expected):rest) fns fnMap =
-    ((Test 0 fns literalText testText (Exception expected)):(convertLinesToBlocks rest fns fnMap))
+    ((Test 0 fns literalText testText (Exception expected) Nothing):(convertLinesToBlocks rest fns fnMap))
 convertLinesToBlocks ((TestInput testText):(ExpectedResult expected):rest) fns fnMap =
-    ((Test 0 fns "(undescribed output test)" testText (Output expected)):(convertLinesToBlocks rest fns fnMap))
+    ((Test 0 fns "(undescribed output test)" testText (Output expected) Nothing):(convertLinesToBlocks rest fns fnMap))
 convertLinesToBlocks ((TestInput testText):(ExpectedError expected):rest) fns fnMap =
-    ((Test 0 fns "(undescribed output test)" testText (Exception expected)):(convertLinesToBlocks rest fns fnMap))
+    ((Test 0 fns "(undescribed output test)" testText (Exception expected) Nothing):(convertLinesToBlocks rest fns fnMap))
 convertLinesToBlocks ((SectionHeading text):rest) fn fnMap =
     ((Section text):(convertLinesToBlocks rest fn fnMap))
 convertLinesToBlocks ((Pragma _ (Just (TestsFor (NamedFunctionality name)))):rest) fns fnMap =
@@ -184,8 +184,8 @@ reDescribeBlocks blocks = reDescribeBlocks' blocks "" 2
 
 reDescribeBlocks' [] desc n =
     []
-reDescribeBlocks' (block@(Test id fn literalText inp exp):rest) desc n
-    | allWhitespace literalText = (Test id fn numberedDesc inp exp):(reDescribeBlocks' rest desc (n+1))
+reDescribeBlocks' (block@(Test id fn literalText inp exp result):rest) desc n
+    | allWhitespace literalText = (Test id fn numberedDesc inp exp result):(reDescribeBlocks' rest desc (n+1))
     | otherwise                 = (block):(reDescribeBlocks' rest literalText 2)
     where numberedDesc = "(#" ++ (show n) ++ ") " ++ (stripLeading '\n' desc)
 reDescribeBlocks' (block:rest) desc n =

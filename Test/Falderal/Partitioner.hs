@@ -25,7 +25,7 @@ partitionTests' (pred:preds) tests id =
 
 filterTests pred [] id =
     ([], id)
-filterTests pred (test@(Test _ fns _ _ _):rest) id =
+filterTests pred (test@(Test _ fns _ _ _ _):rest) id =
     case filter (pred) fns of
         [] ->
            filterTests (pred) rest id
@@ -40,11 +40,11 @@ filterTests pred (_:rest) id =
 
 mapTests test [] id =
     ([], id)
-mapTests test@(Test _ _ desc inp exp) (fn:fns) id =
+mapTests test@(Test _ _ desc inp exp result) (fn:fns) id =
     let
         (remainder, id') = mapTests test fns (id+1)
     in
-        ((Test id [fn] desc inp exp):remainder, id')
+        ((Test id [fn] desc inp exp result):remainder, id')
 
 --
 -- Useful predicates to use, above.

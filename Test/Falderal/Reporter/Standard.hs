@@ -34,8 +34,9 @@ module Test.Falderal.Reporter.Standard (report) where
 
 import Test.Falderal.Common
 
-report testTuples failures = let
-        numTests = length (filter (isTest) testTuples)
+report blocks = let
+        numTests = length (filter (isTest) blocks)
+        failures = filter (isFailingTest) blocks
     in do
         putStrLn "--------------------------------"
         putStrLn ("Total tests: " ++ (show numTests) ++ ", failures: " ++ (show (length failures)))
@@ -44,7 +45,7 @@ report testTuples failures = let
 
 reportEachTest [] = do
     return ()
-reportEachTest ((Failure literalText testText expected actual):rest) = do
+reportEachTest (Test id fns literalText testText expected (Just actual):rest) = do
     reportText 8 "FAILED"   (stripLeading '\n' (stripTrailing '\n' literalText))
     putStrLn ""
     reportText 8 "Input"    testText
@@ -62,5 +63,8 @@ reportText width fieldName text =
       else do
         putStrLn ((pad fieldName width) ++ ": " ++ text)
 
-isTest (_, (Test _ _ _ _ _)) = True
+isTest (Test _ _ _ _ _ _) = True
 isTest _ = False
+
+isFailingTest (Test _ _ _ _ _ (Just _)) = True
+isFailingTest _ = False
