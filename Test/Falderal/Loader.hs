@@ -66,7 +66,7 @@ loadText text =
         bs = convertLinesToBlocks ls' [] fds
         bs' = reDescribeBlocks bs
     in
-        (ls', bs)
+        (ls', bs')
 
 transformLines ls =
     let
