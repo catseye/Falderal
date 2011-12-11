@@ -64,8 +64,9 @@ Actual  : Output "[False,False,False,False]"
 EOF
 cd eg
 falderal test LiterateHaskellDemo.lhs >../actual.txt
-E2=$?
 cd ..
+diff -u expected.txt actual.txt
+E2=$?
 rm -f expected.txt actual.txt
 
 if [ $E1 != 0 -o $E2 != 0 ]
