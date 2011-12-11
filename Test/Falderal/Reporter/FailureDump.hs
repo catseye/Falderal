@@ -44,6 +44,7 @@ report (Test id fns literalText testText expected (Just actual):rest) =
         putStrLn (show id)
         putStrLn ((show lineCount) ++ " output.txt")
         putStrLn text
+        report rest
 report (_:rest) =
     report rest
 
