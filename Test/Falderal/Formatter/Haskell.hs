@@ -51,11 +51,13 @@ formatBlocks (_:rest) =
 formatBlocks [] =
     ""
 
-gatherImports ((Test id [(HaskellTest moduleName functionName)] _ _ _ _):rest) =
-    "import qualified " ++ moduleName ++ "\n" ++ gatherImports rest
-gatherImports (_:rest) =
-    gatherImports rest
-gatherImports [] =
+gatherImports ((Test id [(HaskellTest moduleName functionName)] _ _ _ _):rest) mNames
+    | moduleName `elem` mNames = gatherImports rest mNames
+    | otherwise =
+        "import qualified " ++ moduleName ++ "\n" ++ gatherImports rest (moduleName:mNames) 
+gatherImports (_:rest) mNames =
+    gatherImports rest mNames
+gatherImports [] _ =
     ""
 
 prelude blocks =
@@ -66,7 +68,7 @@ prelude blocks =
     \\n\
     \import Test.Falderal.Common\n\
     \import Test.Falderal.Runner\n\
-    \import Test.Falderal.Reporter\n" ++ (gatherImports blocks) ++ "\
+    \import Test.Falderal.Reporter\n" ++ (gatherImports blocks []) ++ "\
     \\n\
     \tests = [\n"
 
