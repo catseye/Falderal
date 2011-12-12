@@ -1,7 +1,7 @@
 module Test.Falderal.Formatter.Shell (format) where
 
 --
--- Test.Falderal.Formatter.Shell -- Shell-script compiler for Falderal
+-- Test.Falderal.Formatter.Shell -- Bourne shell script compiler for Falderal
 -- Copyright (c)2011 Cat's Eye Technologies.  All rights reserved.
 --
 -- Redistribution and use in source and binary forms, with or without
@@ -72,8 +72,12 @@ postlude =
     \rm -f input.txt output.txt\n"
 
 testExecution cmd id =
-    cmd ++ " <input.txt >output.txt\n\
-    \echo \"output\"\n\
+    cmd ++ " <input.txt >output.txt 2>&1\n\
+    \if [ $? != 0 ]; then\n\
+    \  echo \"exception\"\n\
+    \else\n\
+    \  echo \"output\"\n\
+    \fi\n\
     \echo " ++ (show id) ++ "\n\
     \echo `wc -l output.txt`\n\
     \cat output.txt\n"

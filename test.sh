@@ -5,10 +5,14 @@
 # installed via Cabal first:
 # $ cabal clean && cabal install --prefix=$HOME --user
 
+echo 'Testing formatting...'
+
 falderal format identity eg/LiterateHaskellDemo.lhs >formatted.txt
 diff -u eg/LiterateHaskellDemo.lhs formatted.txt
 E1=$?
 rm -f formatted.txt
+
+echo 'Testing LiterateHaskellDemo...'
 
 cat >expected.txt <<EOF
 --------------------------------
@@ -69,9 +73,39 @@ diff -u expected.txt actual.txt
 E2=$?
 rm -f expected.txt actual.txt
 
-if [ $E1 != 0 -o $E2 != 0 ]
+echo 'Testing Erroneous.falderal...'
+
+cat >expected.txt <<EOF
+--------------------------------
+Total tests: 3, failures: 2
+--------------------------------
+
+NOT RUN : (#2) 
+Input:
+These are eight words
+that span two lines.
+Expected: Output "2"
+
+NOT RUN : (#3) 
+Input:
+These are eight words
+that span
+three lines.
+Expected: Output "3"
+
+EOF
+cd eg
+falderal -m test Erroneous.falderal >../actual.txt 2>/dev/null
+cd ..
+diff -u expected.txt actual.txt
+E3=$?
+rm -f expected.txt actual.txt
+
+if [ $E1 != 0 -o $E2 != 0 -o $E3 != 0 ]
   then
+    echo "Internal tests failed!"
     exit 1
   else
+    echo "All tests passed."
     exit 0
 fi
