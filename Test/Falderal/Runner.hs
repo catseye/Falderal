@@ -2,8 +2,8 @@ module Test.Falderal.Runner (runTests) where
 
 import Char (isDigit, ord)
 
+import System
 import System.IO
-import System.Process
 
 import Test.Falderal.Common
 import Test.Falderal.Formatter (format) -- boo?
@@ -16,10 +16,10 @@ import Test.Falderal.Formatter (format) -- boo?
 data Result = Result Int Expectation
     deriving (Ord, Eq, Show)
 
-cleanRun False cmd = do
+cleanRun True cmd = do
     system cmd
     return ()
-cleanRun True cmd = do
+cleanRun False cmd = do
     return ()
 
 runTests :: [Block] -> String -> String -> String -> Bool -> IO [Block]
@@ -33,30 +33,12 @@ runTests blocks filename formatName command messy = do
     text <- return $ format formatName [] blocks
     hPutStr outputFileHandle text
     hClose outputFileHandle
-    (lines, exitCode) <- captureLines command
-    results <- return $ collectResults lines
-    cleanRun messy ("rm -f " ++ filename)
+    exitCode <- system (command ++ " >results.txt")
+    contents <- readFile "results.txt"
+    results <- return $ collectResults $ lines $ contents
+    cleanRun (not messy) ("rm -f " ++ filename)
+    cleanRun (not messy) ("rm -f results.txt")
     return $ decorateTestsWithResults blocks results
-
-captureLines command =
-    let
-        procDesc = (shell command){ std_out = CreatePipe }
-    in do
-        (_, Just hStdout, _, proc) <- createProcess procDesc
-        output <- collect hStdout
-        exitCode <- waitForProcess proc
-        return (output, exitCode)
-
-collect handle = do
-    eof <- hIsEOF handle
-    if
-        eof
-      then do
-        return []
-      else do
-        line <- hGetLine handle
-        remainder <- collect handle
-        return (line:remainder)
 
 collectResults [] =
     []

@@ -86,11 +86,16 @@ prelude blocks =
     \    report rest\n\
     \report ((id,fun,input):rest) = do\n\
     \    result <- runFun (fun) input\n\
+    \    numLines <- return $ length $ lines $ getText result\n\
     \    putStrLn (getKind result)\n\
     \    putStrLn (show id)\n\
-    \    putStrLn (show $ length $ lines $ getText result)\n\
-    \    putStrLn (getText result)\n\
-    \    report rest\n\
+    \    putStrLn (show numLines)\n\
+    \    case numLines of\n\
+    \        0 -> do\n\
+    \            report rest\n\
+    \        _ -> do\n\
+    \            putStrLn (getText result)\n\
+    \            report rest\n\
     \\n\
     \testModule = report [\n"
 

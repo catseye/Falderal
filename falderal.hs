@@ -1,6 +1,4 @@
 import System
-import System.IO
-import System.Process
 import System.Environment
 import System.Console.GetOpt
 
@@ -87,8 +85,6 @@ dispatch ("test":fileNames) flags =
         [haskellBlocks, shellBlocks] <- return $ partitionTests preds blocks
         haskellBlocks' <- testHaskell haskellBlocks flags
         shellBlocks' <- testShell shellBlocks flags
-        print haskellBlocks'
-        print shellBlocks'
         report reportFormat (haskellBlocks' ++ shellBlocks')
         exitWith ExitSuccess
 
