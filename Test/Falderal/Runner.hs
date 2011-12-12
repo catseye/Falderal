@@ -1,65 +1,94 @@
 module Test.Falderal.Runner (runTests) where
 
---
--- Test.Falderal.Runner -- The Falderal Test Runner
--- Copyright (c)2011 Cat's Eye Technologies.  All rights reserved.
---
--- Redistribution and use in source and binary forms, with or without
--- modification, are permitted provided that the following conditions
--- are met:
---
---  1. Redistributions of source code must retain the above copyright
---     notices, this list of conditions and the following disclaimer.
---  2. Redistributions in binary form must reproduce the above copyright
---     notices, this list of conditions, and the following disclaimer in
---     the documentation and/or other materials provided with the
---     distribution.
---  3. Neither the names of the copyright holders nor the names of their
---     contributors may be used to endorse or promote products derived
---     from this software without specific prior written permission.
---
--- THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
--- ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
--- LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
--- FOR A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE
--- COPYRIGHT HOLDERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
--- INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
--- BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
--- LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
--- CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
--- LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
--- ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
--- POSSIBILITY OF SUCH DAMAGE.
---
+import Char (isDigit, ord)
 
-import qualified Control.Exception as Exc
+import System.IO
+import System.Process
 
 import Test.Falderal.Common
+import Test.Falderal.Formatter (format) -- boo?
 
 --
--- Test-running engine.  Takes a list of (function, block) tuples;
--- any block that is not a Test is simply ignored.
+-- Test-running engine.  This has just completely changed
+-- from what it used to be!
 --
 
-runTests :: [(String -> String, Block)] -> IO [Block]
+data Result = Result Int Expectation
+    deriving (Ord, Eq, Show)
 
-runTests [] = do
+cleanRun False cmd = do
+    system cmd
+    return ()
+cleanRun True cmd = do
+    return ()
+
+runTests :: [Block] -> String -> String -> String -> Bool -> IO [Block]
+
+-- TODO: what to do with exitCode?
+
+runTests [] _ _ _ _ = do
     return []
-runTests ((testFun, Test id fns literalText inputText expected _):rest) = do
-    actual <- runFun (testFun) inputText
-    case compareTestOutcomes actual expected of
-        True ->
-            runTests rest
-        False -> do
-            remainder <- runTests rest
-            return ((Test id fns literalText inputText expected (Just actual)):remainder)
-runTests (_:rest) = do
-    runTests rest
+runTests blocks filename formatName command messy = do
+    outputFileHandle <- openFile filename WriteMode
+    text <- return $ format formatName [] blocks
+    hPutStr outputFileHandle text
+    hClose outputFileHandle
+    (lines, exitCode) <- captureLines command
+    results <- return $ collectResults lines
+    cleanRun messy ("rm -f " ++ filename)
+    return $ decorateTestsWithResults blocks results
 
-runFun testFun inputText = do
-    Exc.catch (Exc.evaluate (Output $! (testFun inputText)))
-              (\exception -> return (Exception (show (exception :: Exc.SomeException))))
+captureLines command =
+    let
+        procDesc = (shell command){ std_out = CreatePipe }
+    in do
+        (_, Just hStdout, _, proc) <- createProcess procDesc
+        output <- collect hStdout
+        exitCode <- waitForProcess proc
+        return (output, exitCode)
 
--- This may be improved to do pattern-matching of some kind, someday.
-compareTestOutcomes actual expected =
-    actual == expected
+collect handle = do
+    eof <- hIsEOF handle
+    if
+        eof
+      then do
+        return []
+      else do
+        line <- hGetLine handle
+        remainder <- collect handle
+        return (line:remainder)
+
+collectResults [] =
+    []
+collectResults (kindStr:idStr:numLinesStr:rest) =
+    let
+        id = parseNumStr idStr 0
+        numLines = parseNumStr numLinesStr 0
+        failLines = take numLines rest
+        rest' = drop numLines rest
+        resText = (join "\n" failLines)
+        res = case kindStr of
+            "output" -> Output resText
+            "exception" -> Exception resText
+    in
+        ((Result id res):collectResults rest')
+collectResults (idStr:rest) =
+    let
+        id = parseNumStr idStr 0
+    in
+        ((Result id (Output "")):collectResults rest)
+
+parseNumStr [] acc = acc
+parseNumStr (x:xs) acc
+    | isDigit x = parseNumStr xs (acc * 10 + ((ord x) - (ord '0')))
+    | otherwise = acc
+
+decorateTestsWithResults [] fails = []
+decorateTestsWithResults (t@(Test testId fns literalText testText expected _):tests) fails =
+    case filter (\(Result resultId _) -> resultId == testId) fails of
+        [(Result _ result)] ->
+            (Test testId fns literalText testText expected (Just result)):decorateTestsWithResults tests fails
+        _ ->
+            (t:decorateTestsWithResults tests fails)
+decorateTestsWithResults (test:tests) fails =
+    (test:decorateTestsWithResults tests fails)

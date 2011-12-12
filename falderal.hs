@@ -1,5 +1,3 @@
-import Char (isDigit, ord)
-
 import System
 import System.IO
 import System.Process
@@ -14,6 +12,7 @@ import Test.Falderal.Partitioner (
                                    isShellFunctionality
                                  )
 import Test.Falderal.Formatter (format)
+import Test.Falderal.Runner (runTests)
 import Test.Falderal.Reporter (report)
 
 --
@@ -29,6 +28,7 @@ data Flag = ReportFormat String
           | HaskellRunCommand String
           | ShellRunCommand String
           | Verbosity String
+          | Messy
     deriving (Show, Ord, Eq)
 
 determineReportFormat [] = "standard"
@@ -67,6 +67,7 @@ header = "Usage: falderal <command> [<option>...] <filename.falderal>...\n\
 options :: [OptDescr Flag]
 options = [
     Option ['h'] ["haskell-command"] (ReqArg HaskellRunCommand "CMD") "command to run Haskell tests (default: 'ghc -e testModule')",
+    Option ['m'] ["messy"] (NoArg Messy) "messy: do not delete generated files (default: clean)",
     Option ['r'] ["report-format"] (ReqArg ReportFormat "FORMAT") "success/failure report format (default: standard)",
     Option ['s'] ["shell-command"] (ReqArg ShellRunCommand "CMD") "command to run shell scripts (default: 'sh')",
     Option ['v'] ["verbosity"] (ReqArg Verbosity "LEVEL") "verbosity level, higher is more verbose (default: 0)"
@@ -84,13 +85,11 @@ dispatch ("test":fileNames) flags =
     in do
         (lines, blocks) <- loadFiles fileNames
         [haskellBlocks, shellBlocks] <- return $ partitionTests preds blocks
-        haskellFails <- testHaskell haskellBlocks flags
-        shellFails <- testShell shellBlocks flags
-        tests <- return $ assembleFailingTests (haskellBlocks ++ shellBlocks) (haskellFails ++ shellFails)
-        -- putStrLn (show (haskellFails ++ shellFails))
-        -- putStrLn (show (haskellBlocks ++ shellBlocks))
-        -- putStrLn (show tests)
-        report reportFormat tests
+        haskellBlocks' <- testHaskell haskellBlocks flags
+        shellBlocks' <- testShell shellBlocks flags
+        print haskellBlocks'
+        print shellBlocks'
+        report reportFormat (haskellBlocks' ++ shellBlocks')
         exitWith ExitSuccess
 
 dispatch ("version":_) _ = do
@@ -104,80 +103,7 @@ dispatch _ _ = putStrLn header
 -- TODO: require only runhaskell.
 --
 testHaskell blocks flags =
-    runTests blocks flags
-        ("GeneratedFalderalTests.hs", "haskell", (determineHaskellRunCommand flags) ++ " GeneratedFalderalTests.hs")
+    runTests blocks "GeneratedFalderalTests.hs" "haskell" ((determineHaskellRunCommand flags) ++ " GeneratedFalderalTests.hs") (Messy `elem` flags)
 
 testShell blocks flags =
-    runTests blocks flags
-        ("GeneratedFalderalTests.sh", "shell", (determineShellRunCommand flags) ++ " GeneratedFalderalTests.sh")
-
-captureLines command =
-    let
-        procDesc = (shell command){ std_out = CreatePipe }
-    in do
-        (_, Just hStdout, _, proc) <- createProcess procDesc
-        output <- collect hStdout
-        exitCode <- waitForProcess proc
-        return (output, exitCode)
-
-collect handle = do
-    eof <- hIsEOF handle
-    if
-        eof
-      then do
-        return []
-      else do
-        line <- hGetLine handle
-        remainder <- collect handle
-        return (line:remainder)
-
--- TODO: what to do with exitCode?
-
-runTests [] _ _ = do
-    return []
-runTests blocks flags (filename, formatName, command) =
-    let
-        reportFormat = determineReportFormat flags
-        verbosity = determineVerbosity flags
-    in do
-        outputFileHandle <- openFile filename WriteMode
-        text <- return $ format formatName [] blocks
-        hPutStr outputFileHandle text
-        hClose outputFileHandle
-        (lines, exitCode) <- captureLines command
-        system ("rm -f " ++ filename)
-        return $ collectFails lines
-
-data Fail = Fail Int String
-    deriving (Ord, Eq, Show)
-
-collectFails [] =
-    []
-collectFails (idStr:numLinesStr:rest) =
-    let
-        id = parseNumStr idStr 0
-        numLines = parseNumStr numLinesStr 0
-        failLines = take numLines rest
-        rest' = drop numLines rest
-    in
-        ((Fail id (join "\n" failLines)):collectFails rest')
-collectFails (idStr:rest) =
-    let
-        id = parseNumStr idStr 0
-    in
-        ((Fail id ""):collectFails rest)
-
-parseNumStr [] acc = acc
-parseNumStr (x:xs) acc
-    | isDigit x = parseNumStr xs (acc * 10 + ((ord x) - (ord '0')))
-    | otherwise = acc
-
-assembleFailingTests [] fails = []
-assembleFailingTests (t@(Test testId fns literalText testText expected _):tests) fails =
-    case filter (\(Fail failId _) -> failId == testId) fails of
-        [(Fail _ actualText)] ->
-            (Test testId fns literalText testText expected (Just (Output actualText))):assembleFailingTests tests fails
-        _ ->
-            (t:assembleFailingTests tests fails)
-assembleFailingTests (test:tests) fails =
-    (test:assembleFailingTests tests fails)
+    runTests blocks "GeneratedFalderalTests.sh" "shell" ((determineShellRunCommand flags) ++ " GeneratedFalderalTests.sh") (Messy `elem` flags)

@@ -32,7 +32,6 @@ library
                    Test.Falderal.Formatter.Shell
                    Test.Falderal.Formatter.Markdown
                    Test.Falderal.Reporter.Standard
-                   Test.Falderal.Reporter.FailureDump
 
 executable falderal
   main-is:        falderal.hs
