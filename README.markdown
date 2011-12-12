@@ -8,6 +8,9 @@ language-agnostic fashion.  The dumbed-down sound-bite version: "doctests
 for DSLs".  `Test.Falderal` is the reference implementation, in Haskell,
 of tools for formatting and running tests written in Falderal.
 
+Motivation
+----------
+
 Here's the scenario:
 
 * You have a file format, or a language (perhaps a programming language.)
@@ -19,7 +22,9 @@ Here's the scenario:
   an error.)
 * You want to be able to present those example programs in a nicely readable
   fashion, perhaps interleaved with some descriptive prose, perhaps
-  formatted into a document format such as HTML.
+  formatted into a document format such as HTML.  (This is certainly a
+  reasonable way to document a language; most people are good at learning
+  from examples.)
 * You want to run those example programs to make sure they do what you
   expect, to find flaws that may be lurking in either those programs, or in
   an implementation of the language.
@@ -27,16 +32,58 @@ Here's the scenario:
   in another source file, perhaps an implementation of the very language
   they describe in literate Haskell.
 
-If this describes you, then Falderal might help.  The particular need I had
-that encouraged me to write it is having implemented several esoteric
-programming languages in Haskell, and wanting to write nicely formatted
-tests suites for them.
+If this describes you, then Falderal might help.  I wrote it because I was
+designing yet another esoteric programming language, and while working on its
+test suite I realized I was rebuilding yet another ad-hoc unit test suite,
+like I had done a half-dozen times before.  I didn't want to keep doing this
+for every language I designed, and I realized that literate test suites could
+serve as documentation as well; the result was Falderal.
+
+Features
+--------
+
+The current version of Falderal is described in the Falderal Literate Test
+Format document.  The current version of `Test.Falderal` is 0.4.
+Neither the file format specification, nor the `Test.Falderal` API,
+should not be expected to be stable through the 0.x series.
+
+Currently supported features of the framework are:
+
+* Writing literate test suites.  These may be embedded in other kinds of
+  textual documents, such as Markdown, literate Haskell source code, and so
+  forth.
+* Formatting these test suites (i.e. converting them to other file formats,
+  such as Markdown).
+* Running these test suites.  Running is accomplished by formatting the tests
+  to an executable format (such as a Haskell source file) and running that;
+  these two steps can be done automatically with the `falderal test` command.
+* Producing readable failure reports.  Each test or group of test may be
+  preceded by descriptive text, and this will be displayed above every failing
+  test, along with the expected and actual output.
+* Testing text-processing functionalities.  A test specifies textual input to
+  the function, and may expect a particular textual output, or that a
+  particular error was encountered.  Functionalities are abstract: each
+  functionality defined in a Falderal file can be implemented in multiple
+  ways.
+* Specifying that a functionality is implemented by a Haskell function of
+  type `String -> String`.
+* Specifying that a functionality is implemented by a shell command.  The
+  shell command can invoke arbitrary executables, allowing you to test
+  implementations of your language written in essentially any language.
 
 History
 -------
 
-The current version under development is 0.4.  It introduced the
-following features:
+Version 0.5 (under development):
+
+* Failure reporting is now consistent across languages; both Haskell and
+  Bourne shell results generators generate an intermediate format, which
+  `falderal` digests.
+* Addition of the `encoding:` pragma, so that this directive can be
+  embedded in your Falderal document (for the benefit of your text editor)
+  without necessarily appearing in the formatted document.
+
+Version 0.4 (current released version):
 
 * For ease of installation, the project is presented as a Cabal package.
 * A driver executable, `falderal`, is built as part of installing the
@@ -48,33 +95,43 @@ following features:
 * The Functionality-definition pragma has been implemented, making it
   possible to write tests in a more abstract, implementation-independent
   fashion.
+* Falderal files written to work with Falderal 0.3 should still work with
+  Falderal 0.4, but you are encouraged to use the Functionality-definition
+  pragma introduced in 0.4 to make your tests more implementation-independent.
 
-The previous released version of Falderal was 0.3.  It introduced the
-following features:
+Version 0.3:
 
 * The definition of a Falderal Literate Test Format, distinct from the
   reference implementation of tools for it in Haskell (`Test.Falderal`).
+  This represented a fairly substantial departure from how previous versions
+  of Falderal worked.
 * The ability to format a Falderal file to different formats, including
   Markdown and Haskell.
 * Running tests is now a matter of formatting a Falderal file as a Haskell
   module and running the function `testModule` in that module.
 
-Falderal files written to work with Falderal 0.3 should still work with
-Falderal 0.4, but you are encouraged to use the Functionality-definition
-pragma introduced in 0.4 to make your tests more implementation-independent.
+Version 0.2:
 
-The API should not be expected to be stable through the 0.x series.
+* (to be filled in)
+
+Version 0.1:
+
+* (to be filled in)
+
+Prehistory:
+
+* Falderal started life as a Haskell-specific hack that could be embedded
+  in a Bird-style Literate Haskell source file.  I took a framework for
+  literate tests I had already written in a project called _Rho_, and used it
+  as the basis of this code.
 
 Development
 -----------
 
-Falderal development is hosted on Bitbucket:
-
-    https://bitbucket.org/catseye/falderal/
-
-Bugs may be reported (and features requested) on the Issue Tracker:
-
-    https://bitbucket.org/catseye/falderal/issues
+Falderal development is
+[hosted on Bitbucket](https://bitbucket.org/catseye/falderal/).
+Bugs may be reported (and features requested) on the
+[Issue Tracker](https://bitbucket.org/catseye/falderal/issues) there.
 
 Official release distfiles are available on the
 [Falderal project page](http://catseye.tc/projects/falderal/) at
