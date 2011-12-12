@@ -44,14 +44,10 @@ import Test.Falderal.Common
 format _ blocks =
     prelude ++ (formatBlocks blocks) ++ postlude
 
-formatBlocks (test@(Test id [(ShellTest cmd)] desc input expectation _):rest) =
+formatBlocks (test@(Test id [(ShellTest cmd)] desc input _ _):rest) =
     let
-        expected = case expectation of
-            Output e -> e
-            Exception e -> e -- XXX should we expect this on stderr?
         inputHereDoc = hereDoc "input.txt" input
-        expectedHereDoc = hereDoc "expected.txt" expected
-        formattedBlock = inputHereDoc ++ expectedHereDoc ++ testExecution cmd id
+        formattedBlock = inputHereDoc ++ testExecution cmd id
     in
         formattedBlock ++ "\n" ++ formatBlocks rest
 formatBlocks (_:rest) =
@@ -73,15 +69,11 @@ prelude =
 
 postlude =
     "\n\
-    \\n"
+    \rm -f input.txt output.txt\n"
 
 testExecution cmd id =
     cmd ++ " <input.txt >output.txt\n\
-    \diff -q expected.txt output.txt 2>&1 >/dev/null\n\
-    \if [ $? -ne 0 ]\n\
-    \  then\n\
-    \  echo " ++ (show id) ++ "\n\
-    \  echo `wc -l output.txt`\n\
-    \  cat output.txt\n\
-    \fi\n\
-    \rm -f input.txt expected.txt output.txt\n"
+    \echo \"output\"\n\
+    \echo " ++ (show id) ++ "\n\
+    \echo `wc -l output.txt`\n\
+    \cat output.txt\n"
