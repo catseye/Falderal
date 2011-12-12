@@ -133,9 +133,12 @@ Falderal development is
 Bugs may be reported (and features requested) on the
 [Issue Tracker](https://bitbucket.org/catseye/falderal/issues) there.
 
+There is also a
+[git mirror of the repository on Github](https://github.com/catseye/Falderal).
+
 Official release distfiles are available on the
 [Falderal project page](http://catseye.tc/projects/falderal/) at
-[Cat's Eye Technologies'](http://catseye.tc/).
+[Cat's Eye Technologies](http://catseye.tc/).
 
 For Further Information
 -----------------------
