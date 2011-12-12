@@ -37,7 +37,7 @@ determineVerbosity [] = 0
 determineVerbosity (Verbosity v:_) = (read v) :: Int
 determineVerbosity (_:rest) = determineVerbosity rest
 
-determineHaskellRunCommand [] = "ghc -e testModule"
+determineHaskellRunCommand [] = "runhaskell"
 determineHaskellRunCommand (HaskellRunCommand s:_) = s
 determineHaskellRunCommand (_:rest) = determineHaskellRunCommand rest
 
@@ -64,7 +64,7 @@ header = "Usage: falderal <command> [<option>...] <filename.falderal>...\n\
 
 options :: [OptDescr Flag]
 options = [
-    Option ['h'] ["haskell-command"] (ReqArg HaskellRunCommand "CMD") "command to run Haskell tests (default: 'ghc -e testModule')",
+    Option ['h'] ["haskell-command"] (ReqArg HaskellRunCommand "CMD") "command to run Haskell tests (default: 'runhaskell')",
     Option ['m'] ["messy"] (NoArg Messy) "messy: do not delete generated files (default: clean)",
     Option ['r'] ["report-format"] (ReqArg ReportFormat "FORMAT") "success/failure report format (default: standard)",
     Option ['s'] ["shell-command"] (ReqArg ShellRunCommand "CMD") "command to run shell scripts (default: 'sh')",
@@ -93,11 +93,6 @@ dispatch ("version":_) _ = do
 
 dispatch _ _ = putStrLn header
 
---
--- Requires ghc.  Requires Test.Falderal in the package path
--- (easiest way to ensure this is to install it as a Cabal package)
--- TODO: require only runhaskell.
---
 testHaskell blocks flags =
     runTests blocks "GeneratedFalderalTests.hs" "haskell" ((determineHaskellRunCommand flags) ++ " GeneratedFalderalTests.hs") (Messy `elem` flags)
 
