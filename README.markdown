@@ -43,7 +43,7 @@ Features
 --------
 
 The current version of Falderal is described in the Falderal Literate Test
-Format document.  The current version of `Test.Falderal` is 0.4.
+Format document.  The current version of `Test.Falderal` is 0.5 "The Loop".
 Neither the file format specification, nor the `Test.Falderal` API,
 should not be expected to be stable through the 0.x series.
 
@@ -74,7 +74,7 @@ Currently supported features of the framework are:
 History
 -------
 
-Version 0.5 (under development):
+Version 0.5 "The Loop" (current released version):
 
 * The command-line format of `falderal` has changed, for the better.
   The `test` subcommand no longer requires that the failure reporting
@@ -91,8 +91,15 @@ Version 0.5 (under development):
 * A new pragma `encoding:` was added, so that this directive can be
   embedded in your Falderal document (for the benefit of your text editor)
   without necessarily appearing in the formatted document.
+* We began giving release milestones colorful names.  The naming
+  convention is to choose names of Chicagoland neigborhoods, suburbs,
+  landmarks, and institutions.  Version 0.5 was named after The Loop in
+  recognition of its ability to shuttle test results between `falderal`
+  and the various results generators implemented in different languages.
+  Previous versions of `Test.Falderal` were retroactively given milestone
+  names during this release.
 
-Version 0.4 (current released version):
+Version 0.4 "Blackstone Hotel":
 
 * For ease of installation, the project is presented as a Cabal package.
 * A driver executable, `falderal`, is built as part of installing the
@@ -108,7 +115,7 @@ Version 0.4 (current released version):
   Falderal 0.4, but you are encouraged to use the Functionality-definition
   pragma introduced in 0.4 to make your tests more implementation-independent.
 
-Version 0.3:
+Version 0.3 "Chicago Board of Trade":
 
 * The definition of a Falderal Literate Test Format, distinct from the
   reference implementation of tools for it in Haskell (`Test.Falderal`).
@@ -119,13 +126,29 @@ Version 0.3:
 * Running tests is now a matter of formatting a Falderal file as a Haskell
   module and running the function `testModule` in that module.
 
-Version 0.2:
+Version 0.2 "Dearborn Station":
 
-* (to be filled in)
+* Added a test harness for Falderal itself, in the form of a simple shell
+  script which diffs the output of `Test.Falderal.Demo` against a text file
+  containing the expected content.
+* Improved formatting of failure reports.  Multi-line input text or expected
+  output is always presented starting on its own line.
+* Tests may be organized into groups; the entire group is preceded by some
+  literal text, but there is no literal text between the tests in the group.
+  When one of these tests fails, the literal text for the group is reported,
+  along with the number of the test within the group.
+* Fixed a bug where exception text which extended over multiple lines
+  could not be expected correctly.
 
-Version 0.1:
+Version 0.1 "Haymarket Square":
 
-* (to be filled in)
+* Provision of a framework for writing and running literate tests which may
+  be embedded in literate Haskell source code.
+* Testing Haskell functions of type `String -> String`.  A test specifies input
+  to the function, and may expect a particular output, or that a particular
+  exception is thrown.
+* Through simple adapters, testing functions of other types such as
+  `(Show a) => String -> a`.
 
 Prehistory:
 
