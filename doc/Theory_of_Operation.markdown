@@ -36,3 +36,9 @@ contains the number of lines of text that the test generated (call it _n_).
 The next _n_ lines contain the actual text generated.  (If _n_ = 0, there
 will be no such lines.)  Immediately following this group will be either
 another group, or the end-of-file.
+
+The second and third lines in a group contain natural numbers; they may
+contain arbitrary text after the final digit of the natural number, which is
+ignored.  (This is to simplify their generation from shell scripts, where
+`wc -l` is used to produce the number of lines of output text, and where
+`wc` also outputs the filename.)

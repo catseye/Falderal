@@ -102,3 +102,15 @@ padFrom s n
 join _ [] = ""
 join _ [x] = x
 join glue (x:xs) = x ++ glue ++ (join glue xs)
+
+--
+-- Parse the first natural number out of a string.  It's allowable for there
+-- to be non-numeric digits following the last digit; they are ignored.
+--
+
+parseNatNumStr [] acc = acc
+parseNatNumStr (x:xs) acc
+    | Char.isDigit x =
+        parseNatNumStr xs (acc * 10 + ((Char.ord x) - (Char.ord '0')))
+    | otherwise =
+        acc

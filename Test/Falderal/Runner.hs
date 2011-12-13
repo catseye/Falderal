@@ -1,7 +1,5 @@
 module Test.Falderal.Runner (runTests) where
 
-import Char (isDigit, ord)
-
 import System
 import System.IO
 
@@ -44,8 +42,8 @@ collectResults [] =
     []
 collectResults (kindStr:idStr:numLinesStr:rest) =
     let
-        id = parseNumStr idStr 0
-        numLines = parseNumStr numLinesStr 0
+        id = parseNatNumStr idStr 0
+        numLines = parseNatNumStr numLinesStr 0
         failLines = take numLines rest
         rest' = drop numLines rest
         resText = (join "\n" failLines)
@@ -56,14 +54,9 @@ collectResults (kindStr:idStr:numLinesStr:rest) =
         ((Result id res):collectResults rest')
 collectResults (idStr:rest) =
     let
-        id = parseNumStr idStr 0
+        id = parseNatNumStr idStr 0
     in
         ((Result id (Output "")):collectResults rest)
-
-parseNumStr [] acc = acc
-parseNumStr (x:xs) acc
-    | isDigit x = parseNumStr xs (acc * 10 + ((ord x) - (ord '0')))
-    | otherwise = acc
 
 decorateTestsWithResults [] fails = []
 decorateTestsWithResults (t@(Test testId fns literalText testText expected _):tests) fails =

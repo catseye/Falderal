@@ -1,6 +1,6 @@
 -- encoding: UTF-8
 name:            Falderal
-version:         0.4
+version:         0.5
 cabal-version:   >= 1.8
 build-type:      Simple
 license:         BSD3

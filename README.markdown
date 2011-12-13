@@ -76,10 +76,19 @@ History
 
 Version 0.5 (under development):
 
+* The command-line format of `falderal` has changed, for the better.
+  The `test` subcommand no longer requires that the failure reporting
+  style be specified; instead, it defaults to `standard`, and can be
+  changed with a command-line option.  There are also command-line
+  options for selecting the programs to run results generators, and to
+  keep generated files around instead of cleaning them up after testing.
+* The dependency on `ghc` for running Haskell results generators has been
+  removed; these can be run by `runhaskell` now, and are run by
+  `runhaskell` by default.
 * Failure reporting is now consistent across languages; both Haskell and
   Bourne shell results generators generate an intermediate format, which
   `falderal` digests.
-* Addition of the `encoding:` pragma, so that this directive can be
+* A new pragma `encoding:` was added, so that this directive can be
   embedded in your Falderal document (for the benefit of your text editor)
   without necessarily appearing in the formatted document.
 

@@ -89,7 +89,7 @@ dispatch ("test":fileNames) flags =
         exitWith ExitSuccess
 
 dispatch ("version":_) _ = do
-    putStrLn "Test.Falderal version 0.4"
+    putStrLn "Test.Falderal version 0.5"
 
 dispatch _ _ = putStrLn header
 
