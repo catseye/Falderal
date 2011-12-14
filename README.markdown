@@ -21,31 +21,31 @@ Here's the scenario:
   about what should happen when they are run (possibly including producing
   an error.)
 * You want to be able to present those example programs in a nicely readable
-  fashion, perhaps interleaved with some descriptive prose, perhaps
+  fashion, interleaved with some descriptive prose, perhaps ultimately
   formatted into a document format such as HTML.  (This is certainly a
   reasonable way to document a language; most people are good at learning
   from examples.)
 * You want to run those example programs to make sure they do what you
   expect, to find flaws that may be lurking in either those programs, or in
   an implementation of the language.
-* You want to be able to embed those example programs and that documentation
-  in another source file, perhaps an implementation of the very language
-  they describe in literate Haskell.
+* You want the option of embedding those example programs and that
+  documentation in a source code file -- perhaps a literate implementation
+  of the very language they are testing.
 
 If this describes you, then Falderal might help.  I wrote it because I was
-designing yet another esoteric programming language, and while working on its
-test suite I realized I was rebuilding yet another ad-hoc unit test suite,
-like I had done a half-dozen times before.  I didn't want to keep doing this
-for every language I designed, and I realized that literate test suites could
-serve as documentation as well; the result was Falderal.
+designing yet another esoteric programming language, and while working on it
+I realized I was rebuilding yet another ad-hoc unit test suite, like I had
+done a half-dozen times before.  I didn't want to keep doing this for every
+language I designed, and I realized that literate test suites could serve as
+documentation as well; the result was Falderal.
 
 Features
 --------
 
 The current version of Falderal is described in the Falderal Literate Test
 Format document.  The current version of `Test.Falderal` is 0.5 "The Loop".
-Neither the file format specification, nor the `Test.Falderal` API,
-should not be expected to be stable through the 0.x series.
+Neither the file format specification, nor the `Test.Falderal` API, should
+be expected to be stable through the 0.x series.
 
 Currently supported features of the framework are:
 
@@ -55,8 +55,9 @@ Currently supported features of the framework are:
 * Formatting these test suites (i.e. converting them to other file formats,
   such as Markdown).
 * Running these test suites.  Running is accomplished by formatting the tests
-  to an executable format (such as a Haskell source file) and running that;
-  these two steps can be done automatically with the `falderal test` command.
+  to an executable format (such as a Haskell source file), running that,
+  and collecting the results from it.  This sequence of steps is done
+  automatically with the `falderal test` command.
 * Producing readable failure reports.  Each test or group of test may be
   preceded by descriptive text, and this will be displayed above every failing
   test, along with the expected and actual output.
@@ -64,7 +65,8 @@ Currently supported features of the framework are:
   the function, and may expect a particular textual output, or that a
   particular error was encountered.  Functionalities are abstract: each
   functionality defined in a Falderal file can be implemented in multiple
-  ways.
+  ways.  Thus the same tests can be run multiple times, once for each
+  implementation of the functionality they test.
 * Specifying that a functionality is implemented by a Haskell function of
   type `String -> String`.
 * Specifying that a functionality is implemented by a shell command.  The
