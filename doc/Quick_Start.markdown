@@ -51,7 +51,7 @@ these tests are for.
     | Q
     ? Not matched
 
-Then, use the {{{falderal}}} tool to run these tests:
+Then, use the `falderal` tool to run these tests:
 
     % falderal test Gobvert.lhs
 
