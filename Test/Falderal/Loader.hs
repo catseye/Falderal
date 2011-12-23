@@ -1,4 +1,9 @@
-module Test.Falderal.Loader (loadFile, loadFiles, loadText) where
+module Test.Falderal.Loader (
+                              loadFile,
+                              loadFiles,
+                              loadText,
+                              parseFunctionality
+                            ) where
 
 --
 -- Test.Falderal.Loader -- The Falderal Test Loader
@@ -13,16 +18,16 @@ import Test.Falderal.Common
 -- File loading functions.
 --
 
-loadFile fileName = do
+loadFile fileName givenFuncDefs = do
     testText <- readFile fileName
-    (ls, bs) <- return $ loadText testText
+    (ls, bs) <- return $ loadText testText givenFuncDefs
     return (ls, bs)
 
-loadFiles [] = do
+loadFiles [] givenFuncDefs = do
     return ([], [])
-loadFiles (fileName:rest) = do
-    (ls, bs) <- loadFile fileName
-    (restLs, restBs) <- loadFiles rest
+loadFiles (fileName:rest) givenFuncDefs = do
+    (ls, bs) <- loadFile fileName givenFuncDefs
+    (restLs, restBs) <- loadFiles rest givenFuncDefs
     return (ls ++ restLs, bs ++ restBs)
 
 --
@@ -30,11 +35,11 @@ loadFiles (fileName:rest) = do
 -- allowing the caller to choose which one they want to look at.
 --
 
-loadText text =
+loadText text givenFuncDefs =
     let
         ls = transformLines $ lines text
         ls' = resolvePragmas ls
-        fds = collectFunctionalityDefinitions ls'
+        fds = (collectFunctionalityDefinitions ls') ++ givenFuncDefs
         bs = convertLinesToBlocks ls' [] fds
         bs' = reDescribeBlocks bs
     in
@@ -168,7 +173,7 @@ reDescribeBlocks' (block:rest) desc n =
 --
 
 possiblePragmas = [
-                    (["Tests", "for"], \rest -> TestsFor $ tryFunctionalities functionalities rest),
+                    (["Tests", "for"], \rest -> TestsFor $ parseFunctionality rest),
                     (["Functionality"], \rest -> parseFuncDefn rest),
                     (["encoding:"], \rest -> Encoding rest)
                   ]
@@ -190,6 +195,8 @@ functionalities = [
                     parseShellFunctionality,
                     parseNamedFunctionality
                   ]
+
+parseFunctionality text = tryFunctionalities functionalities text
 
 tryFunctionalities [] text =
     error $ "bad functionality: " ++ text
@@ -241,7 +248,7 @@ parseFuncDefn text =
         case consumeWords ["is", "implemented", "by"] rest of
             Just funky ->
                 let
-                    functionality = tryFunctionalities functionalities funky
+                    functionality = parseFunctionality funky
                 in
                     FunctionalityDefinition name functionality
             Nothing ->
