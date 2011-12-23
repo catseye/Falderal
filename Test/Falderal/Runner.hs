@@ -20,13 +20,13 @@ cleanRun True cmd = do
 cleanRun False cmd = do
     return ()
 
-runTests :: [Block] -> String -> String -> String -> Bool -> IO [Block]
+runTests :: [Block] -> String -> String -> String -> Bool -> Maybe String -> IO [Block]
 
 -- TODO: what to do with exitCode?
 
-runTests [] _ _ _ _ = do
+runTests [] _ _ _ _ _ = do
     return []
-runTests blocks filename formatName command messy = do
+runTests blocks filename formatName command messy persistTo = do
     outputFileHandle <- openFile filename WriteMode
     text <- return $ format formatName [] blocks
     hPutStr outputFileHandle text

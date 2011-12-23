@@ -27,6 +27,7 @@ data Flag = ReportFormat String
           | ShellRunCommand String
           | Verbosity String
           | Functionality String
+          | Persist String
           | Messy
     deriving (Show, Ord, Eq)
 
@@ -72,10 +73,11 @@ main = do
         (flags, newArgs, [])     -> dispatch newArgs flags
         (_,     _,       msgs)   -> error $ concat msgs ++ usageInfo header options
 
-header = "Usage: falderal <command> [<option>...] <filename.falderal>...\n\
+header = "Usage: falderal <command> [<option>...] <filename>...\n\
          \where <command> is one of:\n\
-         \    format <format-name>\n\
+         \    format\n\
          \    test\n\
+         \    report\n\
          \    version"
 
 options :: [OptDescr Flag]
@@ -83,6 +85,7 @@ options = [
     Option ['h'] ["haskell-command"] (ReqArg HaskellRunCommand "CMD") "command to run Haskell tests (default: 'runhaskell')",
     Option ['f'] ["functionality"] (ReqArg Functionality "SPEC") "specify implementation of a functionality under test",
     Option ['m'] ["messy"] (NoArg Messy) "messy: do not delete generated files (default: clean)",
+    Option ['p'] ["persist"] (ReqArg Persist "FILE") "suppress report, and persist results to the given file",
     Option ['r'] ["report-format"] (ReqArg ReportFormat "FORMAT") "success/failure report format (default: standard)",
     Option ['s'] ["shell-command"] (ReqArg ShellRunCommand "CMD") "command to run shell scripts (default: 'sh')",
     Option ['v'] ["verbosity"] (ReqArg Verbosity "LEVEL") "verbosity level, higher is more verbose (default: 0)"
@@ -106,13 +109,36 @@ dispatch ("test":fileNames) flags =
         report reportFormat (haskellBlocks' ++ shellBlocks')
         exitWith ExitSuccess
 
+dispatch ("report":fileNames) flags =
+    let
+        reportFormat = determineReportFormat flags
+        verbosity = determineVerbosity flags
+        [fileName] = fileNames
+    in do
+        -- resultBlocks <- loadResults fileName
+        -- report reportFormat resultBlocks
+        exitWith ExitSuccess
+
 dispatch ("version":_) _ = do
     putStrLn "Test.Falderal version 0.5"
 
 dispatch _ _ = putStrLn header
 
 testHaskell blocks flags =
-    runTests blocks "GeneratedFalderalTests.hs" "haskell" ((determineHaskellRunCommand flags) ++ " GeneratedFalderalTests.hs") (Messy `elem` flags)
+    testTests blocks flags "GeneratedFalderalTests.hs" "haskell" determineHaskellRunCommand
 
 testShell blocks flags =
-    runTests blocks "GeneratedFalderalTests.sh" "shell" ((determineShellRunCommand flags) ++ " GeneratedFalderalTests.sh") (Messy `elem` flags)
+    testTests blocks flags "GeneratedFalderalTests.sh" "shell" determineShellRunCommand
+
+testTests blocks flags resultsGenerator formatName cmdDeterminer =
+    let
+        cmd = cmdDeterminer flags
+        messy = Messy `elem` flags
+        isPersist (Persist _) = True
+        isPersist _ = False
+        persistTo =
+            case filter (isPersist) flags of
+                [] -> Nothing
+                [Persist fileName] -> Just fileName
+    in
+        runTests blocks resultsGenerator formatName (cmd ++ " " ++ resultsGenerator) messy persistTo
