@@ -31,12 +31,19 @@ runTests blocks filename formatName command messy persistTo = do
     text <- return $ format formatName [] blocks
     hPutStr outputFileHandle text
     hClose outputFileHandle
-    exitCode <- system (command ++ " >results.txt")
-    contents <- readFile "results.txt"
-    results <- return $ collectResults $ lines $ contents
-    cleanRun (not messy) ("rm -f " ++ filename)
-    cleanRun (not messy) ("rm -f results.txt")
-    return $ decorateTestsWithResults blocks results
+    case persistTo of
+        Just resultsFilename -> do
+            exitCode <- system (command ++ " >>" ++ resultsFilename)
+            contents <- readFile resultsFilename
+            cleanRun (not messy) ("rm -f " ++ filename)
+            return []
+        Nothing -> do
+            exitCode <- system (command ++ " >results.txt")
+            contents <- readFile "results.txt"
+            results <- return $ collectResults $ lines $ contents
+            cleanRun (not messy) ("rm -f " ++ filename)
+            cleanRun (not messy) ("rm -f results.txt")
+            return $ decorateTestsWithResults blocks results
 
 collectResults [] =
     []
