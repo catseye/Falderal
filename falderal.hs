@@ -3,7 +3,7 @@ import System.Environment
 import System.Console.GetOpt
 
 import Test.Falderal.Common
-import Test.Falderal.Loader (loadFiles)
+import Test.Falderal.Loader (loadFiles, parseFunctionality)
 import Test.Falderal.Partitioner (
                                    partitionTests,
                                    isHaskellFunctionality,
@@ -26,6 +26,7 @@ data Flag = ReportFormat String
           | HaskellRunCommand String
           | ShellRunCommand String
           | Verbosity String
+          | Functionality String
           | Messy
     deriving (Show, Ord, Eq)
 
@@ -44,6 +45,20 @@ determineHaskellRunCommand (_:rest) = determineHaskellRunCommand rest
 determineShellRunCommand [] = "sh"
 determineShellRunCommand (ShellRunCommand s:_) = s
 determineShellRunCommand (_:rest) = determineShellRunCommand rest
+
+collectFunctionalities [] = []
+collectFunctionalities (Functionality spec:rest) =
+    (parseFunctionalitySpec spec:collectFunctionalities rest)
+collectFunctionalities (_:rest) = collectFunctionalities rest
+
+-- -f 'Run Pixley Program:shell command "./pixley.sh %(test)"'
+
+parseFunctionalitySpec str =
+    let
+        name = takeWhile (\c -> c /= ':') str
+        rest = tail (dropWhile (\c -> c /= ':') str)
+    in
+        (name, parseFunctionality rest)
 
 --
 -- Command-line entry point
@@ -65,6 +80,7 @@ header = "Usage: falderal <command> [<option>...] <filename.falderal>...\n\
 options :: [OptDescr Flag]
 options = [
     Option ['h'] ["haskell-command"] (ReqArg HaskellRunCommand "CMD") "command to run Haskell tests (default: 'runhaskell')",
+    Option ['f'] ["functionality"] (ReqArg Functionality "SPEC") "specify implementation of a functionality under test",
     Option ['m'] ["messy"] (NoArg Messy) "messy: do not delete generated files (default: clean)",
     Option ['r'] ["report-format"] (ReqArg ReportFormat "FORMAT") "success/failure report format (default: standard)",
     Option ['s'] ["shell-command"] (ReqArg ShellRunCommand "CMD") "command to run shell scripts (default: 'sh')",
@@ -79,6 +95,7 @@ dispatch ("test":fileNames) flags =
     let
         reportFormat = determineReportFormat flags
         verbosity = determineVerbosity flags
+        functionalities = collectFunctionalities flags
         preds = [isHaskellFunctionality, isShellFunctionality]
     in do
         (lines, blocks) <- loadFiles fileNames

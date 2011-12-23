@@ -1,4 +1,9 @@
-module Test.Falderal.Loader (loadFile, loadFiles, loadText) where
+module Test.Falderal.Loader (
+                              loadFile,
+                              loadFiles,
+                              loadText,
+                              parseFunctionality
+                            ) where
 
 --
 -- Test.Falderal.Loader -- The Falderal Test Loader
@@ -168,7 +173,7 @@ reDescribeBlocks' (block:rest) desc n =
 --
 
 possiblePragmas = [
-                    (["Tests", "for"], \rest -> TestsFor $ tryFunctionalities functionalities rest),
+                    (["Tests", "for"], \rest -> TestsFor $ parseFunctionality rest),
                     (["Functionality"], \rest -> parseFuncDefn rest),
                     (["encoding:"], \rest -> Encoding rest)
                   ]
@@ -190,6 +195,8 @@ functionalities = [
                     parseShellFunctionality,
                     parseNamedFunctionality
                   ]
+
+parseFunctionality text = tryFunctionalities functionalities text
 
 tryFunctionalities [] text =
     error $ "bad functionality: " ++ text
@@ -241,7 +248,7 @@ parseFuncDefn text =
         case consumeWords ["is", "implemented", "by"] rest of
             Just funky ->
                 let
-                    functionality = tryFunctionalities functionalities funky
+                    functionality = parseFunctionality funky
                 in
                     FunctionalityDefinition name functionality
             Nothing ->
