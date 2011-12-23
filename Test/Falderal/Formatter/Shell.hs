@@ -19,7 +19,8 @@ format _ blocks =
 formatBlocks (test@(Test id [(ShellTest cmd)] desc input _ _):rest) =
     let
         inputHereDoc = hereDoc "input.txt" input
-        formattedBlock = inputHereDoc ++ testExecution cmd id
+        cmd' = expandCommand cmd
+        formattedBlock = inputHereDoc ++ testExecution cmd' id
     in
         formattedBlock ++ "\n" ++ formatBlocks rest
 formatBlocks (_:rest) =
@@ -43,8 +44,35 @@ postlude =
     "\n\
     \rm -f input.txt output.txt\n"
 
+-- TODO: capture output/errors from command, even when output variable
+-- is present
+
+expandCommand cmd =
+    let
+        substitutions = [
+                          ("test", "input.txt"),
+                          ("output", "output.txt")
+                        ]
+        suppliedInput =
+            if
+                containsVariable cmd "test"
+            then
+                ""
+            else
+                " <input.txt"
+        providedOutput =
+            if
+                containsVariable cmd "output"
+            then
+                ""
+            else
+                " >output.txt"
+        cmd' = expandVariables cmd substitutions
+    in
+        cmd' ++ suppliedInput ++ providedOutput
+
 testExecution cmd id =
-    cmd ++ " <input.txt >output.txt 2>&1\n\
+    cmd ++ " 2>&1\n\
     \if [ $? != 0 ]; then\n\
     \  echo \"exception\"\n\
     \else\n\
