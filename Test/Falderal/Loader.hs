@@ -18,16 +18,16 @@ import Test.Falderal.Common
 -- File loading functions.
 --
 
-loadFile fileName = do
+loadFile fileName givenFuncDefs = do
     testText <- readFile fileName
-    (ls, bs) <- return $ loadText testText
+    (ls, bs) <- return $ loadText testText givenFuncDefs
     return (ls, bs)
 
-loadFiles [] = do
+loadFiles [] givenFuncDefs = do
     return ([], [])
-loadFiles (fileName:rest) = do
-    (ls, bs) <- loadFile fileName
-    (restLs, restBs) <- loadFiles rest
+loadFiles (fileName:rest) givenFuncDefs = do
+    (ls, bs) <- loadFile fileName givenFuncDefs
+    (restLs, restBs) <- loadFiles rest givenFuncDefs
     return (ls ++ restLs, bs ++ restBs)
 
 --
@@ -35,11 +35,11 @@ loadFiles (fileName:rest) = do
 -- allowing the caller to choose which one they want to look at.
 --
 
-loadText text =
+loadText text givenFuncDefs =
     let
         ls = transformLines $ lines text
         ls' = resolvePragmas ls
-        fds = collectFunctionalityDefinitions ls'
+        fds = (collectFunctionalityDefinitions ls') ++ givenFuncDefs
         bs = convertLinesToBlocks ls' [] fds
         bs' = reDescribeBlocks bs
     in

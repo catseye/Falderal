@@ -95,13 +95,37 @@ Expected: Output "3"
 
 EOF
 cd eg
-falderal -m test Erroneous.falderal >../actual.txt 2>/dev/null
+falderal test Erroneous.falderal >../actual.txt 2>/dev/null
 cd ..
 diff -u expected.txt actual.txt
 E3=$?
 rm -f expected.txt actual.txt
 
-if [ $E1 != 0 -o $E2 != 0 -o $E3 != 0 ]
+echo 'Testing functionality definition on command line...'
+cat >expected.txt <<EOF
+falderal: Can't find Count lines in []
+EOF
+cd eg
+falderal test Underspecified.falderal >../actual.txt 2>&1
+cd ..
+diff -u expected.txt actual.txt
+E4=$?
+rm -f expected.txt actual.txt
+
+cat >expected.txt <<EOF
+--------------------------------
+Total tests: 1, failures: 0
+--------------------------------
+
+EOF
+cd eg
+falderal test --functionality 'Count lines:shell command "wc -l"' Underspecified.falderal >../actual.txt 2>&1
+cd ..
+diff -u expected.txt actual.txt
+E5=$?
+rm -f expected.txt actual.txt
+
+if [ $E1 != 0 -o $E2 != 0 -o $E3 != 0 -o $E4 != 0 -o $E5 != 0 ]
   then
     echo "Internal tests failed!"
     exit 1

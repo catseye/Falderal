@@ -46,10 +46,11 @@ determineShellRunCommand [] = "sh"
 determineShellRunCommand (ShellRunCommand s:_) = s
 determineShellRunCommand (_:rest) = determineShellRunCommand rest
 
-collectFunctionalities [] = []
-collectFunctionalities (Functionality spec:rest) =
-    (parseFunctionalitySpec spec:collectFunctionalities rest)
-collectFunctionalities (_:rest) = collectFunctionalities rest
+collectFunctionalityDefinitions [] = []
+collectFunctionalityDefinitions (Functionality spec:rest) =
+    (parseFunctionalitySpec spec:collectFunctionalityDefinitions rest)
+collectFunctionalityDefinitions (_:rest) =
+    collectFunctionalityDefinitions rest
 
 -- -f 'Run Pixley Program:shell command "./pixley.sh %(test)"'
 
@@ -88,17 +89,17 @@ options = [
   ]
 
 dispatch ("format":formatName:fileNames) _ = do
-    (lines, blocks) <- loadFiles fileNames
+    (lines, blocks) <- loadFiles fileNames []
     putStr $ format formatName lines blocks
 
 dispatch ("test":fileNames) flags =
     let
         reportFormat = determineReportFormat flags
         verbosity = determineVerbosity flags
-        functionalities = collectFunctionalities flags
+        funcDefs = collectFunctionalityDefinitions flags
         preds = [isHaskellFunctionality, isShellFunctionality]
     in do
-        (lines, blocks) <- loadFiles fileNames
+        (lines, blocks) <- loadFiles fileNames funcDefs
         [haskellBlocks, shellBlocks] <- return $ partitionTests preds blocks
         haskellBlocks' <- testHaskell haskellBlocks flags
         shellBlocks' <- testShell shellBlocks flags
