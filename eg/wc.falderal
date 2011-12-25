@@ -13,6 +13,9 @@ functionalities which have multiple implementations.
 -> shell command "wc -l"
 
 -> Functionality "Count lines" is implemented by
+-> shell command "wc -l $(test)"
+
+-> Functionality "Count lines" is implemented by
 -> Haskell function WordCount:countLines
 
 -> Tests for functionality "Count lines"
