@@ -20,30 +20,23 @@ cleanRun True cmd = do
 cleanRun False cmd = do
     return ()
 
-runTests :: [Block] -> String -> String -> String -> Bool -> Maybe String -> IO [Block]
+runTests :: [Block] -> String -> String -> String -> Bool -> IO [Block]
 
 -- TODO: what to do with exitCode?
 
-runTests [] _ _ _ _ _ = do
+runTests [] _ _ _ _ = do
     return []
-runTests blocks filename formatName command messy persistTo = do
+runTests blocks filename formatName command messy = do
     outputFileHandle <- openFile filename WriteMode
     text <- return $ format formatName [] blocks
     hPutStr outputFileHandle text
     hClose outputFileHandle
-    case persistTo of
-        Just resultsFilename -> do
-            exitCode <- system (command ++ " >>" ++ resultsFilename)
-            contents <- readFile resultsFilename
-            cleanRun (not messy) ("rm -f " ++ filename)
-            return []
-        Nothing -> do
-            exitCode <- system (command ++ " >results.txt")
-            contents <- readFile "results.txt"
-            results <- return $ collectResults $ lines $ contents
-            cleanRun (not messy) ("rm -f " ++ filename)
-            cleanRun (not messy) ("rm -f results.txt")
-            return $ decorateTestsWithResults blocks results
+    exitCode <- system (command ++ " >results.txt")
+    contents <- readFile "results.txt"
+    results <- return $ collectResults $ lines $ contents
+    cleanRun (not messy) ("rm -f " ++ filename)
+    cleanRun (not messy) ("rm -f results.txt")
+    return $ decorateTestsWithResults blocks results
 
 collectResults [] =
     []
