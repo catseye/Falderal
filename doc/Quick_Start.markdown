@@ -18,7 +18,6 @@ Often, depending on the syntax of your implementation language, you can
 place your literate tests in the same file as your code.  We'll use
 Bird-style literate Haskell in this example.
 
-    #!lhs
     module Gobvert
 
     This is some kind of really trivial little language.
@@ -30,9 +29,8 @@ Then give your functionality a name, and write some tests for your
 functionality.  You use a Falderal pragma to identify which functionality
 these tests are for.
 
-    #!lhs
-
-    -> Functionality "Gobvert a string" is implemented by Haskell function Gobvert:gobvert
+    -> Functionality "Gobvert a string" is implemented by
+    -> Haskell function Gobvert:gobvert
 
     -> Tests for functionality "Gobvert a string"
 
