@@ -50,19 +50,21 @@ postlude =
 expandCommand cmd =
     let
         substitutions = [
-                          ("test", "input.txt"),
-                          ("output", "output.txt")
+                          ("test-file", "input.txt"),
+                          ("test-text", "`cat input.txt`"),
+                          ("output-file", "output.txt")
                         ]
         suppliedInput =
             if
-                containsVariable cmd "test"
+                containsVariable cmd "test-file" ||
+                containsVariable cmd "test-text"
             then
                 ""
             else
                 " <input.txt"
         providedOutput =
             if
-                containsVariable cmd "output"
+                containsVariable cmd "output-file"
             then
                 ""
             else

@@ -6,8 +6,8 @@ This document describes the proposed Falderal Literate Test Format.
 Status
 ======
 
-This document is a *draft*.  It is nominally "version 0.4" because it
-describes something that version 0.4 of `Test.Falderal` mostly implements.
+This document is a *draft*.  It is nominally "version 0.6" because it
+describes something that version 0.6 of `Test.Falderal` mostly implements.
 We will deign to note which sections of this document the current released
 version of `Test.Falderal` implements, and which it does not.  However,
 this document is a work in progress, subject to change, and subject to get
@@ -63,6 +63,21 @@ _paragraph_.
 Pragmas
 =======
 
+encoding
+--------
+
+The encoding pragma allows a Falderal file to specify what encoding is
+used for the characters in it.  An implementation of Falderal is not
+expected to be able to handle any coding other than UTF-8, however,
+this pragma is included for the benefit of text editors and other tools,
+to indicate that the document is in fact in UTF-8 encoding.  It is
+generally stripped from documents formatted from the Falderal file,
+perhaps replaced by an equivalent directive for the particular format.
+
+Example:
+
+    -> encoding: UTF-8
+
 Functionality-definition
 ------------------------
 
@@ -105,22 +120,30 @@ Shell commands
 
 For shell commands, the _functionality-specifier_ is in the format
 `"command arg1 arg2 ... argn"`.  Any line of legal Bourne shell syntax may
-be used, so pipes, redirection, etc., are supported.  The sequence
-`%input`, if it appears in the string, is replaced by the name of a
-temporary file which is to be created to hold the input text.  If it does
-not appear, the input text will be provided on the standard input of the
-shell command.  The sequence `%output`, if it appears in the string,
-is replaced by the name of a temporary file from which the output text
-will be read.  If it does not appear, the output text will be read from
-the standard output.  Shell commands do not (yet) support expected error
+be used, so pipes, redirection, etc., are supported.
+
+Certain subsequences, called _variables_, if present in the command string,
+will be expanded before execution, and will alter how the command reads the
+text of the test and produces its output, to be compared with the expected
 output.
+
+The variable `%(test-file)` will be replaced by the name of a file which
+contains the text of the test.  This may be a temporary files created
+solely for this purpose.  The variable `%(test-text)` will be replaced by
+the actual text of the test.  If neither of these variables appear in the
+command string, the test text will be provided on the standard input of the
+shell command.
+
+The variable `%(output-file)` will be replaced by the name of a file
+(temporary file) to which the test results will be written.  If it does
+not appear in the command string, the output text will be read from
+the standard output of the command.
+
+How shell commands support error output is not yet standardized.
 
 For example:
 
-    -> Functionality 'Prepending foo.txt' is implemented by shell command "cat foo.txt %input > %output"
-
-`Test.Falderal` version 0.4 implements shell commands, but does not yet
-support the `%input` and `%output` sequences.
+    -> Functionality 'Prepending foo.txt' is implemented by shell command "cat foo.txt %(test-file) > %(output-file)"
 
 Tests-for
 ---------

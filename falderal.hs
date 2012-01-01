@@ -52,8 +52,6 @@ collectFunctionalityDefinitions (Functionality spec:rest) =
 collectFunctionalityDefinitions (_:rest) =
     collectFunctionalityDefinitions rest
 
--- -f 'Run Pixley Program:shell command "./pixley.sh %(test)"'
-
 parseFunctionalitySpec str =
     let
         name = takeWhile (\c -> c /= ':') str

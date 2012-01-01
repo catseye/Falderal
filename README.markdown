@@ -95,9 +95,7 @@ Version 0.6 "Streeterville" (currently under development):
 
 TODO:
 
-* Rename the variables to conform to what's listed above.
-* Make `%(output-file)` properly optional.
-* Update the format specification re those variables.
+* Figure out why one of the tests in wc.falderal doesn't run.
 * Command-line option to clear functionalities.
 * Command-line option to skip tests for given functionalities.
 

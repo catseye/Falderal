@@ -134,7 +134,7 @@ expandVariables ('%':'(':rest) alist =
             Just value ->
                 value ++ (expandVariables rest' alist)
             Nothing ->
-                expandVariables rest' alist
+                "%(" ++ name ++ ")" ++ expandVariables rest' alist
     where
         getName "" =
             ("", "")
