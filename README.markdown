@@ -76,6 +76,31 @@ Currently supported features of the framework are:
 History
 -------
 
+Version 0.6 "Streeterville" (currently under development):
+
+* Variables may be included in the specification of a shell command
+  implementation; these will be expanded before generating the results
+  generator.  These variable include `%(test-text)`, `%(test-file)`,
+  and `%(output-file)`.
+* `falderal` now lets the user specify how a functionality is implemented
+  on the command line.  Giving `-f 'foo:shell command "foo.sh %(test-file)"'`
+  has the same effect as including the pragma `Functionality "foo" is
+  implemented by shell command "foo.sh %(test-file)"` in the Falderal
+  file.
+* The Markdown formatter now formats Bird-style embedded code with
+  HTML embedded in the Markdown document.  This is so that it can
+  be styled independently from, and thus distinguished from, any plain
+  Markdown indented code blocks which may appear in the literate portion
+  of the source code.
+
+TODO:
+
+* Rename the variables to conform to what's listed above.
+* Make `%(output-file)` properly optional.
+* Update the format specification re those variables.
+* Command-line option to clear functionalities.
+* Command-line option to skip tests for given functionalities.
+
 Version 0.5 "The Loop" (current released version):
 
 * The command-line format of `falderal` has changed, for the better.
