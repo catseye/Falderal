@@ -36,7 +36,7 @@ formatLine (LiteralText text) =
     (prefixEachLine "" text)
 formatLine (QuotedCode text) =
     "<pre class=\"quoted-code\"><code>" ++
-    (prefixEachLine "" text) ++
+    (mapEachLine (escapeHtml) text) ++
     "</code></pre>"
 formatLine (Pragma text (Just (Encoding _))) =
     ""

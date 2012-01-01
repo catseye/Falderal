@@ -92,6 +92,15 @@ allLines x =
 prefixEachLine prefix text =
     foldl (++) "" (map (\x -> prefix ++ x ++ "\n") (allLines text))
 
+mapEachLine fn text =
+    foldl (++) "" (map (\x -> (fn x) ++ "\n") (allLines text))
+
+escapeHtml "" = ""
+escapeHtml ('<':rest) = "&lt;" ++ escapeHtml rest
+escapeHtml ('>':rest) = "&gt;" ++ escapeHtml rest
+escapeHtml ('&':rest) = "&amp;" ++ escapeHtml rest
+escapeHtml (c:cs) = c:(escapeHtml cs)
+
 formatLines formatter lines = foldl (++) "" (map (formatter) lines)
 
 pad s n = padFrom s (n-(length s))
