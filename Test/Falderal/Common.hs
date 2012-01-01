@@ -114,3 +114,30 @@ parseNatNumStr (x:xs) acc
         parseNatNumStr xs (acc * 10 + ((Char.ord x) - (Char.ord '0')))
     | otherwise =
         acc
+
+expandVariables "" alist =
+    ""
+expandVariables ('%':'(':rest) alist =
+    let
+        (name, rest') = getName rest
+    in
+        case lookup name alist of
+            Just value ->
+                value ++ (expandVariables rest' alist)
+            Nothing ->
+                expandVariables rest' alist
+    where
+        getName "" =
+            ("", "")
+        getName (')':rest) =
+            ("", rest)
+        getName (c:rest) =
+            let
+                (remainder, rest') = getName rest
+            in
+                ((c:remainder), rest')
+expandVariables (c:rest) alist =
+    (c:expandVariables rest alist)
+
+containsVariable str var =
+    expandVariables str [(var, "foo")] /= str
