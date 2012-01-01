@@ -36,7 +36,12 @@ data Directive = TestsFor Functionality
 data Functionality = HaskellTest String String -- module name, function name
                    | ShellTest String -- command
                    | NamedFunctionality String
-                   deriving (Show, Eq, Ord)
+                   deriving (Eq, Ord)
+
+instance Show Functionality where
+    show (HaskellTest m f) = "Haskell function " ++ m ++ ":" ++ f
+    show (ShellTest c) = "Shell command \"" ++ c ++ "\""
+    show (NamedFunctionality f) = "functionality \"" ++ f ++ "\""
 
 --
 -- ...and after.

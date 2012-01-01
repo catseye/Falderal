@@ -20,17 +20,22 @@ reportEachTest [] = do
 reportEachTest (Test id fns literalText testText expected (Just actual):rest) = do
     reportText 8 "FAILED"   (stripLeading '\n' (stripTrailing '\n' literalText))
     putStrLn ""
+    reportText 8 "Impl"     (show fn)
     reportText 8 "Input"    testText
     reportText 8 "Expected" (show expected)
     reportText 8 "Actual"   (show actual)
     putStrLn ""
     reportEachTest rest
+    where [fn] = fns
 reportEachTest (Test id fns literalText testText expected Nothing:rest) = do
     reportText 8 "NOT RUN"  (stripLeading '\n' (stripTrailing '\n' literalText))
+    putStrLn ""
+    reportText 8 "Impl"     (show fn)
     reportText 8 "Input"    testText
     reportText 8 "Expected" (show expected)
     putStrLn ""
     reportEachTest rest
+    where [fn] = fns
 
 reportText width fieldName text =
     if

@@ -23,6 +23,7 @@ FAILED:
 This is an intentionally failing test, to demonstrate how Falderal will
 present it.
 
+Impl    : Haskell function LiterateHaskellDemo:everySecond
 Input   : Something
 Expected: Output "Anything"
 Actual  : Output "oehn"
@@ -31,6 +32,7 @@ FAILED:
 Another intentionally failing test to demonstrate how Falderal will
 present expecting an exception and not getting one.
 
+Impl    : Haskell function LiterateHaskellDemo:everySecond
 Input   : ridiculous
 Expected: Exception "Prelude.head: empty list"
 Actual  : Output "iiuos"
@@ -39,6 +41,7 @@ FAILED:
 An intentionally failing test to demonstrate that it is important
 to get the formatting of the output right, when testing with show.
 
+Impl    : Haskell function LiterateHaskellDemo:showParseBits
 Input   : 01
 Expected: Output "[False, True]"
 Actual  : Output "[False,True]"
@@ -47,6 +50,7 @@ FAILED:
 An intentionally failing test to demonstrate show what a failure
 looks like on multi-line input.
 
+Impl    : Haskell function LiterateHaskellDemo:showParseBits
 Input:
 01
 10
@@ -61,6 +65,7 @@ when any of them fails is the text that comes before the first of them,
 annotated with the number of the test in the set that failed.  The
 intentionally-failing third test below demonstrates this.
 
+Impl    : Haskell function LiterateHaskellDemo:showParseBits
 Input   : 0000
 Expected: Output "[False,False,False,Flse]"
 Actual  : Output "[False,False,False,False]"
@@ -73,6 +78,28 @@ diff -u expected.txt actual.txt
 E2=$?
 rm -f expected.txt actual.txt
 
+echo 'Testing wc.falderal (multiple impls, var exp...)'
+
+cat >expected.txt <<EOF
+--------------------------------
+Total tests: 7, failures: 1
+--------------------------------
+
+FAILED  : An intentionally failing test.
+
+Impl    : Shell command "wc -w"
+Input   : Not four words!
+Expected: Output "4"
+Actual  : Output "3"
+
+EOF
+cd eg
+falderal test wc.falderal >../actual.txt
+cd ..
+diff -u expected.txt actual.txt
+EWC=$?
+rm -f expected.txt actual.txt
+
 echo 'Testing Erroneous.falderal...'
 
 cat >expected.txt <<EOF
@@ -81,12 +108,16 @@ Total tests: 3, failures: 2
 --------------------------------
 
 NOT RUN : (#2) 
+
+Impl    : Haskell function Erroneous:countLines
 Input:
 These are eight words
 that span two lines.
 Expected: Output "2"
 
 NOT RUN : (#3) 
+
+Impl    : Haskell function Erroneous:countLines
 Input:
 These are eight words
 that span
@@ -125,7 +156,7 @@ diff -u expected.txt actual.txt
 E5=$?
 rm -f expected.txt actual.txt
 
-if [ $E1 != 0 -o $E2 != 0 -o $E3 != 0 -o $E4 != 0 -o $E5 != 0 ]
+if [ $E1 != 0 -o $E2 != 0 -o $E3 != 0 -o $E4 != 0 -o $E5 != 0 -o $EWC != 0 ]
   then
     echo "Internal tests failed!"
     exit 1

@@ -92,10 +92,20 @@ Version 0.6 "Streeterville" (currently under development):
   be styled independently from, and thus distinguished from, any plain
   Markdown indented code blocks which may appear in the literate portion
   of the source code.
+* In failure reports, the implementation of the functionality of the test
+  that failed is now reported in each failure.
+* A race condition(?) that could occur when testing multiple implementations
+  of a functionality, of different kinds (Haskell and shell), has been
+  prevented.  Both tests were writing to `results.txt` and immediately
+  deleting it, and this would sometimes confuse `falderal` into thinking
+  one had produced no results (perhaps a result of some creative
+  scheduling by `ghc`, although really, I haven't a clue.)  Results are
+  now written to different temporary files with different, generated
+  names.
 
 TODO:
 
-* Figure out why one of the tests in wc.falderal doesn't run.
+* Skip blank lines at end of each block in results.  Test for missing eol.
 * Command-line option to clear functionalities.
 * Command-line option to skip tests for given functionalities.
 
