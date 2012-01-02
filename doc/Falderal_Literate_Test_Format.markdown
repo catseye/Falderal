@@ -130,9 +130,11 @@ output.
 The variable `%(test-file)` will be replaced by the name of a file which
 contains the text of the test.  This may be a temporary files created
 solely for this purpose.  The variable `%(test-text)` will be replaced by
-the actual text of the test.  If neither of these variables appear in the
-command string, the test text will be provided on the standard input of the
-shell command.
+the actual text of the test.  It is assumed that `%(test-text)` will appear
+inside single quotes in the command string, so any single quotes in the
+text of the test will be escaped.  If neither of these variables appear in
+the command string, the test text will be provided on the standard input of
+the shell command.
 
 The variable `%(output-file)` will be replaced by the name of a file
 (temporary file) to which the test results will be written.  If it does

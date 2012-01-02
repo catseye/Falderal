@@ -18,16 +18,16 @@ import Test.Falderal.Common
 -- File loading functions.
 --
 
-loadFile fileName givenFuncDefs = do
+loadFile fileName funcsToClear givenFuncDefs = do
     testText <- readFile fileName
-    (ls, bs) <- return $ loadText testText givenFuncDefs
+    (ls, bs) <- return $ loadText testText funcsToClear givenFuncDefs
     return (ls, bs)
 
-loadFiles [] givenFuncDefs = do
+loadFiles [] funcsToClear givenFuncDefs = do
     return ([], [])
-loadFiles (fileName:rest) givenFuncDefs = do
-    (ls, bs) <- loadFile fileName givenFuncDefs
-    (restLs, restBs) <- loadFiles rest givenFuncDefs
+loadFiles (fileName:rest) funcsToClear givenFuncDefs = do
+    (ls, bs) <- loadFile fileName funcsToClear givenFuncDefs
+    (restLs, restBs) <- loadFiles rest funcsToClear givenFuncDefs
     return (ls ++ restLs, bs ++ restBs)
 
 --
@@ -35,12 +35,14 @@ loadFiles (fileName:rest) givenFuncDefs = do
 -- allowing the caller to choose which one they want to look at.
 --
 
-loadText text givenFuncDefs =
+loadText text funcsToClear givenFuncDefs =
     let
         ls = transformLines $ lines text
         ls' = resolvePragmas ls
-        fds = (collectFunctionalityDefinitions ls') ++ givenFuncDefs
-        bs = convertLinesToBlocks ls' [] fds
+        fds = (collectFunctionalityDefinitions ls')
+        fds' = clearFuncs fds funcsToClear
+        fds'' = fds' ++ givenFuncDefs
+        bs = convertLinesToBlocks ls' [] fds''
         bs' = reDescribeBlocks bs
     in
         (ls', bs')
@@ -276,3 +278,8 @@ consumeWords (word:rest) text =
             consumeWords rest text'
         Nothing ->
             Nothing
+
+clearFuncs [] names = []
+clearFuncs (def@(name,fn):rest) names
+    | name `elem` names = clearFuncs rest names
+    | otherwise         = (def:clearFuncs rest names)

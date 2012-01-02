@@ -9,7 +9,7 @@ echo 'Testing formatting...'
 
 falderal format identity eg/LiterateHaskellDemo.lhs >formatted.txt
 diff -u eg/LiterateHaskellDemo.lhs formatted.txt
-E1=$?
+EID=$?
 rm -f formatted.txt
 
 echo 'Testing LiterateHaskellDemo...'
@@ -75,7 +75,7 @@ cd eg
 falderal test LiterateHaskellDemo.lhs >../actual.txt
 cd ..
 diff -u expected.txt actual.txt
-E2=$?
+ELHS=$?
 rm -f expected.txt actual.txt
 
 echo 'Testing wc.falderal (multiple impls, var exp)...'
@@ -144,7 +144,7 @@ cd eg
 falderal test Erroneous.falderal >../actual.txt 2>/dev/null
 cd ..
 diff -u expected.txt actual.txt
-E3=$?
+EERR=$?
 rm -f expected.txt actual.txt
 
 echo 'Testing functionality definition on command line...'
@@ -155,7 +155,7 @@ cd eg
 falderal test Underspecified.falderal >../actual.txt 2>&1
 cd ..
 diff -u expected.txt actual.txt
-E4=$?
+ECL1=$?
 rm -f expected.txt actual.txt
 
 cat >expected.txt <<EOF
@@ -168,10 +168,29 @@ cd eg
 falderal test --functionality 'Count lines:shell command "wc -l"' Underspecified.falderal >../actual.txt 2>&1
 cd ..
 diff -u expected.txt actual.txt
-E5=$?
+ECL2=$?
 rm -f expected.txt actual.txt
 
-if [ $E1 != 0 -o $E2 != 0 -o $E3 != 0 -o $E4 != 0 -o $E5 != 0 -o $EWC != 0 -o $EECHO != 0 ]
+cat >expected.txt <<EOF
+falderal: Can't find Echo in []
+EOF
+falderal -c "Echo" test eg/echo.falderal >actual.txt 2>&1
+diff -u expected.txt actual.txt
+ECL3=$?
+rm -f expected.txt actual.txt
+
+cat >expected.txt <<EOF
+--------------------------------
+Total tests: 3, failures: 0
+--------------------------------
+
+EOF
+falderal -c "Echo" -f "Echo:shell command \"echo '%(test-text)'\"" test eg/echo.falderal >actual.txt
+diff -u expected.txt actual.txt
+ECL4=$?
+rm -f expected.txt actual.txt
+
+if [ $EID != 0 -o $ELHS != 0 -o $EERR != 0 -o $ECL1 != 0 -o $ECL2 != 0 -o $ECL3 != 0 -o $ECL4 != 0 -o $EWC != 0 -o $EECHO != 0 ]
   then
     echo "Internal tests failed!"
     exit 1

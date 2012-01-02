@@ -82,11 +82,14 @@ Version 0.6 "Streeterville" (unreleased, currently under development):
   implementation; these will be expanded before generating the results
   generator.  These variable include `%(test-text)`, `%(test-file)`,
   and `%(output-file)`.
-* `falderal` now lets the user specify how a functionality is implemented
-  on the command line.  Giving `-f 'foo:shell command "foo.sh %(test-file)"'`
-  has the same effect as including the pragma `Functionality "foo" is
-  implemented by shell command "foo.sh %(test-file)"` in the Falderal
-  file.
+* `falderal` now lets the user specify, on the command line, the
+  implementations for a named functionality.  Supplying `-f 'foo:shell
+  command "foo.sh %(test-file)"'` has the same effect as including the
+  pragma `Functionality "foo" is implemented by shell command "foo.sh
+  %(test-file)"` in the Falderal file.  Note that this is in addition
+  to the Functionality-definition pragmas given in the Falderal file;
+  to replace them, you must first clear the ones with that name from
+  the file by supplying `-c foo` on the command line.
 * The Markdown formatter now formats Bird-style embedded code with
   HTML embedded in the Markdown document.  This is so that it can
   be styled independently from, and thus distinguished from, any plain
@@ -109,7 +112,6 @@ Version 0.6 "Streeterville" (unreleased, currently under development):
 
 TODO:
 
-* Command-line option to clear functionalities.
 * Command-line option to skip tests for given functionalities.
 
 Version 0.5 "The Loop" (current released version):

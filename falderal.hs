@@ -27,6 +27,7 @@ data Flag = ReportFormat String
           | ShellRunCommand String
           | Verbosity String
           | Functionality String
+          | ClearFunctionality String
           | Messy
     deriving (Show, Ord, Eq)
 
@@ -59,6 +60,12 @@ parseFunctionalitySpec str =
     in
         (name, parseFunctionality rest)
 
+determineFunctionalitiesToClear [] = []
+determineFunctionalitiesToClear (ClearFunctionality name:rest) =
+    (name:determineFunctionalitiesToClear rest)
+determineFunctionalitiesToClear (_:rest) =
+    determineFunctionalitiesToClear rest
+
 --
 -- Command-line entry point
 --
@@ -78,8 +85,9 @@ header = "Usage: falderal <command> [<option>...] <filename.falderal>...\n\
 
 options :: [OptDescr Flag]
 options = [
+    Option ['c'] ["clear-functionality"] (ReqArg ClearFunctionality "NAME") "clear all implementations of a named functionality",
+    Option ['f'] ["functionality"] (ReqArg Functionality "SPEC") "specify additional implementation of a named functionality",
     Option ['h'] ["haskell-command"] (ReqArg HaskellRunCommand "CMD") "command to run Haskell tests (default: 'runhaskell')",
-    Option ['f'] ["functionality"] (ReqArg Functionality "SPEC") "specify implementation of a functionality under test",
     Option ['m'] ["messy"] (NoArg Messy) "messy: do not delete generated files (default: clean)",
     Option ['r'] ["report-format"] (ReqArg ReportFormat "FORMAT") "success/failure report format (default: standard)",
     Option ['s'] ["shell-command"] (ReqArg ShellRunCommand "CMD") "command to run shell scripts (default: 'sh')",
@@ -87,7 +95,7 @@ options = [
   ]
 
 dispatch ("format":formatName:fileNames) _ = do
-    (lines, blocks) <- loadFiles fileNames []
+    (lines, blocks) <- loadFiles fileNames [] []
     putStr $ format formatName lines blocks
 
 dispatch ("test":fileNames) flags =
@@ -95,9 +103,10 @@ dispatch ("test":fileNames) flags =
         reportFormat = determineReportFormat flags
         verbosity = determineVerbosity flags
         funcDefs = collectFunctionalityDefinitions flags
+        funcsToClear = determineFunctionalitiesToClear flags
         preds = [isHaskellFunctionality, isShellFunctionality]
     in do
-        (lines, blocks) <- loadFiles fileNames funcDefs
+        (lines, blocks) <- loadFiles fileNames funcsToClear funcDefs
         [haskellBlocks, shellBlocks] <- return $ partitionTests preds blocks
         haskellBlocks' <- testHaskell haskellBlocks flags
         shellBlocks' <- testShell shellBlocks flags
