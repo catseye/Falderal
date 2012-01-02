@@ -42,10 +42,11 @@ documentation as well; the result was Falderal.
 Features
 --------
 
-The current version of Falderal is described in the Falderal Literate Test
-Format document.  The current version of `Test.Falderal` is 0.5 "The Loop".
-Neither the file format specification, nor the `Test.Falderal` API, should
-be expected to be stable through the 0.x series.
+The current version of Falderal is described in the [Falderal Literate Test
+Format](docs/Falderal_Literate_Test_Format.markdown).  The current version
+of `Test.Falderal` is 0.6 "Streeterville".  Neither the file format
+specification, nor the `Test.Falderal` API, should be expected to be stable
+through the 0.x series.
 
 Currently supported features of the framework are:
 
@@ -59,10 +60,10 @@ Currently supported features of the framework are:
   and collecting the results from it.  This sequence of steps is done
   automatically with the `falderal test` command.
 * Producing readable failure reports.  Each test or group of test may be
-  preceded by descriptive text, and this will be displayed above every failing
-  test, along with the expected and actual output.
-* Testing text-processing functionalities.  A test specifies textual input to
-  the function, and may expect a particular textual output, or that a
+  preceded by descriptive text, and this will be displayed above every
+  failing test, along with the expected and actual output.
+* Testing text-processing functionalities.  A test specifies textual input
+  to the function, and may expect a particular textual output, or that a
   particular error was encountered.  Functionalities are abstract: each
   functionality defined in a Falderal file can be implemented in multiple
   ways.  Thus the same tests can be run multiple times, once for each
@@ -76,7 +77,7 @@ Currently supported features of the framework are:
 History
 -------
 
-Version 0.6 "Streeterville" (unreleased, currently under development):
+Version 0.6 "Streeterville" (current released version):
 
 * Variables may be included in the specification of a shell command
   implementation; these will be expanded before generating the results
@@ -122,7 +123,7 @@ Version 0.6 "Streeterville" (unreleased, currently under development):
   first file would be in effect at the start of the second file.
   Files are now loaded and processed seperately.
 
-Version 0.5 "The Loop" (current released version):
+Version 0.5 "The Loop":
 
 * The command-line format of `falderal` has changed, for the better.
   The `test` subcommand no longer requires that the failure reporting
