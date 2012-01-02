@@ -61,6 +61,7 @@ data Expectation = Output String
 --
 
 data Block = Section String
+           | Directive Directive
            | Test Int [Functionality] String String Expectation (Maybe Expectation)
            deriving (Show, Eq, Ord)
 

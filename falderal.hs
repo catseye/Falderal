@@ -3,7 +3,7 @@ import System.Environment
 import System.Console.GetOpt
 
 import Test.Falderal.Common
-import Test.Falderal.Loader (loadFiles, parseFunctionality)
+import Test.Falderal.Loader (loadFile, parseFunctionality)
 import Test.Falderal.Partitioner (
                                    partitionTests,
                                    isHaskellFunctionality,
@@ -28,6 +28,7 @@ data Flag = ReportFormat String
           | Verbosity String
           | Functionality String
           | ClearFunctionality String
+          | SkipFunctionality String
           | Messy
     deriving (Show, Ord, Eq)
 
@@ -66,6 +67,12 @@ determineFunctionalitiesToClear (ClearFunctionality name:rest) =
 determineFunctionalitiesToClear (_:rest) =
     determineFunctionalitiesToClear rest
 
+determineFunctionalitiesToSkip [] = []
+determineFunctionalitiesToSkip (SkipFunctionality name:rest) =
+    (name:determineFunctionalitiesToSkip rest)
+determineFunctionalitiesToSkip (_:rest) =
+    determineFunctionalitiesToSkip rest
+
 --
 -- Command-line entry point
 --
@@ -88,6 +95,7 @@ options = [
     Option ['c'] ["clear-functionality"] (ReqArg ClearFunctionality "NAME") "clear all implementations of a named functionality",
     Option ['f'] ["functionality"] (ReqArg Functionality "SPEC") "specify additional implementation of a named functionality",
     Option ['h'] ["haskell-command"] (ReqArg HaskellRunCommand "CMD") "command to run Haskell tests (default: 'runhaskell')",
+    Option ['k'] ["skip-functionality"] (ReqArg SkipFunctionality "NAME") "skip all tests for this named functionality",
     Option ['m'] ["messy"] (NoArg Messy) "messy: do not delete generated files (default: clean)",
     Option ['r'] ["report-format"] (ReqArg ReportFormat "FORMAT") "success/failure report format (default: standard)",
     Option ['s'] ["shell-command"] (ReqArg ShellRunCommand "CMD") "command to run shell scripts (default: 'sh')",
@@ -104,10 +112,13 @@ dispatch ("test":fileNames) flags =
         verbosity = determineVerbosity flags
         funcDefs = collectFunctionalityDefinitions flags
         funcsToClear = determineFunctionalitiesToClear flags
+        funcsToSkip = determineFunctionalitiesToSkip flags
         preds = [isHaskellFunctionality, isShellFunctionality]
     in do
         (lines, blocks) <- loadFiles fileNames funcsToClear funcDefs
-        [haskellBlocks, shellBlocks] <- return $ partitionTests preds blocks
+        --print blocks
+        blocks' <- return $ removeFuncsToSkip blocks funcsToSkip
+        [haskellBlocks, shellBlocks] <- return $ partitionTests preds blocks'
         haskellBlocks' <- testHaskell haskellBlocks flags
         shellBlocks' <- testShell shellBlocks flags
         report reportFormat (haskellBlocks' ++ shellBlocks')
@@ -130,3 +141,14 @@ testHaskell blocks flags =
 
 testShell blocks flags =
     runTests blocks "GeneratedFalderalTests.sh" "shell" ((determineShellRunCommand flags) ++ " GeneratedFalderalTests.sh") (Messy `elem` flags)
+
+removeFuncsToSkip blocks funcsToSkip =
+    blocks
+
+loadFiles [] funcsToClear givenFuncDefs = do
+    return ([], [])
+loadFiles (fileName:rest) funcsToClear givenFuncDefs = do
+    (ls, bs) <- loadFile fileName funcsToClear givenFuncDefs
+    (restLs, restBs) <- loadFiles rest funcsToClear givenFuncDefs
+    return (ls ++ restLs, bs ++ restBs)
+

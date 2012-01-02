@@ -1,6 +1,5 @@
 module Test.Falderal.Loader (
                               loadFile,
-                              loadFiles,
                               loadText,
                               parseFunctionality
                             ) where
@@ -23,16 +22,17 @@ loadFile fileName funcsToClear givenFuncDefs = do
     (ls, bs) <- return $ loadText testText funcsToClear givenFuncDefs
     return (ls, bs)
 
-loadFiles [] funcsToClear givenFuncDefs = do
-    return ([], [])
-loadFiles (fileName:rest) funcsToClear givenFuncDefs = do
-    (ls, bs) <- loadFile fileName funcsToClear givenFuncDefs
-    (restLs, restBs) <- loadFiles rest funcsToClear givenFuncDefs
-    return (ls ++ restLs, bs ++ restBs)
-
 --
--- Returns both the (coaslesced) lines and the (redescribed) blocks,
--- allowing the caller to choose which one they want to look at.
+-- Returns a pair of the lines and the blocks, allowing the caller to choose
+-- which one they want to look at.
+--
+-- Note that the lines so returned are coalesced, and contain parsed pragmas.
+--
+-- SOON:
+-- Note that the blocks so returned are redescribed, but are not processed;
+-- that is, named functionalities are not expanded to their underlying
+-- implementations.  We leave this up to the caller.  The functions to do
+-- the processing should maybe be in some module other than this one.
 --
 
 loadText text funcsToClear givenFuncDefs =
@@ -42,10 +42,11 @@ loadText text funcsToClear givenFuncDefs =
         fds = (collectFunctionalityDefinitions ls')
         fds' = clearFuncs fds funcsToClear
         fds'' = fds' ++ givenFuncDefs
-        bs = convertLinesToBlocks ls' [] fds''
-        bs' = reDescribeBlocks bs
+        bs = convertLinesToBlocks ls'
+        bs' = assignFunctionalities bs [] fds''
+        bs'' = reDescribeBlocks bs'
     in
-        (ls', bs')
+        (ls', bs'')
 
 transformLines ls =
     let
@@ -113,37 +114,57 @@ resolvePragmas (other:rest) = (other:resolvePragmas rest)
 resolvePragmas [] = []
 
 --
--- Convert (coalesced) lines to blocks.
+-- Convert (coalesced) lines to blocks.  We expect the pragmas to have
+-- been parsed, and retain directives from them in the blocks.
 --
 
-convertLinesToBlocks :: [Line] -> [Functionality] -> [(String, Functionality)] -> [Block]
+convertLinesToBlocks :: [Line] -> [Block]
 
-convertLinesToBlocks ((LiteralText literalText):(TestInput testText):(ExpectedResult expected):rest) fns fnMap =
-    ((Test 0 fns literalText testText (Output expected) Nothing):(convertLinesToBlocks rest fns fnMap))
-convertLinesToBlocks ((LiteralText literalText):(TestInput testText):(ExpectedError expected):rest) fns fnMap =
-    ((Test 0 fns literalText testText (Exception expected) Nothing):(convertLinesToBlocks rest fns fnMap))
-convertLinesToBlocks ((TestInput testText):(ExpectedResult expected):rest) fns fnMap =
-    ((Test 0 fns "(undescribed output test)" testText (Output expected) Nothing):(convertLinesToBlocks rest fns fnMap))
-convertLinesToBlocks ((TestInput testText):(ExpectedError expected):rest) fns fnMap =
-    ((Test 0 fns "(undescribed output test)" testText (Exception expected) Nothing):(convertLinesToBlocks rest fns fnMap))
-convertLinesToBlocks ((SectionHeading text):rest) fn fnMap =
-    ((Section text):(convertLinesToBlocks rest fn fnMap))
-convertLinesToBlocks ((Pragma _ (Just (TestsFor (NamedFunctionality name)))):rest) fns fnMap =
+convertLinesToBlocks ((LiteralText literalText):(TestInput testText):(ExpectedResult expected):rest) =
+    (Test 0 [] literalText testText (Output expected) Nothing):convertLinesToBlocks rest
+convertLinesToBlocks ((LiteralText literalText):(TestInput testText):(ExpectedError expected):rest) =
+    (Test 0 [] literalText testText (Exception expected) Nothing):convertLinesToBlocks rest
+convertLinesToBlocks ((TestInput testText):(ExpectedResult expected):rest) =
+    (Test 0 [] "(undescribed output test)" testText (Output expected) Nothing):convertLinesToBlocks rest
+convertLinesToBlocks ((TestInput testText):(ExpectedError expected):rest) =
+    (Test 0 [] "(undescribed error test)" testText (Exception expected) Nothing):convertLinesToBlocks rest
+convertLinesToBlocks ((SectionHeading text):rest) =
+    (Section text):convertLinesToBlocks rest
+convertLinesToBlocks ((Pragma _ (Just dir)):rest) =
+    (Directive dir):convertLinesToBlocks rest
+convertLinesToBlocks ((LiteralText _):(SectionHeading text):rest) =
+    ((Section text):convertLinesToBlocks rest)
+convertLinesToBlocks (_:rest) =
+    convertLinesToBlocks rest
+convertLinesToBlocks [] = []
+
+--
+-- Give each test block a functionality, expanding named functionalities to
+-- concrete functionalities as needed.  Strip all Directives and Sections(?)
+-- from the list of blocks.
+--
+
+assignFunctionalities :: [Block] -> [Functionality] -> [(String, Functionality)] -> [Block]
+
+assignFunctionalities ((Test 0 [] literalText testText expectation Nothing):rest) fns fnMap =
+    (Test 0 fns literalText testText expectation Nothing):assignFunctionalities rest fns fnMap
+
+assignFunctionalities ((Directive (TestsFor (NamedFunctionality name))):rest) fns fnMap =
     case map (snd) $ filter (\(s,fn) -> s == name) fnMap of
         []   -> error ("Can't find " ++ name ++ " in " ++ (show fnMap))
-        fns' -> convertLinesToBlocks rest fns' fnMap
-convertLinesToBlocks ((Pragma _ (Just (TestsFor fn))):rest) fns fnMap =
-    convertLinesToBlocks rest [fn] fnMap
-convertLinesToBlocks ((Pragma _ Nothing):rest) fns fnMap =
-    error $ "should have resolved all pragmas to directives by now"
-convertLinesToBlocks ((Pragma _ _):rest) fns fnMap =
-    convertLinesToBlocks rest fns fnMap
-convertLinesToBlocks ((LiteralText _):(SectionHeading text):rest) fns fnMap =
-    ((Section text):(convertLinesToBlocks rest fns fnMap))
+        fns' -> assignFunctionalities rest fns' fnMap
 
-convertLinesToBlocks (_:rest) fns fnMap =
-    convertLinesToBlocks rest fns fnMap
-convertLinesToBlocks [] _ _ = []
+assignFunctionalities ((Directive (TestsFor fn)):rest) fns fnMap =
+    assignFunctionalities rest [fn] fnMap
+
+assignFunctionalities (_:rest) fns fnMap =
+    assignFunctionalities rest fns fnMap
+
+assignFunctionalities [] _ _ = []
+
+--
+-- Collect Functionality-definition pragmas.
+--
 
 collectFunctionalityDefinitions ((Pragma _ (Just (FunctionalityDefinition name functionality))):rest) =
     ((name, functionality):collectFunctionalityDefinitions rest)
