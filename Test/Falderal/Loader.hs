@@ -3,6 +3,7 @@ module Test.Falderal.Loader (
                               loadText,
                               parseFunctionality,
                               collectFunctionalityDefinitions,
+                              stripFunctionalities,
                               assignFunctionalities
                             ) where
 
@@ -132,6 +133,24 @@ convertLinesToBlocks ((LiteralText _):(SectionHeading text):rest) =
 convertLinesToBlocks (_:rest) =
     convertLinesToBlocks rest
 convertLinesToBlocks [] = []
+
+--
+-- Remove all tests for the given functionality from a list of blocks.
+-- The functionality to be removed is typically a NamedFunctionality.
+-- Third argument should initially be False, and indicates whether we are
+-- stripping.
+--
+
+stripFunctionalities :: [Block] -> [Functionality] -> Bool -> [Block]
+
+stripFunctionalities [] _ _ = []
+stripFunctionalities (d@(Directive (TestsFor fn)):rest) fns _
+    | fn `elem` fns = stripFunctionalities rest fns True
+    | otherwise     = d:stripFunctionalities rest fns False
+stripFunctionalities (other:rest) names False =
+    other:stripFunctionalities rest names False
+stripFunctionalities (other:rest) names True =
+    stripFunctionalities rest names True
 
 --
 -- Give each test block a functionality, expanding named functionalities to

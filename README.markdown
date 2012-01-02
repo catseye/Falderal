@@ -90,6 +90,9 @@ Version 0.6 "Streeterville" (unreleased, currently under development):
   to the Functionality-definition pragmas given in the Falderal file;
   to replace them, you must first clear the ones with that name from
   the file by supplying `-c foo` on the command line.
+* `falderal` also allows tests for named functionalities to be skipped
+  completely, by passing the name of the functionality to be skipped
+  after a `-k` flag on the command line.
 * The Markdown formatter now formats Bird-style embedded code with
   HTML embedded in the Markdown document.  This is so that it can
   be styled independently from, and thus distinguished from, any plain
@@ -118,10 +121,6 @@ Version 0.6 "Streeterville" (unreleased, currently under development):
   the second file, and that any Tests-for in effect at the end of the
   first file would be in effect at the start of the second file.
   Files are now loaded and processed seperately.
-
-TODO:
-
-* Command-line option to skip tests for given functionalities.
 
 Version 0.5 "The Loop" (current released version):
 

@@ -108,9 +108,7 @@ Total tests: 6, failures: 0
 --------------------------------
 
 EOF
-cd eg
-falderal test echo.falderal >../actual.txt
-cd ..
+falderal test eg/echo.falderal >actual.txt
 diff -u expected.txt actual.txt
 EECHO=$?
 rm -f expected.txt actual.txt
@@ -148,6 +146,7 @@ EERR=$?
 rm -f expected.txt actual.txt
 
 echo 'Testing functionality definition on command line...'
+
 cat >expected.txt <<EOF
 falderal: Can't find functionality "Count lines" in []
 EOF
@@ -188,6 +187,19 @@ EOF
 falderal -c "Echo" -f "Echo:shell command \"echo '%(test-text)'\"" test eg/echo.falderal >actual.txt
 diff -u expected.txt actual.txt
 ECL4=$?
+rm -f expected.txt actual.txt
+
+echo 'Testing functionality skipping from the command line...'
+
+cat >expected.txt <<EOF
+--------------------------------
+Total tests: 0, failures: 0
+--------------------------------
+
+EOF
+falderal test -k "Echo" eg/echo.falderal >actual.txt
+diff -u expected.txt actual.txt
+EECHO=$?
 rm -f expected.txt actual.txt
 
 echo 'Testing that Tests-for pragma needs to be specified...'

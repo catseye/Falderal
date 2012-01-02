@@ -7,6 +7,7 @@ import Test.Falderal.Loader (
                               loadFile,
                               parseFunctionality,
                               collectFunctionalityDefinitions,
+                              stripFunctionalities,
                               assignFunctionalities
                             )
 import Test.Falderal.Partitioner (
@@ -74,7 +75,7 @@ determineFunctionalitiesToClear (_:rest) =
 
 determineFunctionalitiesToSkip [] = []
 determineFunctionalitiesToSkip (SkipFunctionality name:rest) =
-    (name:determineFunctionalitiesToSkip rest)
+    ((NamedFunctionality name):determineFunctionalitiesToSkip rest)
 determineFunctionalitiesToSkip (_:rest) =
     determineFunctionalitiesToSkip rest
 
@@ -132,6 +133,18 @@ dispatch ("version":_) _ = do
 dispatch _ _ = putStrLn header
 
 --
+-- Loading a set of files
+-- NOTE: this runs each file into the last -- so only use it for formatting.
+--
+
+loadFiles [] = do
+    return ([], [])
+loadFiles (fileName:rest) = do
+    (ls, bs) <- loadFile fileName
+    (restLs, restBs) <- loadFiles rest
+    return (ls ++ restLs, bs ++ restBs)
+
+--
 -- Orchestrating the tests
 --
 
@@ -147,8 +160,8 @@ testFiles (fileName:rest) flags =
         (lines, blocks) <- loadFile fileName
         fds <- return $ collectFunctionalityDefinitions lines
         fds' <- return $ clearFuncs fds funcsToClear
-        blocks' <- return $ assignFunctionalities blocks [] (fds' ++ funcDefs)
-        blocks'' <- return $ removeFuncsToSkip blocks' funcsToSkip
+        blocks' <- return $ stripFunctionalities blocks funcsToSkip False
+        blocks'' <- return $ assignFunctionalities blocks' [] (fds' ++ funcDefs)
         [haskellBlocks, shellBlocks] <- return $ partitionTests preds blocks''
         haskellBlocks' <- testHaskell haskellBlocks flags
         shellBlocks' <- testShell shellBlocks flags
@@ -159,21 +172,10 @@ testFiles (fileName:rest) flags =
 -- Transforming tests before running them
 --
 
--- NOTE: this runs each file into the last -- not so good, defn's and such bleed
-loadFiles [] = do
-    return ([], [])
-loadFiles (fileName:rest) = do
-    (ls, bs) <- loadFile fileName
-    (restLs, restBs) <- loadFiles rest
-    return (ls ++ restLs, bs ++ restBs)
-
 clearFuncs [] names = []
 clearFuncs (def@(name,fn):rest) names
     | name `elem` names = clearFuncs rest names
     | otherwise         = (def:clearFuncs rest names)
-
-removeFuncsToSkip blocks funcsToSkip =
-    blocks
 
 --
 -- Running the tests
