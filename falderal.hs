@@ -114,21 +114,9 @@ dispatch ("format":formatName:fileNames) _ = do
 dispatch ("test":fileNames) flags =
     let
         reportFormat = determineReportFormat flags
-        verbosity = determineVerbosity flags
-        funcDefs = determineFunctionalityDefinitions flags
-        funcsToClear = determineFunctionalitiesToClear flags
-        funcsToSkip = determineFunctionalitiesToSkip flags
-        preds = [isHaskellFunctionality, isShellFunctionality]
     in do
-        (lines, blocks) <- loadFiles fileNames
-        fds <- return $ collectFunctionalityDefinitions lines
-        fds' <- return $ clearFuncs fds funcsToClear
-        blocks' <- return $ assignFunctionalities blocks [] (fds' ++ funcDefs)
-        blocks'' <- return $ removeFuncsToSkip blocks' funcsToSkip
-        [haskellBlocks, shellBlocks] <- return $ partitionTests preds blocks''
-        haskellBlocks' <- testHaskell haskellBlocks flags
-        shellBlocks' <- testShell shellBlocks flags
-        report reportFormat (haskellBlocks' ++ shellBlocks')
+        results <- testFiles fileNames flags
+        report reportFormat results
         exitWith ExitSuccess
 
 dispatch ("newlinify":fileName:_) flags = do
@@ -142,6 +130,30 @@ dispatch ("version":_) _ = do
     putStrLn "Test.Falderal version 0.6"
 
 dispatch _ _ = putStrLn header
+
+--
+-- Orchestrating the tests
+--
+
+testFiles [] flags = return []
+testFiles (fileName:rest) flags =
+    let
+        verbosity = determineVerbosity flags
+        funcDefs = determineFunctionalityDefinitions flags
+        funcsToClear = determineFunctionalitiesToClear flags
+        funcsToSkip = determineFunctionalitiesToSkip flags
+        preds = [isHaskellFunctionality, isShellFunctionality]
+    in do
+        (lines, blocks) <- loadFile fileName
+        fds <- return $ collectFunctionalityDefinitions lines
+        fds' <- return $ clearFuncs fds funcsToClear
+        blocks' <- return $ assignFunctionalities blocks [] (fds' ++ funcDefs)
+        blocks'' <- return $ removeFuncsToSkip blocks' funcsToSkip
+        [haskellBlocks, shellBlocks] <- return $ partitionTests preds blocks''
+        haskellBlocks' <- testHaskell haskellBlocks flags
+        shellBlocks' <- testShell shellBlocks flags
+        further <- testFiles rest flags
+        return (haskellBlocks' ++ shellBlocks' ++ further)
 
 --
 -- Transforming tests before running them

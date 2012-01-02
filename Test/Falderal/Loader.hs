@@ -141,12 +141,15 @@ convertLinesToBlocks [] = []
 
 assignFunctionalities :: [Block] -> [Functionality] -> [(String, Functionality)] -> [Block]
 
+assignFunctionalities ((Test 0 [] literalText testText expectation Nothing):rest) [] fnMap =
+    error "Found a test before any Tests-for was specified"
+
 assignFunctionalities ((Test 0 [] literalText testText expectation Nothing):rest) fns fnMap =
     (Test 0 fns literalText testText expectation Nothing):assignFunctionalities rest fns fnMap
 
 assignFunctionalities ((Directive (TestsFor (NamedFunctionality name))):rest) fns fnMap =
     case map (snd) $ filter (\(s,fn) -> s == name) fnMap of
-        []   -> error ("Can't find " ++ name ++ " in " ++ (show fnMap))
+        []   -> error ("Can't find functionality \"" ++ name ++ "\" in " ++ (show fnMap))
         fns' -> assignFunctionalities rest fns' fnMap
 
 assignFunctionalities ((Directive (TestsFor fn)):rest) fns fnMap =

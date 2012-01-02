@@ -1,0 +1,15 @@
+-> encoding: UTF-8
+
+This is a Falderal file with some tests in it, but no indication of what
+those tests are for.  The `falderal` tool should complain.  Also, if some
+other Falderal file is loaded before this one, the Tests-for from it should
+not bleed into this file.
+
+| These are eight words
+| that span two lines.
+= 2
+
+| These are eight words
+| that span
+| three lines.
+= 3

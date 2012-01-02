@@ -109,6 +109,15 @@ Version 0.6 "Streeterville" (unreleased, currently under development):
   with a newline, the intermediate results file was not being generated
   correctly, resulting in failures being misreported.  This has been
   recitified.
+* Previously, if there were tests given in a Falderal file before any
+  Tests-for pragma was specified, those tests would just be ignored.
+  An error message is now issued, and no testing takes place.
+* Previously, if multiple Falderal files were given on the command
+  line, they were simply concatenated when loaded, the result being
+  that Functionality-definitions from the first file were visible in
+  the second file, and that any Tests-for in effect at the end of the
+  first file would be in effect at the start of the second file.
+  Files are now loaded and processed seperately.
 
 TODO:
 

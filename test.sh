@@ -149,7 +149,7 @@ rm -f expected.txt actual.txt
 
 echo 'Testing functionality definition on command line...'
 cat >expected.txt <<EOF
-falderal: Can't find Count lines in []
+falderal: Can't find functionality "Count lines" in []
 EOF
 cd eg
 falderal test Underspecified.falderal >../actual.txt 2>&1
@@ -172,7 +172,7 @@ ECL2=$?
 rm -f expected.txt actual.txt
 
 cat >expected.txt <<EOF
-falderal: Can't find Echo in []
+falderal: Can't find functionality "Echo" in []
 EOF
 falderal -c "Echo" test eg/echo.falderal >actual.txt 2>&1
 diff -u expected.txt actual.txt
@@ -190,7 +190,31 @@ diff -u expected.txt actual.txt
 ECL4=$?
 rm -f expected.txt actual.txt
 
-if [ $EID != 0 -o $ELHS != 0 -o $EERR != 0 -o $ECL1 != 0 -o $ECL2 != 0 -o $ECL3 != 0 -o $ECL4 != 0 -o $EWC != 0 -o $EECHO != 0 ]
+echo 'Testing that Tests-for pragma needs to be specified...'
+
+cat >expected.txt <<EOF
+falderal: Found a test before any Tests-for was specified
+EOF
+falderal test eg/NoTestsSpecified.falderal >actual.txt 2>&1
+diff -u expected.txt actual.txt
+ENOTEST=$?
+rm -f expected.txt actual.txt
+
+echo 'Testing that functionalities do not bleed into successive files...'
+
+cat >expected.txt <<EOF
+falderal: Can't find functionality "Count lines" in []
+EOF
+cd eg
+falderal test wc.falderal Underspecified.falderal >../actual.txt 2>&1
+cd ..
+diff -u expected.txt actual.txt
+ENOBLEED=$?
+rm -f expected.txt actual.txt
+
+if [ $EID != 0 -o $ELHS != 0 -o $EERR != 0 -o $ECL1 != 0 -o $ECL2 != 0 -o \
+     $ECL3 != 0 -o $ECL4 != 0 -o $EWC != 0 -o $EECHO != 0 -o \
+     $ENOTEST != 0 -o $ENOBLEED != 0 ]
   then
     echo "Internal tests failed!"
     exit 1
