@@ -104,8 +104,15 @@ dispatch ("test":fileNames) flags =
         report reportFormat (haskellBlocks' ++ shellBlocks')
         exitWith ExitSuccess
 
+dispatch ("newlinify":fileName:_) flags = do
+    text <- readFile fileName
+    case last text of
+        '\n' -> putStr text
+        _ -> putStrLn text
+    exitWith ExitSuccess
+
 dispatch ("version":_) _ = do
-    putStrLn "Test.Falderal version 0.5"
+    putStrLn "Test.Falderal version 0.6"
 
 dispatch _ _ = putStrLn header
 

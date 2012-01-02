@@ -1,0 +1,37 @@
+-> encoding: UTF-8
+
+Tests for echo
+==============
+
+This Falderal document was written by Chris Pressey.  It is hereby placed in
+the public domain.
+
+This test suite is part of the Falderal internal tests.  It tests two
+things: expansion of the `%(test-text)` variable, and correctly handling
+the case where the program being tested does not end its output with
+a new line.
+
+-> Functionality "Echo" is implemented by
+-> shell command "echo -n '%(test-text)'"
+
+-> Functionality "Echo" is implemented by
+-> shell command "echo '%(test-text)'"
+
+-> Tests for functionality "Echo"
+
+Echo a single line.
+
+| This is a test.
+= This is a test.
+
+Echo multiple lines.
+
+| This is
+| a test.
+= This is
+= a test.
+
+Echo with an embedded single quote.
+
+| This isn't a test.
+= This isn't a test.

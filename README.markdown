@@ -76,7 +76,7 @@ Currently supported features of the framework are:
 History
 -------
 
-Version 0.6 "Streeterville" (currently under development):
+Version 0.6 "Streeterville" (unreleased, currently under development):
 
 * Variables may be included in the specification of a shell command
   implementation; these will be expanded before generating the results
@@ -102,10 +102,13 @@ Version 0.6 "Streeterville" (currently under development):
   scheduling by `ghc`, although really, I haven't a clue.)  Results are
   now written to different temporary files with different, generated
   names.
+* Previously, if the output of a shell command being tested did not end
+  with a newline, the intermediate results file was not being generated
+  correctly, resulting in failures being misreported.  This has been
+  recitified.
 
 TODO:
 
-* Skip blank lines at end of each block in results.  Test for missing eol.
 * Command-line option to clear functionalities.
 * Command-line option to skip tests for given functionalities.
 

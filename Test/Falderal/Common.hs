@@ -106,6 +106,10 @@ escapeHtml ('>':rest) = "&gt;" ++ escapeHtml rest
 escapeHtml ('&':rest) = "&amp;" ++ escapeHtml rest
 escapeHtml (c:cs) = c:(escapeHtml cs)
 
+escapeSingleQuotes "" = ""
+escapeSingleQuotes ('\'':rest) = "'\\''" ++ escapeSingleQuotes rest
+escapeSingleQuotes (c:cs) = c:(escapeSingleQuotes cs)
+
 formatLines formatter lines = foldl (++) "" (map (formatter) lines)
 
 pad s n = padFrom s (n-(length s))

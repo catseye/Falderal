@@ -78,7 +78,7 @@ diff -u expected.txt actual.txt
 E2=$?
 rm -f expected.txt actual.txt
 
-echo 'Testing wc.falderal (multiple impls, var exp...)'
+echo 'Testing wc.falderal (multiple impls, var exp)...'
 
 cat >expected.txt <<EOF
 --------------------------------
@@ -98,6 +98,21 @@ falderal test wc.falderal >../actual.txt
 cd ..
 diff -u expected.txt actual.txt
 EWC=$?
+rm -f expected.txt actual.txt
+
+echo 'Testing echo.falderal (test-text var, missing newline)...'
+
+cat >expected.txt <<EOF
+--------------------------------
+Total tests: 6, failures: 0
+--------------------------------
+
+EOF
+cd eg
+falderal test echo.falderal >../actual.txt
+cd ..
+diff -u expected.txt actual.txt
+EECHO=$?
 rm -f expected.txt actual.txt
 
 echo 'Testing Erroneous.falderal...'
@@ -156,7 +171,7 @@ diff -u expected.txt actual.txt
 E5=$?
 rm -f expected.txt actual.txt
 
-if [ $E1 != 0 -o $E2 != 0 -o $E3 != 0 -o $E4 != 0 -o $E5 != 0 -o $EWC != 0 ]
+if [ $E1 != 0 -o $E2 != 0 -o $E3 != 0 -o $E4 != 0 -o $E5 != 0 -o $EWC != 0 -o $EECHO != 0 ]
   then
     echo "Internal tests failed!"
     exit 1

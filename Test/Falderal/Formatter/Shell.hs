@@ -16,10 +16,10 @@ import Test.Falderal.Common
 format _ blocks =
     prelude ++ (formatBlocks blocks) ++ postlude
 
-formatBlocks (test@(Test id [(ShellTest cmd)] desc input _ _):rest) =
+formatBlocks (test@(Test id [(ShellTest cmd)] desc body _ _):rest) =
     let
-        inputHereDoc = hereDoc "input.txt" input
-        cmd' = expandCommand cmd
+        inputHereDoc = hereDoc "input.txt" body
+        cmd' = expandCommand cmd body
         formattedBlock = inputHereDoc ++ testExecution cmd' id
     in
         formattedBlock ++ "\n" ++ formatBlocks rest
@@ -47,11 +47,11 @@ postlude =
 -- TODO: capture output/errors from command, even when output variable
 -- is present
 
-expandCommand cmd =
+expandCommand cmd body =
     let
         substitutions = [
                           ("test-file", "input.txt"),
-                          ("test-text", "`cat input.txt`"),
+                          ("test-text", escapeSingleQuotes body),
                           ("output-file", "output.txt")
                         ]
         suppliedInput =
@@ -81,5 +81,7 @@ testExecution cmd id =
     \  echo \"output\"\n\
     \fi\n\
     \echo " ++ (show id) ++ "\n\
+    \falderal newlinify output.txt >output2.txt\n\
+    \mv output2.txt output.txt\n\
     \echo `wc -l output.txt`\n\
     \cat output.txt\n"
