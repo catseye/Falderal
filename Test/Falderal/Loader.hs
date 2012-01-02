@@ -1,7 +1,9 @@
 module Test.Falderal.Loader (
                               loadFile,
                               loadText,
-                              parseFunctionality
+                              parseFunctionality,
+                              collectFunctionalityDefinitions,
+                              assignFunctionalities
                             ) where
 
 --
@@ -17,9 +19,9 @@ import Test.Falderal.Common
 -- File loading functions.
 --
 
-loadFile fileName funcsToClear givenFuncDefs = do
+loadFile fileName = do
     testText <- readFile fileName
-    (ls, bs) <- return $ loadText testText funcsToClear givenFuncDefs
+    (ls, bs) <- return $ loadText testText
     return (ls, bs)
 
 --
@@ -28,25 +30,18 @@ loadFile fileName funcsToClear givenFuncDefs = do
 --
 -- Note that the lines so returned are coalesced, and contain parsed pragmas.
 --
--- SOON:
 -- Note that the blocks so returned are redescribed, but are not processed;
--- that is, named functionalities are not expanded to their underlying
--- implementations.  We leave this up to the caller.  The functions to do
--- the processing should maybe be in some module other than this one.
+-- that is, the list still contains Directives and Sections, and tests are
+-- not assigned functionalities.  We leave this up to the caller.
+-- The functions to do this should maybe be in some module other than this one.
 --
 
-loadText text funcsToClear givenFuncDefs =
+loadText text =
     let
-        ls = transformLines $ lines text
-        ls' = resolvePragmas ls
-        fds = (collectFunctionalityDefinitions ls')
-        fds' = clearFuncs fds funcsToClear
-        fds'' = fds' ++ givenFuncDefs
-        bs = convertLinesToBlocks ls'
-        bs' = assignFunctionalities bs [] fds''
-        bs'' = reDescribeBlocks bs'
+        ls = resolvePragmas $ transformLines $ lines text
+        bs = reDescribeBlocks $ convertLinesToBlocks ls
     in
-        (ls', bs'')
+        (ls, bs)
 
 transformLines ls =
     let
@@ -140,7 +135,7 @@ convertLinesToBlocks [] = []
 
 --
 -- Give each test block a functionality, expanding named functionalities to
--- concrete functionalities as needed.  Strip all Directives and Sections(?)
+-- concrete functionalities as needed.  Strip all Directives and Sections
 -- from the list of blocks.
 --
 
@@ -299,8 +294,3 @@ consumeWords (word:rest) text =
             consumeWords rest text'
         Nothing ->
             Nothing
-
-clearFuncs [] names = []
-clearFuncs (def@(name,fn):rest) names
-    | name `elem` names = clearFuncs rest names
-    | otherwise         = (def:clearFuncs rest names)

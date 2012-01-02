@@ -3,7 +3,12 @@ import System.Environment
 import System.Console.GetOpt
 
 import Test.Falderal.Common
-import Test.Falderal.Loader (loadFile, parseFunctionality)
+import Test.Falderal.Loader (
+                              loadFile,
+                              parseFunctionality,
+                              collectFunctionalityDefinitions,
+                              assignFunctionalities
+                            )
 import Test.Falderal.Partitioner (
                                    partitionTests,
                                    isHaskellFunctionality,
@@ -48,11 +53,11 @@ determineShellRunCommand [] = "sh"
 determineShellRunCommand (ShellRunCommand s:_) = s
 determineShellRunCommand (_:rest) = determineShellRunCommand rest
 
-collectFunctionalityDefinitions [] = []
-collectFunctionalityDefinitions (Functionality spec:rest) =
-    (parseFunctionalitySpec spec:collectFunctionalityDefinitions rest)
-collectFunctionalityDefinitions (_:rest) =
-    collectFunctionalityDefinitions rest
+determineFunctionalityDefinitions [] = []
+determineFunctionalityDefinitions (Functionality spec:rest) =
+    (parseFunctionalitySpec spec:determineFunctionalityDefinitions rest)
+determineFunctionalityDefinitions (_:rest) =
+    determineFunctionalityDefinitions rest
 
 parseFunctionalitySpec str =
     let
@@ -103,22 +108,24 @@ options = [
   ]
 
 dispatch ("format":formatName:fileNames) _ = do
-    (lines, blocks) <- loadFiles fileNames [] []
+    (lines, blocks) <- loadFiles fileNames
     putStr $ format formatName lines blocks
 
 dispatch ("test":fileNames) flags =
     let
         reportFormat = determineReportFormat flags
         verbosity = determineVerbosity flags
-        funcDefs = collectFunctionalityDefinitions flags
+        funcDefs = determineFunctionalityDefinitions flags
         funcsToClear = determineFunctionalitiesToClear flags
         funcsToSkip = determineFunctionalitiesToSkip flags
         preds = [isHaskellFunctionality, isShellFunctionality]
     in do
-        (lines, blocks) <- loadFiles fileNames funcsToClear funcDefs
-        --print blocks
-        blocks' <- return $ removeFuncsToSkip blocks funcsToSkip
-        [haskellBlocks, shellBlocks] <- return $ partitionTests preds blocks'
+        (lines, blocks) <- loadFiles fileNames
+        fds <- return $ collectFunctionalityDefinitions lines
+        fds' <- return $ clearFuncs fds funcsToClear
+        blocks' <- return $ assignFunctionalities blocks [] (fds' ++ funcDefs)
+        blocks'' <- return $ removeFuncsToSkip blocks' funcsToSkip
+        [haskellBlocks, shellBlocks] <- return $ partitionTests preds blocks''
         haskellBlocks' <- testHaskell haskellBlocks flags
         shellBlocks' <- testShell shellBlocks flags
         report reportFormat (haskellBlocks' ++ shellBlocks')
@@ -136,19 +143,32 @@ dispatch ("version":_) _ = do
 
 dispatch _ _ = putStrLn header
 
+--
+-- Transforming tests before running them
+--
+
+-- NOTE: this runs each file into the last -- not so good, defn's and such bleed
+loadFiles [] = do
+    return ([], [])
+loadFiles (fileName:rest) = do
+    (ls, bs) <- loadFile fileName
+    (restLs, restBs) <- loadFiles rest
+    return (ls ++ restLs, bs ++ restBs)
+
+clearFuncs [] names = []
+clearFuncs (def@(name,fn):rest) names
+    | name `elem` names = clearFuncs rest names
+    | otherwise         = (def:clearFuncs rest names)
+
+removeFuncsToSkip blocks funcsToSkip =
+    blocks
+
+--
+-- Running the tests
+--
+
 testHaskell blocks flags =
     runTests blocks "GeneratedFalderalTests.hs" "haskell" ((determineHaskellRunCommand flags) ++ " GeneratedFalderalTests.hs") (Messy `elem` flags)
 
 testShell blocks flags =
     runTests blocks "GeneratedFalderalTests.sh" "shell" ((determineShellRunCommand flags) ++ " GeneratedFalderalTests.sh") (Messy `elem` flags)
-
-removeFuncsToSkip blocks funcsToSkip =
-    blocks
-
-loadFiles [] funcsToClear givenFuncDefs = do
-    return ([], [])
-loadFiles (fileName:rest) funcsToClear givenFuncDefs = do
-    (ls, bs) <- loadFile fileName funcsToClear givenFuncDefs
-    (restLs, restBs) <- loadFiles rest funcsToClear givenFuncDefs
-    return (ls ++ restLs, bs ++ restBs)
-
