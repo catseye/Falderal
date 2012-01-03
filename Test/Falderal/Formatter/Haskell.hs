@@ -50,6 +50,7 @@ prelude blocks =
     \getKind (Right _) = \"exception\"\n\
     \getText (Left x) = x\n\
     \getText (Right x) = x\n\
+    \addTrailingNewline s = if (last s) == '\\n' then s else s ++ \"\\n\"\n\
     \report [] = do\n\
     \    return ()\n\
     \report ((-1,_,_):rest) =\n\
@@ -64,7 +65,7 @@ prelude blocks =
     \        0 -> do\n\
     \            report rest\n\
     \        _ -> do\n\
-    \            putStrLn (getText result)\n\
+    \            putStr $ addTrailingNewline $ getText result\n\
     \            report rest\n\
     \\n\
     \main = report [\n"
