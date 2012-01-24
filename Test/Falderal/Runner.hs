@@ -28,6 +28,7 @@ runTests [] _ _ _ _ = do
     return []
 runTests blocks filename formatName command messy = do
     outputFileHandle <- openFile filename WriteMode
+    hSetNewlineMode outputFileHandle noNewlineTranslation
     text <- return $ format formatName [] blocks
     hPutStr outputFileHandle text
     hClose outputFileHandle
