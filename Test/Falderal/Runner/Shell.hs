@@ -22,7 +22,8 @@ cleanRun False cmd = do
 run :: [Block] -> String -> Bool -> IO ()
 
 run blocks resultsFilename messy = do
-    system ("echo -n \"\" >" ++ resultsFilename)
+    r <- openFile resultsFilename WriteMode
+    hClose r
     runBlocks blocks resultsFilename messy
     cleanRun (not messy) "rm -f input.txt output.txt"
 
@@ -43,23 +44,27 @@ runBlock test@(Test id [(ShellTest cmd)] desc body _ _) resultsFilename messy = 
 writeOutFile filename contents = do
     outputFileHandle <- openFile filename WriteMode
     hSetNewlineMode outputFileHandle noNewlineTranslation
-    hPutStr outputFileHandle contents
+    newlinify outputFileHandle contents
     hClose outputFileHandle
 
 execute cmd resultsFilename id = do
     exitCode <- system (cmd ++ " 2>&1")
-    case exitCode of
-        ExitSuccess -> do
-            system ("echo \"output\" >>" ++ resultsFilename)
-            execute' resultsFilename id
-        ExitFailure _ -> do
-            system ("echo \"exception\" >>" ++ resultsFilename)
-            execute' resultsFilename id
-
-execute' resultsFilename id = do
-    system ("echo " ++ (show id) ++ " >>" ++ resultsFilename)
-    system ("falderal newlinify output.txt >output2.txt")
-    system ("mv output2.txt output.txt")
-    system ("echo `wc -l output.txt` >>" ++ resultsFilename)
-    system ("cat output.txt >>" ++ resultsFilename)
+    r <- openFile resultsFilename AppendMode
+    writeExitCode r exitCode
+    hSetNewlineMode r noNewlineTranslation
+    hPutStrLn r (show id)
+    text <- readFile "output.txt"
+    hPutStrLn r $ show $ length $ lines text
+    newlinify r text
+    hClose r
     return ()
+
+writeExitCode handle ExitSuccess = do
+    hPutStrLn handle "output"
+writeExitCode handle (ExitFailure _) = do
+    hPutStrLn handle "exception"
+
+newlinify handle text = do
+    case last text of
+        '\n' -> hPutStr handle text
+        _ -> hPutStrLn handle text
