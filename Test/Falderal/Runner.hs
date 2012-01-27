@@ -6,13 +6,12 @@ import System.IO
 import Test.Falderal.Common
 import Test.Falderal.Formatter (format) -- boo?
 
+import qualified Test.Falderal.Runner.Shell as Shell
+
 --
 -- Test-running engine.  This has just completely changed
 -- from what it used to be!
 --
-
-data Result = Result Int Expectation
-    deriving (Ord, Eq, Show)
 
 cleanRun True cmd = do
     system cmd
@@ -21,6 +20,19 @@ cleanRun False cmd = do
     return ()
 
 runTests :: [Block] -> String -> String -> String -> Bool -> IO [Block]
+
+--
+-- Special case for shell tests
+--
+
+{--
+runTests blocks filename "shell" command messy = do
+    (resultsFilename, handle) <- openTempFile "." "results.txt"
+    hSetNewlineMode handle noNewlineTranslation
+    Shell.run blocks handle messy
+    hClose handle
+    processResultsFile blocks filename resultsFilename messy
+--}
 
 -- TODO: what to do with exitCode?
 
@@ -35,8 +47,11 @@ runTests blocks filename formatName command messy = do
     (resultsFilename, h) <- openTempFile "." "results.txt"
     hClose h
     exitCode <- system (command ++ " >" ++ resultsFilename)
+    processResultsFile blocks filename resultsFilename messy
+
+processResultsFile blocks filename resultsFilename messy = do
     contents <- readFile resultsFilename
-    results <- return $ collectResults $ lines $ contents
+    let results = collectResults $ lines $ contents
     cleanRun (not messy) ("rm -f " ++ filename)
     cleanRun (not messy) ("rm -f " ++ resultsFilename)
     return $ decorateTestsWithResults blocks results

@@ -40,6 +40,7 @@ executable falderal
                   Test.Falderal.Loader
                   Test.Falderal.Partitioner
                   Test.Falderal.Runner
+                  Test.Falderal.Runner.Shell
                   Test.Falderal.Formatter
                   Test.Falderal.Reporter.Standard
 

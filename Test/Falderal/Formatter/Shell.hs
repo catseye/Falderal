@@ -1,4 +1,4 @@
-module Test.Falderal.Formatter.Shell (format) where
+module Test.Falderal.Formatter.Shell (format, expandCommand) where
 
 --
 -- Test.Falderal.Formatter.Shell -- Bourne shell script compiler for Falderal

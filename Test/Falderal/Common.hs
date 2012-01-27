@@ -65,6 +65,9 @@ data Block = Section String
            | Test Int [Functionality] String String Expectation (Maybe Expectation)
            deriving (Show, Eq, Ord)
 
+data Result = Result Int Expectation
+    deriving (Ord, Eq, Show)
+
 --
 -- Common functions.
 --
