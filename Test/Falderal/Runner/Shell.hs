@@ -19,25 +19,26 @@ cleanRun False cmd = do
     return ()
 
 
-run :: [Block] -> Handle -> Bool -> IO ()
+run :: [Block] -> String -> Bool -> IO ()
 
-run blocks handle messy = do
-    runBlocks blocks handle messy
+run blocks resultsFilename messy = do
+    system ("echo -n \"\" >" ++ resultsFilename)
+    runBlocks blocks resultsFilename messy
     cleanRun (not messy) "rm -f input.txt output.txt"
 
-runBlocks :: [Block] -> Handle -> Bool -> IO ()
+runBlocks :: [Block] -> String -> Bool -> IO ()
 
 runBlocks [] _ _ = do
     return ()
-runBlocks (block:blocks) handle messy = do
-    result <- runBlock block handle messy
-    runBlocks blocks handle messy
+runBlocks (block:blocks) resultsFilename messy = do
+    result <- runBlock block resultsFilename messy
+    runBlocks blocks resultsFilename messy
 
-runBlock :: Block -> Handle -> Bool -> IO ()
+runBlock :: Block -> String -> Bool -> IO ()
 
-runBlock test@(Test id [(ShellTest cmd)] desc body _ _) handle messy = do
+runBlock test@(Test id [(ShellTest cmd)] desc body _ _) resultsFilename messy = do
     writeOutFile "input.txt" body
-    execute (expandCommand cmd body) handle
+    execute (expandCommand cmd body) resultsFilename id
 
 writeOutFile filename contents = do
     outputFileHandle <- openFile filename WriteMode
@@ -45,22 +46,20 @@ writeOutFile filename contents = do
     hPutStr outputFileHandle contents
     hClose outputFileHandle
 
-execute cmd handle = do
+execute cmd resultsFilename id = do
+    exitCode <- system (cmd ++ " 2>&1")
+    case exitCode of
+        ExitSuccess -> do
+            system ("echo \"output\" >>" ++ resultsFilename)
+            execute' resultsFilename id
+        ExitFailure _ -> do
+            system ("echo \"exception\" >>" ++ resultsFilename)
+            execute' resultsFilename id
+
+execute' resultsFilename id = do
+    system ("echo " ++ (show id) ++ " >>" ++ resultsFilename)
+    system ("falderal newlinify output.txt >output2.txt")
+    system ("mv output2.txt output.txt")
+    system ("echo `wc -l output.txt` >>" ++ resultsFilename)
+    system ("cat output.txt >>" ++ resultsFilename)
     return ()
-
-{--
-
-testExecution cmd id =
-    cmd ++ " 2>&1\n\
-    \if [ $? != 0 ]; then\n\
-    \  echo \"exception\"\n\
-    \else\n\
-    \  echo \"output\"\n\
-    \fi\n\
-    \echo " ++ (show id) ++ "\n\
-    \falderal newlinify output.txt >output2.txt\n\
-    \mv output2.txt output.txt\n\
-    \echo `wc -l output.txt`\n\
-    \cat output.txt\n"
-
---}

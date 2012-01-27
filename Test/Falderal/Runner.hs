@@ -25,14 +25,12 @@ runTests :: [Block] -> String -> String -> String -> Bool -> IO [Block]
 -- Special case for shell tests
 --
 
-{--
 runTests blocks filename "shell" command messy = do
     (resultsFilename, handle) <- openTempFile "." "results.txt"
-    hSetNewlineMode handle noNewlineTranslation
-    Shell.run blocks handle messy
     hClose handle
+    hSetNewlineMode handle noNewlineTranslation
+    Shell.run blocks resultsFilename messy
     processResultsFile blocks filename resultsFilename messy
---}
 
 -- TODO: what to do with exitCode?
 
