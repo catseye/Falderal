@@ -77,6 +77,13 @@ Currently supported features of the framework are:
 History
 -------
 
+Version 0.7 "Ogden Avenue" (current version under development):
+
+* Addition of `-b` command-line option, which considers a test to
+  have passed if the expected exception message is a substring (rather
+  than an exact match) of the actual produced exception message.
+  TODO: write test for this.
+
 Version 0.6 "Streeterville" (current released version):
 
 * Variables may be included in the specification of a shell command

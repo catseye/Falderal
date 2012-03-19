@@ -1,3 +1,5 @@
+import Data.List (isInfixOf)
+
 import System
 import System.Environment
 import System.Console.GetOpt
@@ -35,6 +37,7 @@ data Flag = ReportFormat String
           | Functionality String
           | ClearFunctionality String
           | SkipFunctionality String
+          | SubstringException
           | Messy
     deriving (Show, Ord, Eq)
 
@@ -98,6 +101,7 @@ header = "Usage: falderal <command> [<option>...] <filename.falderal>...\n\
 
 options :: [OptDescr Flag]
 options = [
+    Option ['b'] ["substring-exception"] (NoArg SubstringException) "match expected exceptions as substrings (default: no)",
     Option ['c'] ["clear-functionality"] (ReqArg ClearFunctionality "NAME") "clear all implementations of a named functionality",
     Option ['f'] ["functionality"] (ReqArg Functionality "SPEC") "specify additional implementation of a named functionality",
     Option ['h'] ["haskell-command"] (ReqArg HaskellRunCommand "CMD") "command to run Haskell tests (default: 'runhaskell')",
@@ -117,7 +121,8 @@ dispatch ("test":fileNames) flags =
         reportFormat = determineReportFormat flags
     in do
         results <- testFiles fileNames flags
-        report reportFormat results
+        let failures = determineFailures results (SubstringException `elem` flags)
+        report reportFormat results failures
         exitWith ExitSuccess
 
 dispatch ("newlinify":fileName:_) flags = do
@@ -186,3 +191,17 @@ testHaskell blocks flags =
 
 testShell blocks flags =
     runTests blocks "GeneratedFalderalTests.sh" "shell" ((determineShellRunCommand flags) ++ " GeneratedFalderalTests.sh") (Messy `elem` flags)
+
+--
+-- Determining the failures
+--
+
+determineFailures blocks substrExc =
+    filter (isFailingTest substrExc) blocks
+
+isFailingTest True (Test _ _ _ _ (Exception x) (Just (Exception y))) =
+    if y `isInfixOf` y then False else True
+isFailingTest _ (Test _ _ _ _ x (Just y)) =
+    if x == y then False else True
+isFailingTest _ _ =
+    True

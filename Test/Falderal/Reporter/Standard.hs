@@ -6,18 +6,17 @@ module Test.Falderal.Reporter.Standard (report) where
 
 import Test.Falderal.Common
 
-report blocks = let
+report blocks failures = let
         numTests = length (filter (isTest) blocks)
-        failures = filter (isFailingTest) blocks
     in do
+        reportEachFailingTest failures
         putStrLn "--------------------------------"
         putStrLn ("Total tests: " ++ (show numTests) ++ ", failures: " ++ (show (length failures)))
         putStrLn "--------------------------------\n"
-        reportEachTest failures
 
-reportEachTest [] = do
+reportEachFailingTest [] = do
     return ()
-reportEachTest (Test id fns literalText testText expected (Just actual):rest) = do
+reportEachFailingTest (Test id fns literalText testText expected (Just actual):rest) = do
     reportText 8 "FAILED"   (stripLeading '\n' (stripTrailing '\n' literalText))
     putStrLn ""
     reportText 8 "Impl"     (show fn)
@@ -25,16 +24,16 @@ reportEachTest (Test id fns literalText testText expected (Just actual):rest) = 
     reportText 8 "Expected" (show expected)
     reportText 8 "Actual"   (show actual)
     putStrLn ""
-    reportEachTest rest
+    reportEachFailingTest rest
     where [fn] = fns
-reportEachTest (Test id fns literalText testText expected Nothing:rest) = do
+reportEachFailingTest (Test id fns literalText testText expected Nothing:rest) = do
     reportText 8 "NOT RUN"  (stripLeading '\n' (stripTrailing '\n' literalText))
     putStrLn ""
     reportText 8 "Impl"     (show fn)
     reportText 8 "Input"    testText
     reportText 8 "Expected" (show expected)
     putStrLn ""
-    reportEachTest rest
+    reportEachFailingTest rest
     where [fn] = fns
 
 reportText width fieldName text =
@@ -48,6 +47,3 @@ reportText width fieldName text =
 
 isTest (Test _ _ _ _ _ _) = True
 isTest _ = False
-
-isFailingTest (Test _ _ _ _ x (Just y)) = if x == y then False else True
-isFailingTest _ = True

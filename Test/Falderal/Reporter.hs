@@ -16,7 +16,7 @@ import qualified Test.Falderal.Reporter.Standard as Standard
 
 getReporter "standard" = Standard.report
 
-report :: String -> [Block] -> IO ()
+report :: String -> [Block] -> [Block] -> IO ()
 
-report format blocks =
-    (getReporter format) blocks
+report format blocks failures =
+    (getReporter format) blocks failures

@@ -74,12 +74,12 @@ collectResults (idStr:rest) =
     in
         ((Result id (Output "")):collectResults rest)
 
-decorateTestsWithResults [] fails = []
-decorateTestsWithResults (t@(Test testId fns literalText testText expected _):tests) fails =
-    case filter (\(Result resultId _) -> resultId == testId) fails of
+decorateTestsWithResults [] results = []
+decorateTestsWithResults (t@(Test testId fns literalText testText expected _):tests) results =
+    case filter (\(Result resultId _) -> resultId == testId) results of
         [(Result _ result)] ->
-            (Test testId fns literalText testText expected (Just result)):decorateTestsWithResults tests fails
+            (Test testId fns literalText testText expected (Just result)):decorateTestsWithResults tests results
         _ ->
-            (t:decorateTestsWithResults tests fails)
-decorateTestsWithResults (test:tests) fails =
-    (test:decorateTestsWithResults tests fails)
+            (t:decorateTestsWithResults tests results)
+decorateTestsWithResults (test:tests) results =
+    (test:decorateTestsWithResults tests results)
