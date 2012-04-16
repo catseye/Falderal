@@ -200,7 +200,7 @@ determineFailures blocks substrExc =
     filter (isFailingTest substrExc) blocks
 
 isFailingTest True (Test _ _ _ _ (Exception x) (Just (Exception y))) =
-    if y `isInfixOf` y then False else True
+    if x `isInfixOf` y then False else True
 isFailingTest _ (Test _ _ _ _ x (Just y)) =
     if x == y then False else True
 isFailingTest _ _ =
