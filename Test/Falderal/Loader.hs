@@ -57,6 +57,7 @@ stripPlaceholders (Placeholder:rest) = stripPlaceholders rest
 stripPlaceholders (other:rest) = other:(stripPlaceholders rest)
 
 classifyLine line
+    | indent == "    " = classifyLine unindentedLine
     | prefix == "| " = TestInput suffix
     | prefix == "= " = ExpectedResult suffix
     | prefix == "? " = ExpectedError suffix
@@ -66,6 +67,8 @@ classifyLine line
     where
         prefix = take 2 line
         suffix = drop 2 line
+        indent = take 4 line
+        unindentedLine = drop 4 line
 
 findSectionHeadings [] last =
     [last]
