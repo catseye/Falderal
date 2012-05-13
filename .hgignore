@@ -1,0 +1,8 @@
+syntax: regexp
+
+^bin/
+
+syntax: glob
+
+*.o
+*.hi
