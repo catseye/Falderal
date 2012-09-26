@@ -1,7 +1,7 @@
 import Data.List (isInfixOf)
 
-import System
 import System.Environment
+import System.Exit
 import System.Console.GetOpt
 
 import Test.Falderal.Common

@@ -1,6 +1,6 @@
 module Test.Falderal.Runner (runTests) where
 
-import System
+import System.Cmd
 import System.IO
 
 import Test.Falderal.Common

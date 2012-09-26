@@ -4,7 +4,8 @@ module Test.Falderal.Runner.Shell (run) where
 -- Test.Falderal.Run.Shell -- Run shell tests directly from falderal
 --
 
-import System
+import System.Cmd
+import System.Exit
 import System.IO
 
 import Test.Falderal.Common

@@ -12,7 +12,6 @@ module Test.Falderal.Loader (
 --
 
 import Data.List
-import System
 
 import Test.Falderal.Common
 

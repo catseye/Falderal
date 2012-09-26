@@ -8,7 +8,7 @@ category:        Testing
 author:          Chris Pressey <cpressey@gmail.com>
 maintainer:      Chris Pressey <cpressey@gmail.com>
 stability:       alpha
-tested-with:     GHC == 6.12.1
+tested-with:     GHC == 7.4.1
 synopsis:        Framework for running and formatting literate test suites
 homepage:        http://catseye.tc/projects/falderal/
 bug-reports:     https://bitbucket.org/catseye/falderal/issues
@@ -20,7 +20,7 @@ description:
     written in Haskell, of tools for formatting and running Falderal tests.
 
 library
-  build-depends: base >= 4.0, haskell98
+  build-depends:   base >= 4.0, process >= 1.1
   exposed-modules: Test.Falderal.Runner
                    Test.Falderal.Common
                    Test.Falderal.Loader
@@ -35,7 +35,7 @@ library
 
 executable falderal
   main-is:        falderal.hs
-  build-depends:  base >= 4.0, haskell98
+  build-depends:  base >= 4.0, process >= 1.1
   other-modules:  Test.Falderal.Common
                   Test.Falderal.Loader
                   Test.Falderal.Partitioner

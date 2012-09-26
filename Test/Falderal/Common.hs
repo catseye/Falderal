@@ -4,7 +4,7 @@ module Test.Falderal.Common where
 -- Test.Falderal.Common -- Common data def'n and functions for Falderal
 --
 
-import qualified Char
+import qualified Data.Char as Char
 
 --
 -- Definitions for the structure of a test suite in Falderal format.
