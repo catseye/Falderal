@@ -44,7 +44,7 @@ Features
 
 The current version of Falderal is described in the [Falderal Literate Test
 Format](docs/Falderal_Literate_Test_Format.markdown).  The current version
-of `Test.Falderal` is 0.6 "Streeterville".  Neither the file format
+of `Test.Falderal` is 0.7 "Ogden Avenue".  Neither the file format
 specification, nor the `Test.Falderal` API, should be expected to be stable
 through the 0.x series.
 
@@ -79,10 +79,19 @@ History
 
 Version 0.7 "Ogden Avenue" (current version under development):
 
+* Fixed a bug where number of lines in the intermediary results file
+  was sometimes being counted incorrect.
+* Slightly improved support for running under Cygwin.
+* Tests that are implemented by a shell command are now run directly
+  from the `falderal` process (instead of creating an intermediary
+  shell script and running it.)  This resulted in better performance.
 * Addition of `-b` command-line option, which considers a test to
   have passed if the expected exception message is a substring (rather
   than an exact match) of the actual produced exception message.
   TODO: write test for this.
+* Blocks may now be indented four spaces, to allow them to be
+  embedded directly in Markdown files as pre-formatted text.
+* A script to just build the binary, without installing it, was added.
 
 Version 0.6 "Streeterville" (current released version):
 
