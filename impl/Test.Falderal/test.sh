@@ -5,7 +5,7 @@
 # installed via Cabal first:
 # $ cabal clean && cabal install --prefix=$HOME --user
 
-FALDERAL=$HOME/bin/falderal
+FALDERAL=`pwd`/bin/falderal
 
 echo 'Testing formatting...'
 
