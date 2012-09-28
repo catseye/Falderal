@@ -77,8 +77,14 @@ Currently supported features of the framework are:
 History
 -------
 
-Version 0.7 "Ogden Avenue" (current version under development):
+Version 0.7 "Ogden Avenue" (current released version):
 
+* **Note that this is the final version of Falderal where `Test.Falderal`
+  is the reference implementation.**  In subsequent versions,
+  `py-falderal` (written in Python) will be the reference implementation.
+  `Test.Falderal` will still be in this repository (under the `impl`
+  directory) but will no longer be definitive, and will go essentially
+  unmaintained.
 * Fixed a bug where number of lines in the intermediary results file
   was sometimes being counted incorrect.
 * Slightly improved support for running under Cygwin.
@@ -93,7 +99,7 @@ Version 0.7 "Ogden Avenue" (current version under development):
   embedded directly in Markdown files as pre-formatted text.
 * A script to just build the binary, without installing it, was added.
 
-Version 0.6 "Streeterville" (current released version):
+Version 0.6 "Streeterville":
 
 * Variables may be included in the specification of a shell command
   implementation; these will be expanded before generating the results

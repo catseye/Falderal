@@ -6,8 +6,8 @@ This document describes the proposed Falderal Literate Test Format.
 Status
 ======
 
-This document is a *draft*.  It is nominally "version 0.6" because it
-describes something that version 0.6 of `Test.Falderal` mostly implements.
+This document is a *draft*.  It is nominally "version 0.7" because it
+describes something that version 0.7 of `Test.Falderal` mostly implements.
 We will deign to note which sections of this document the current released
 version of `Test.Falderal` implements, and which it does not.  However,
 this document is a work in progress, subject to change, and subject to get

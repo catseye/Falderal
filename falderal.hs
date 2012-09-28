@@ -133,7 +133,7 @@ dispatch ("newlinify":fileName:_) flags = do
     exitWith ExitSuccess
 
 dispatch ("version":_) _ = do
-    putStrLn "Test.Falderal version 0.6"
+    putStrLn "Test.Falderal version 0.7"
 
 dispatch _ _ = putStrLn header
 
