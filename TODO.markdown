@@ -109,6 +109,9 @@ to `cd` into that directory before running the tests. Add an option to
 the user invoke `falderal` from any location they like, so long as the
 Falderal document is in the right place.
 
+(This was written against Test.Falderal but similar considerations could
+be made for py-falderal.)
+
 ### Show filenames and implementations in standard failure report
 
 2011-12-11
@@ -124,3 +127,40 @@ each error.
 
 Currently, in `convertLinesToBlocks`, some invalid sequences of lines are
 ignored. They should be flagged as errors in the test suite file.
+
+### Understand Windows paths in shell command implementations
+
+2012-05-13
+
+On Windows, `ghc` is compiled with the Windows-like understanding of paths,
+which encompasses backslashes, but not forward slashes. Thus, if `falderal`
+is compiled with that `ghc`, it will not understand it when you say
+`is implemented by shell command "./bin/foo.sh"`.
+
+`falderal` should be able to say to itself, "oh, I'm running on Windows", and
+at least convert those `/`'s to `\`'s.
+
+(This was written against Test.Falderal but py-falderal should at least be
+tested on Windows Python.)
+
+### Haskell exceptions sometimes not caught correctly
+
+2011-10-18
+
+For example, you might have a function which in some cases evaluates to
+error "undefined term". Your test for this function might look like
+
+    | 71k
+    ? undefined term
+
+But the generated Haskell program which runs the tests won't recognize
+that correctly, and output:
+
+    Input:
+    71k
+    Expected: Exception "undefined term"
+    <interactive>: undefined term
+
+2012-05-13: Root cause is known: evaluation must be both strict *and* deep,
+in order to catch exceptions thrown during recursion. Possible solution is to
+use `show` as a "poor man's deepseq" to force deep evaluation.
