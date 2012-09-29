@@ -1,0 +1,25 @@
+FAILED  : 
+
+Cat dogs, too. (Intentional fail.)
+
+Impl    : shell command "python cat.py"
+Input   : n ← ★
+Expected: output:
+m ← ★
+Actual  : output:
+n ← ★
+
+FAILED  : 
+
+Cat (file) dogs, too. (Intentional fail.)
+
+Impl    : shell command "python cat.py -f %(test-file) -o %(output-file)"
+Input   : n ← ★
+Expected: output:
+m ← ★
+Actual  : output:
+n ← ★
+
+--------------------------------
+Total test runs: 4, failures: 2
+--------------------------------

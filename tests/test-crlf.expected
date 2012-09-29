@@ -1,0 +1,17 @@
+FAILED  : 
+
+No CRLFs in test report (Intentional fail.)
+
+Impl    : shell command "python crlf.py"
+Input   : 
+one
+two
+Expected: output:
+three
+Actual  : output:
+one
+two
+
+--------------------------------
+Total test runs: 2, failures: 1
+--------------------------------

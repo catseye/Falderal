@@ -1,0 +1,32 @@
+FAILED  : 
+
+Cat dogs, too. (Intentional fail.)
+
+Impl    : shell command "python cat.py"
+Input   : meow
+Expected: output:
+woof
+Actual  : output:
+meow
+
+FAILED  : 
+
+Cat dogs, too. (Intentional fail.)
+
+Impl    : shell command "python cat.py"
+Input   : 
+purr
+prrr
+prreow
+Expected: output:
+woof
+woof
+awoooo
+Actual  : output:
+purr
+prrr
+prreow
+
+--------------------------------
+Total test runs: 4, failures: 2
+--------------------------------
