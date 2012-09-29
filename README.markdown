@@ -243,8 +243,48 @@ Official release distfiles are available on the
 [Falderal project page](http://catseye.tc/projects/falderal/) at
 [Cat's Eye Technologies](http://catseye.tc/).
 
-For Further Information
------------------------
+Contents of the Wiki
+--------------------
 
-Please see the [Falderal wiki](https://bitbucket.org/catseye/falderal/wiki/)
-on Bitbucket.
+(This will be rewritten at some point)
+
+### Falderal ###
+
+Welcome to the Falderal wiki!  We've pared it down recently, as there's no
+sense in maintaining multiple copies of the documentation.
+
+### Installation ###
+
+The current released version of `Test.Falderal` is **0.7 "Ogden Avenue"**.
+To install:
+
+    hg clone https://bitbucket.org/catseye/falderal/
+
+Then put `falderal/bin` on your `$PATH`.
+
+### Documentation ###
+
+* For a basic introduction to what Falderal is and why, and version history, see the
+[[https://bitbucket.org/catseye/falderal/src/tip/README.markdown|README]].
+* To quickly get started using Faderal, see the
+[[https://bitbucket.org/catseye/falderal/src/tip/doc/Quick_Start.markdown|Quick Start document]].
+* For a description of the Falderal Literate Test Format, see the
+[[https://bitbucket.org/catseye/falderal/src/tip/doc/Falderal_Literate_Test_Format.markdown|Falderal Literate Test Format document]].
+* For some insight into how {{{Test.Falderal}}} implements Falderal, see the [[https://bitbucket.org/catseye/falderal/src/tip/doc/Theory_of_Operation.markdown|Theory of Operation document]].
+
+== Projects using Falderal ==
+
+Actually, I'm sure this information can be extracted from Chrysoberyl
+somehow, so TODO just link to that here.
+
+* [[http://catseye.tc/projects/flobnar/|The Flobnar Programming Language]] (Haskell)
+* [[http://catseye.tc/projects/iphi/|The Iphigeneia Programming Language]] (Haskell)
+* [[http://catseye.tc/projects/madison/|The Madison Proof-Checking Language]] (TDLD)
+* [[http://catseye.tc/projects/pail/|The Pail Programming Language]] (Haskell)
+* [[https://bitbucket.org/catseye/pixley/|The Pixley Programming Language]] (Pixley, Scheme)
+* [[https://bitbucket.org/catseye/pl-goto-.net/|PL-{GOTO}.NET]] (Haskell)
+* [[https://bitbucket.org/catseye/robin/|The Robin Programming Language]] (Haskell)
+* [[http://catseye.tc/projects/quylthulg/|The Quylthulg Programming Language]] (Haskell)
+* [[http://catseye.tc/projects/xoomonk/|The Xoomonk Programming Language]] (TDLD)
+
+Pail, Xoomonk, and Madison are better examples of how a literate test suite can be useful in both describing a programming language through examples and testing that an implementation of the language does not violate the language specification.  Xoomonk and Madison, in fact, are experiments in //test-driven language design// (TDLD), where the tests were written as part of designing the language, before any attempt at implementation; the others are more like traditional test suites.
