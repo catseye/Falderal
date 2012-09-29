@@ -1,6 +1,10 @@
 History
 =======
 
+Version 0.8-pre "Ukranian Village" (current development version):
+
+* The reference implementation is now `py-falderal`.
+
 Version 0.7 "Ogden Avenue" (current released version):
 
 * **Note that this is the final version of Falderal where `Test.Falderal`
@@ -147,7 +151,14 @@ Version 0.1 "Haymarket Square":
 
 Prehistory:
 
-* Falderal started life as a Haskell-specific hack that could be embedded
-  in a Bird-style Literate Haskell source file.  I took a framework for
-  literate tests I had already written in a project called _Rho_, and used it
-  as the basis of this code.
+Falderal started life as a Haskell-specific hack that could be embedded
+in a Bird-style Literate Haskell source file.  I took a framework for
+literate tests I had already written in a project called _Rho_, and used it
+as the basis of this code.
+
+I wrote it because I was designing yet another esoteric programming
+language, and while working on it I realized I was rebuilding yet another
+ad-hoc unit test suite, like I had done a half-dozen times before.  I didn't
+want to keep doing this for every language I designed, and I realized that
+literate test suites could serve as documentation as well; the result was
+Falderal.
