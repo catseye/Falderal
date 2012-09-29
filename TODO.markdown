@@ -7,6 +7,63 @@ TODO
 Falderal Literate Test Format
 -----------------------------
 
+### Support specifying input to tests
+
+2011-10-13
+
+Since Falderal is shaping up to be (good at being) a test framework for
+languages, often, each test presents an example program in the language
+being tested. And guess what, some programs don't just produce output,
+they take input, too. It would be really handy, then, to be able to specify
+some input to provide to a test when it is run. This could be specified in a
+block after the test contents block, with its own introducer. Example with
+a simple Scheme-like language:
+
+    | (* 5 (read))
+    : 100
+    = 500
+
+The same test block could be re-used with multiple input blocks.
+
+    | (* 5 (read))
+    : 100
+    = 500
+
+    : 5
+    = 25
+
+How to actually implement this might take some thinking. For shell commands,
+different `%test` and `%input` variables could be used, like
+
+    shell command "myinterp %test <%input >%output"
+
+For Haskell functions, the obvious thing is to have the function be
+`String -> String -> String`, but do we insist all Haskell functions to be
+tested have that signature even if they don't have separate input, or do we
+have a different pragma to indicate "with input", or...?
+
+### Allow expectations to be transformed during comparison
+
+2011-11-08
+
+It would be nice to allow expectations to be transformed before they are
+compared to the actual output. The main use case for this that I can think of
+is to allow the expected output to be "pretty printed" (that is, nicely
+formatted) in the Falderal file, while the functionality being tested just
+produces a dump. The nicely formatted expected output should be "crunched"
+into the same ugly format as the dump.
+
+This doesn't work as well the other way; although one could compose the
+functionality being tested with an actual pretty-printer, that would
+prescribe a certain indentation scheme etc. that the expected output would
+have to match exactly. It would be rather better if the writer of the tests
+could format their expected output as they find most aesthetically pleasing
+in their literate tests, and have that be transformed instead.
+
+This might be somewhat tricky, however; if the transformation applied is
+too powerful, it can distort or eliminate the meaning of the test, and erode
+confidence.
+
 ### Allow use of patterns in expected output
 
 2011-05-17
@@ -35,7 +92,24 @@ Syntax for an equivalency test might look like this:
 Test.Falderal
 -------------
 
-### Show filenames and implementations in standard failure report ###
+### Support cd'ing to directory containing Falderal file before running tests
+
+2011-12-01
+
+For Falderal files which specify implementations of functionalities by shell
+commands, it is useful for them to be able to locate the shell command
+they want to run. If it is not on the search path, the directory in which
+`falderal` is invoked is used as the directory on which relative paths are
+based.
+
+This is less useful than using the directory that the Falderal file is in,
+as the directory on which relative paths are based. So, it would be useful
+to `cd` into that directory before running the tests. Add an option to
+`falderal` to do this automatically, or maybe by default. This would let
+the user invoke `falderal` from any location they like, so long as the
+Falderal document is in the right place.
+
+### Show filenames and implementations in standard failure report
 
 2011-12-11
 
@@ -44,7 +118,7 @@ Falderal document filename(s) in the summary, the relevant source filename
 in each error, and the implementation used to test the functionality in
 each error.
 
-### Flag invalid sequences of lines as errors ###
+### Flag invalid sequences of lines as errors
 
 2011-08-05
 
