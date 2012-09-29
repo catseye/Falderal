@@ -1,8 +1,8 @@
 TODO
 ====
 
-(collected from the [Falderal issue tracker on Bitbucket][] and the
-[py-falderal issue tracker on github][])
+(collected from the Falderal issue tracker on Bitbucket and the
+py-falderal issue tracker on github)
 
 Falderal Literate Test Format
 -----------------------------
@@ -87,6 +87,119 @@ Syntax for an equivalency test might look like this:
     | 3+1
     ==
     | 7-3
+
+
+py-falderal
+-----------
+
+### Policy and/or options for looking at stdout and stderr
+
+When you have a program that produces output on both stdout and stderr,
+whether it fails or not, you might want to expect text on both stdout and
+stderr.
+
+Currently it expects the text on stdout if it is a `=` expectation, and on
+stderr if it is a `?` expectation.
+
+You can't work around this so well by tacking `2>&1` onto the end of the
+command, because then stderr will always be empty.
+
+We could, by default, tack `2>&1` on the end ourselves and look only at
+stdout.  This might be the simplest approach.
+
+We might want to add options that avoid doing that, but if so, what should
+they be?  Should each test be able to configure this?  Should a single test
+be able to have both `=` and `?` expectations, each for each stream?
+
+This is complicated by the presence of `%(output-file)`; currently, if that
+is given, stdout is ignored in preference to it (but stderr is still
+checked, if the command failed.  There should probably be a corresponding
+`%(error-file)` variable.)
+
+I think the current behaviour could work, with the following policy:
+
+If the command succeeds, your `=` expectation will be matched against
+stdout only.  If you wish to match against both stdout and stderr in these
+cases, add `2>&1` to your shell command.
+
+If the command fails, your `?` expectation will be matched against stderr
+only.  If you wish to match against both stdout and stderr in these cases,
+add `1>&2` to your shell command.
+
+Either way, it's still worth investigating whether it's worthwhile to have
+both `=` and `?` expectations on a single test.  (I can't convince myself
+that stdout and stderr will always be combined deterministically, and
+having both kinds of expectations would allow non-deterministic combinations
+of the two to be matched.)
+
+### lint test documents by default
+
+Unless some command line option is given (call it `--cavalier`, maybe,) if
+any of the following is true, we should abort quickly with an error message:
+
+-   Parsing the given documents resulted in no tests.  (This is implied by:
+    there were no documents given.)
+-   For one or more functionalities, there were no implementations specified.
+
+### catch KeyboardInterrupt, report on all results so far
+
+When a test suite takes a long time to run, it would be very nice if
+interrupting it with `^C` were to show a report of all the tests that did
+manage to run, plus a count of how many were not run.
+
+### Split InterveningMarkdown blocks to make nice test descriptions
+
+For example, if we have
+
+    ...test #1...
+    Some text.
+    Heading
+    -------
+    More text
+    ...test #2...
+
+The description for test #2 should consist of "More text"; possibly also
+the heading, but not "Some text".  This can take place in a pre-processing
+phase which simply splits every `InterveningMarkdown` block into multiple
+blocks, at its headers.  It should understand both underlined and atx-style
+headers.
+
+### Display functionality, filename, line number, in each test result
+
+### permit UTF-8 encoded input to Haskell function-implemented tests
+
+Falderal test documents are assumed to be UTF-8 encoded Markdown.
+
+`py-falderal` runs "Haskell function"-implemented tests with a little `ghc`
+hack that uses `readFile`.
+
+But `readFile` on modern Haskell doesn't, by itself, understand UTF-8.
+
+`py-falderal`'s little hack in this regard could use improvement.
+
+No, it seems this is nothing to do with `py-falderal`, but rather, some
+change to the version of Haskell supported by the `ghc` bundled with the
+Haskell Platform.  Closing as invalid.
+
+So, the problem *actually* seems to be that Haskell's `readFile`, by
+itself, doesn't know how to read UTF-8 files.  `readFile` is used in
+`py-falderal`'s "implemented by Haskell function" support (hack).  Which
+means that tests containing UTF-8 can't be run with this implementation
+support (hack) right now.
+
+### option to colourize test result output
+
+Using one of the approaches listed here:
+
+http://stackoverflow.com/questions/287871/print-in-terminal-with-colors-using-python
+
+...py-falderal ought to provide an option (not default, of course, and not
+if stdout is not a tty) to colorize the output with, of course, pass=green,
+fail=red.
+
+OTOH, you'd often want to pipe the output to less, which will disable
+colourization anyway, on the tty check.  So maybe look at how `cdiff` allows
+colourized text to be paged, first.
 
 
 Test.Falderal
