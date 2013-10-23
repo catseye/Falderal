@@ -31,6 +31,10 @@ def main(args):
     parser.add_option("-t", "--test",
                       action="store_true", default=False,
                       help="run internal tests and exit")
+    parser.add_option("-v", "--verbose",
+                      action="store_true", default=False,
+                      help="run verbosely (currently only affects internal "
+                           "tests)")
 
     (options, args) = parser.parse_args(args[1:])
 
