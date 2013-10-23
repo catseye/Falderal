@@ -22,7 +22,8 @@ def main(args):
                            "Format of the argument is a colon-seperated "
                            "list of functionality names.")
     parser.add_option("-d", "--dump",
-                      action="store_true", default=False)
+                      action="store_true", default=False,
+                      help="print out info about parsed tests, don't run them")
     parser.add_option("-f", "--functionalities",
                       metavar="SPEC",
                       help="specify implementations of functionalies, "
@@ -33,8 +34,7 @@ def main(args):
                       help="run internal tests and exit")
     parser.add_option("-v", "--verbose",
                       action="store_true", default=False,
-                      help="run verbosely (currently only affects internal "
-                           "tests)")
+                      help="print out info about each test as it is run")
 
     (options, args) = parser.parse_args(args[1:])
 
@@ -96,10 +96,13 @@ def test_documents(options, args):
         print "Tests:"
         for test in tests:
             print "  " + str(test)
+        return 0
 
     # run tests
     results = []
     for test in tests:
+        if options.verbose:
+            print str(test)
         results += test.run(options=options)
 
     # report on results

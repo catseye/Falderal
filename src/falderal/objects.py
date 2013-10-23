@@ -160,6 +160,14 @@ class Block(object):
         self.line_num = line_num
         self.filename = filename
 
+    def __repr__(self):
+        return "%s(%r, line_num=%r, filename=%r)" % (
+            self.__class__.__name__, self.prefix, self.line_num, self.filename
+        )
+
+    def __str__(self):
+        return repr(self)
+
     def append(self, line):
         self.lines.append(line[len(self.prefix):])
 
@@ -437,6 +445,12 @@ class Functionality(object):
         self.name = name
         self.implementations = []
 
+    def __repr__(self):
+        return "Functionality(%r)" % self.name
+
+    def __str__(self):
+        return repr(self)
+
     def add_implementation(self, implementation):
         self.implementations.append(implementation)
 
@@ -477,6 +491,12 @@ class CallableImplementation(Implementation):
 class ShellImplementation(Implementation):
     def __init__(self, command):
         self.command = command
+
+    def __repr__(self):
+        return "ShellImplementation(%r)" % self.name
+
+    def __str__(self):
+        return repr(self)
 
     def run(self, input=None):
         r"""
@@ -575,6 +595,15 @@ class Test(object):
         self.expectation = expectation
         self.functionality = functionality
         self.desc_block = desc_block
+    
+    def __repr__(self):
+        return (
+            "Test(input=%r, expectation=%r, functionality=%r, desc_block=%r)" %
+            (self.input, self.expectation, self.functionality, self.desc_block)
+        )
+
+    def __str__(self):
+        return repr(self)
 
     def run(self, options=DEFAULT_OPTIONS):
         """Returns a list of Results, one for each implementation of
