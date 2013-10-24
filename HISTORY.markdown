@@ -9,6 +9,14 @@ Version 0.8-pre "Ukranian Village" (current development version):
   distribution, which have themselves been re-organized.
 * Added the `-v`/`--verbose` flag and made it and the `-d`/`--dump` flag
   do what you would expect from them.
+* The `-f`/`--functionalities` and `-c`/`--clear-functionalities` flags
+  have been *removed*.  The rationale is that implementations of
+  functionalities are clumsy to express on the command line (and anyway
+  the syntax would have to be different) while it is not difficult to
+  create a "configuration" Falderal file which specifies *only* the
+  desired implementations of the desired functionalities, and to load
+  it just before loading a "tests" Falderal file which specified the
+  functionalities being tested, but not their implementations.
 
 Version 0.7 "Ogden Avenue" (current released version):
 
