@@ -4,6 +4,11 @@ History
 Version 0.8-pre "Ukranian Village" (current development version):
 
 * The reference implementation is now `py-falderal`.
+* Various documentation which was on Bitbucket (wiki, issues) and Github
+  (py-falderal issues) have been moved into Markdown documents in the
+  distribution, which have themselves been re-organized.
+* Added the `-v`/`--verbose` flag and made it and the `-d`/`--dump` flag
+  do what you would expect from them.
 
 Version 0.7 "Ogden Avenue" (current released version):
 
