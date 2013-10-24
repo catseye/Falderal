@@ -53,29 +53,19 @@ def main(args):
         else:
             return 0
 
+    # load Documents and create Falderal Tests from them
+    documents = []
+    functionalities = {}
+    tests = []
     try:
-        return test_documents(options, args)
+        for filename in args:
+            documents.append(Document.load(filename))
+        for document in documents:
+            tests += document.parse_blocks_to_tests(functionalities)
     except FalderalSyntaxError as e:
         # if options.show_full_exception: do that, else
         sys.stderr.write('%s: %s\n' % (e.__class__.__name__, str(e)))
         return 1
-
-
-def test_documents(options, args):
-    # load Falderal documents
-    documents = []
-    for filename in args:
-        documents.append(Document.load(filename))
-
-    # collect functionalities
-    # XXX if any implementations are given in the command line,
-    # we can put them in here.
-    functionalities = {}
-
-    # create Falderal Tests
-    tests = []
-    for document in documents:
-        tests += document.parse_blocks_to_tests(functionalities)
 
     if options.clear_functionalities:
         for name in options.clear_functionalities.split(':'):
