@@ -8,27 +8,31 @@ Motivation
 
 There are a few reasons I had for re-implementing Falderal in Python:
 
-* The original Falderal implementation grew out of a Haskell-specific hack,
-  and it shows in how it's written.
+*   The original Falderal implementation grew out of a Haskell-specific hack,
+    and it shows in how it's written.
 
-* Fewer discrepancies between platforms.  In particular, `ghc` for Windows
-  likes to operate in terms of MS-DOS end-of-lines (`CR`, `LF`), but I tend
-  to use it under Cygwin using Unix end-of-lines (`LF`).
+*   Fewer discrepancies between platforms.  In particular, `ghc` for Windows
+    likes to operate in terms of MS-DOS end-of-lines (`CR`, `LF`), but I tend
+    to use it under Cygwin using Unix end-of-lines (`LF`).
 
-* Smaller install burden: Python sometimes comes bundled with the operating
-  system; Haskell rarely does.
+*   Smaller install burden: Python sometimes comes bundled with the operating
+    system; Haskell rarely does.
 
-* Haskell, being lazy, makes it harder to deal with exceptions; unless the
-  Haskell expression is being evaluated both strictly and deeply, exceptions
-  can slip by.  For Falderal's purposes, this seems artificial, at best.
+*   Haskell, being lazy, makes it harder to deal with exceptions; unless the
+    Haskell expression is being evaluated both strictly and deeply, exceptions
+    can slip by.  Haskell's facilities for forcing an expression to be
+    evaluated strictly and deeply are rather hacky (last I checked, the most
+    portable way to do so was to use `show`.)  For Falderal's purposes, this
+    limitation seems artificial, at best.
 
-* Relatedly, Python (or CPython, anyway) has better error behavior than
-  Haskell (or `ghc`, anyway); when it crashes, it dumps a backtrace (which I
-  can then analyze), instead of just saying something pithy like `Prelude:
-  empty list` (which I can't.)
+*   Relatedly, Python (or CPython, anyway) has better error behavior than
+    Haskell (or `ghc`, anyway); when it crashes, it dumps a backtrace (which I
+    can then analyze), instead of just saying something pithy like `Prelude:
+    empty list` (which I can't.)
 
-* Any standard worth its salt should probably have more than one
-  implementation, anyway.
+*   Any standard worth its salt should probably have more than one
+    implementation, anyway.  (Although, to be fair, the Haskell implementation
+    will probably wither in bitrot for a while before simply being forgotten.)
 
 Features
 --------
@@ -66,10 +70,14 @@ In particular,
   command "flargh"` anymore.  I mean, it should certainly be the case that
   functionalities can have multiple implementations, but
   * Perhaps implementations should not be specified in Falderal documents
-    at all -- that approach is more abstract.  But it requires them to be
+    at all — that approach is more abstract.  But it requires them to be
     specified on the tool's command line, which in practice requires there
     to be a driver script to run the tests, for a particular implementation;
-    but this is not necessarily a bad thing.
+    but this is not necessarily a bad thing.  (The effective practice has
+    been, actually, to write out a bit of "configuration Markdown" with
+    that "Functionality is implemented by" snippet in it, and to load that
+    before loading the main tests.  Rather than to configure the functionality
+    implementation(s) on the command line itself.)
   * When `falderal` is run on more than one input file, what is the scope
     of a functionality, and what is the scope of the implementations of a
     functionality?  Currently, in the Falderal semantics, that scope is

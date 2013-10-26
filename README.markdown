@@ -27,7 +27,7 @@ So why not write those examples in a format that can be tested?
 You could write a bunch of standalone test sources, and store the output you
 expect from them in a bunch of other files, and write a shell script that runs
 each program and `diff`s the output with the expected output.  But this is a
-lot of clutter -- finding a particular example might not be so easy.  Each
+lot of clutter — finding a particular example might not be so easy.  Each
 test source exists in a void, not necessarily logically grouped with other,
 similar tests.  And any text you write describing a test needs to be in the
 comment syntax of your programming language (if your programming language
@@ -94,20 +94,21 @@ Contents of this Distribution
 
 This distribution contains:
 
-*   `doc` -- contains documents about Falderal.  For the specification of
+*   `doc` — contains documents about Falderal.  For the specification of
     the file format, see `doc/Falderal_Literate_Test_Format.markdown`.
     (Note that this specification should not be expected to remain stable
     through the 0.x version series.)  There are other documents in there too.
-*   `bin/falderal` -- the reference implementation of Falderal, written in
+*   `bin/falderal` — the reference implementation of Falderal, written in
     Python and sometimes referred to as "py-falderal".  It imports the
     sources in `src/falderal`.  You don't need to install it; just add
-    the `bin` directory of this distribution to your `$PATH`.
-*   `impl/Test.Falderal` -s a (lagging, and not conformant) implementation of
+    the `bin` directory of this distribution to your `$PATH`.  This
+    implementation is (somewhat) documented in `doc/py-falderal.markdown`.
+*   `impl/Test.Falderal` — a (lagging, and not conformant) implementation of
     Falderal in Haskell.
-*   `tests` -- a set of tests for Falderal itself.  (Note that these are not
+*   `tests` — a set of tests for Falderal itself.  (Note that these are not
     written in Falderal, as that would just be too confusing.)
-*   `HISTORY.markdown` -- changelog for releases of Falderal.
-*   `TODO.markdown` -- areas where Falderal and its implementations could be
+*   `HISTORY.markdown` — changelog for releases of Falderal.
+*   `TODO.markdown` — areas where Falderal and its implementations could be
     improved.
 
 Development
@@ -118,19 +119,19 @@ Falderal development is
 [git mirror of the repository on Github](https://github.com/catseye/Falderal).
 
 Official release distfiles are available on the
-[Falderal project page](http://catseye.tc/projects/falderal/) at
+[Falderal project page](http://catseye.tc/node/Falderal) at
 [Cat's Eye Technologies](http://catseye.tc/).
 
 Projects using Falderal
 -----------------------
 
 (NOTE Actually, I'm sure this information can be extracted from Chrysoberyl
-somehow, so just link to that here.)
+somehow, so in the future, just link to that here.)
 
-Exanoke, Flobnar, Iphigeneia, Madison, Pail, Pixley, PL-{GOTO}.NET, Robin,
+Exanoke, Flobnar, Hev, Iphigeneia, Madison, Pail, Pixley, PL-{GOTO}.NET, Robin,
 Quylthulg, Velo, and Xoomonk.
 
-Pail, Xoomonk, Madison, Velo, and Exanoke are good examples of how a literate
+Xoomonk, Madison, Velo, and Exanoke are good examples of how a literate
 test suite can be useful in both describing a programming language through
 examples and testing that an implementation of the language does not violate
 the language specification.
