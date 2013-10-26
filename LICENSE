@@ -1,9 +1,30 @@
-Except where noted as being in the public domain, the Test.Falderal
-source code files are made available under the following BSD-style
-license:
+Falderal is distributed under the following, BSD-compatible licenses.
 
+All documentation is covered by this license, modelled after the
+"Report on the Programming Language Haskell 98" license:
 
-Copyright (c)2011 Cat's Eye Technologies.  All rights reserved.
+-----------------------------------------------------------------------------
+
+  Copyright (c)2011-2013 Chris Pressey, Cat's Eye Technologies.
+  All rights reserved.
+
+  The authors intend this Report to belong to the entire Falderal
+  community, and so we grant permission to copy and distribute it for
+  any purpose, provided that it is reproduced in its entirety,
+  including this Notice.  Modified versions of this Report may also be
+  copied and distributed for any purpose, provided that the modified
+  version is clearly presented as such, and that it does not claim to
+  be a definition of the Falderal Literate Test Format.
+
+-----------------------------------------------------------------------------
+
+All source code for the implementations of Falderal in this distribution
+(Test.Falderal, py-falderal) as well as the internal test suite itself is
+covered by this BSD 3-clause license:
+
+-----------------------------------------------------------------------------
+
+Copyright (c)2011-2013 Cat's Eye Technologies.  All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions
@@ -31,3 +52,5 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
 LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
 ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
+
+-----------------------------------------------------------------------------
