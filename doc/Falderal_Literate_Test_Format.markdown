@@ -6,8 +6,8 @@ This document describes the proposed Falderal Literate Test Format.
 Status
 ======
 
-This document is a *draft*.  It is nominally "version 0.7" because it
-describes something that version 0.7 of `Test.Falderal` mostly implements.
+This document is a *draft*.  It is nominally "version 0.8" because it
+describes something that version 0.8 of `Test.Falderal` mostly implements.
 We will deign to note which sections of this document the current released
 version of `Test.Falderal` implements, and which it does not.  However,
 this document is a work in progress, subject to change, and subject to get
@@ -31,9 +31,10 @@ Syntax
 ======
 
 Lines which have special meaning to the Falderal Literate Test Format
-always begin (in the leftmost column) with a series of special characters,
-called an //introducer//.  The introducers which have meaning to the
-Falderal Literate Test Format are as follows:
+always begin with an indent of four (4) spaces from the leftmost column
+followed immediately by a series of distinguished characters, called an
+_introducer_.  The introducers which have meaning to the Falderal Literate
+Test Format are as follows:
 
 * `->` (hyphen, greater-than sign): pragma
 * `| ` (vertical bar, space): input text
@@ -70,9 +71,7 @@ The encoding pragma allows a Falderal file to specify what encoding is
 used for the characters in it.  An implementation of Falderal is not
 expected to be able to handle any coding other than UTF-8, however,
 this pragma is included for the benefit of text editors and other tools,
-to indicate that the document is in fact in UTF-8 encoding.  It is
-generally stripped from documents formatted from the Falderal file,
-perhaps replaced by an equivalent directive for the particular format.
+to indicate that the document is in fact in UTF-8 encoding.
 
 Example:
 
@@ -94,12 +93,12 @@ which may be referenced in a later Tests-for pragma.
 
 Note that the Functionality-definitions given in a Falderal file should
 not be considered exhaustive, or even requisite, by a tool.  The tool may
-accept additional definitions of the name of a functionality, from an
-external source such as the command line or a configuration file, and may
-be instructed to ignore certain Functionality-definitions in a Falderal
-file (if, for example, certain implementation are not currently available
-or of interest to the user.)  Indeed, the functionality referred to by a
-_functionality-name_ in a Tests-for pragma need not be defined by any
+accept additional definitions of a functionality, referencing it by its
+name, from an external source such as the command line or a configuration
+file, and may be instructed to ignore certain Functionality-definitions in
+a Falderal file (if, for example, certain implementation are not currently
+available or of interest to the user.)  Indeed, the functionality referred
+to by a _functionality-name_ in a Tests-for pragma need not be defined by any
 Functionality-definition pragma in the same Falderal file, and this
 situation requires the functionality to be specified to the tool in some
 other manner.
@@ -120,21 +119,35 @@ Shell commands
 
 For shell commands, the _functionality-specifier_ is in the format
 `"command arg1 arg2 ... argn"`.  Any line of legal Bourne shell syntax may
-be used, so pipes, redirection, etc., are supported.
+be used, so pipes, redirection, etc., are supported.  Note that the double
+quotation mark characters used to enclosed the command have meaning only to
+the Falderal format — they are not part of the command, are not passed to the
+shell, and do not require double quotation mark characters that are enclosed
+by them to be escaped with a backslash.
 
 Certain subsequences, called _variables_, if present in the command string,
 will be expanded before execution, and will alter how the command reads the
 text of the test and produces its output, to be compared with the expected
 output.
 
+### `%(test-file)` ###
+
 The variable `%(test-file)` will be replaced by the name of a file which
-contains the text of the test.  This may be a temporary files created
-solely for this purpose.  The variable `%(test-text)` will be replaced by
-the actual text of the test.  It is assumed that `%(test-text)` will appear
-inside single quotes in the command string, so any single quotes in the
-text of the test will be escaped.  If neither of these variables appear in
+contains the text of the test.  This may be a temporary file created
+solely for this purpose by the Falderal implementation.
+
+### `%(test-text)` ###
+
+The variable `%(test-text)` will be replaced by the actual text of the test.
+It is assumed that `%(test-text)` will appear inside single quotes in the
+command string, so any single quotes in the text of the test will be escaped
+by the Falderal implementation by preceding them with backslashes.
+
+If neither of the variables `%(test-file)` nor `%(test-text)` appear in
 the command string, the test text will be provided on the standard input of
 the shell command.
+
+### `%(output-file)` ###
 
 The variable `%(output-file)` will be replaced by the name of a file
 (temporary file) to which the test results will be written.  If it does
@@ -182,13 +195,20 @@ Input and Expected Text
 
 Each section of input text should be followed immediately by either a
 section of expected output or expected error output.  It may also be
-preceded by a paragraph of text; this paragraph should be displayed along
-with the input text and expected text, in a test report.
+preceded by a paragraph of text; the intent of the Falderal Literate
+Test Format is that this text should describe the test, or rather, the
+aspect of the behaviour of the system that the test is meant to check.
+It is therefore reasonably that this text should be displayed along
+with the contents (input text and expected text) of the test, in, for
+example, a test result report.
 
 Discussion
 ==========
 
-(This section is non-normative, and possibly out-of-date.)
+(This section is non-normative.)
+
+Typically, a file in Falderal Literate Test Format will also be in
+Markdown format.
 
 The format of the lines which comprise the Falderal Literate Test Format
 was chosen to not conflict with many other common text formats (including
