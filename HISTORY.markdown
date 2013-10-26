@@ -1,9 +1,14 @@
 History
 =======
 
-Version 0.8-pre "Ukranian Village" (current development version):
+Version 0.8 "Ukranian Village" (current released version):
 
 * The reference implementation is now `py-falderal`.
+* Blocks *must* now be indented four spaces.  That Falderal test documents
+  will be embedded in Markdown is generally assumed (although not strictly
+  required) and they generally have the file extension `.markdown` so that
+  other software (e.g. Bitbucket and Github) knows how to pretty-display
+  them.
 * Various documentation which was on Bitbucket (wiki, issues) and Github
   (py-falderal issues) have been moved into Markdown documents in the
   distribution, which have themselves been re-organized.
@@ -18,7 +23,7 @@ Version 0.8-pre "Ukranian Village" (current development version):
   it just before loading a "tests" Falderal file which specified the
   functionalities being tested, but not their implementations.
 
-Version 0.7 "Ogden Avenue" (current released version):
+Version 0.7 "Ogden Avenue" (previous released version):
 
 * **Note that this is the final version of Falderal where `Test.Falderal`
   is the reference implementation.**  In subsequent versions,

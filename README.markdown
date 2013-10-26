@@ -1,7 +1,7 @@
 Falderal
 ========
 
-Version 0.8-pre "Ukranian Village"
+Version 0.8 "Ukranian Village"
 
 This is the reference distribution of Falderal, a file format for literate
 test suites.  Falderal is particularly suited for:
@@ -20,7 +20,7 @@ Say you have a programming language.  You probably have a document describing
 the language.  That document probably includes examples.  Those examples are
 probably intended to produce some kind of output.  That output is probably
 expected to be a certain, predicted thing, and if it's not that thing, the
-implementation is probably considered incorrect
+implementation is probably considered incorrect.
 
 So why not write those examples in a format that can be tested?
 
@@ -103,6 +103,7 @@ This distribution contains:
     sources in `src/falderal`.  You don't need to install it; just add
     the `bin` directory of this distribution to your `$PATH`.  This
     implementation is (somewhat) documented in `doc/py-falderal.markdown`.
+*   `src` — source code for py-falderal.
 *   `impl/Test.Falderal` — a (lagging, and not conformant) implementation of
     Falderal in Haskell.
 *   `tests` — a set of tests for Falderal itself.  (Note that these are not
