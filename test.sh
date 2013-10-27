@@ -5,7 +5,7 @@
 bin/falderal -t || exit 1
 
 cd tests
-for TEST in test1 test2 test3 test4 test5 test9 test10 test-utf8 test-crlf; do
+for TEST in test1 test2 test3 test4 test5 test9 test10 test11 test-utf8 test-crlf; do
     echo ${TEST}...
     ../bin/falderal ${TEST}.markdown > ${TEST}.actual 2>&1
     diff -u ${TEST}.expected ${TEST}.actual || exit 1

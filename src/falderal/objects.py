@@ -559,7 +559,7 @@ class ShellImplementation(Implementation):
         >>> i.run(body='text')
         OutputOutcome('text')
 
-        >>> i = ShellImplementation('echo %(test-body-text)')
+        >>> i = ShellImplementation("echo '%(test-body-text)'")
         >>> i.run(body='text')
         OutputOutcome('text')
 
@@ -567,12 +567,27 @@ class ShellImplementation(Implementation):
         >>> i.run(body='text')
         OutputOutcome('text')
 
+        >>> i = ShellImplementation("echo '%(test-body-text)' '%(test-input-text)'")
+        >>> i.run(body='text', input='zzrk')
+        OutputOutcome('text zzrk')
+
+        Here the body is sent to cat's stdin, but cat ignores it.
+        
+        >>> i = ShellImplementation('cat >%(output-file) <%(test-input-file)')
+        >>> i.run(body='text', input='zzrk')
+        OutputOutcome('zzrk')
+
         """
         # expand variables in the command
         test_filename = None
         output_filename = None
         command = self.command
 
+        command_contained_test_body_file = False
+        command_contained_test_body_text = False
+        command_contained_test_input_file = False
+        command_contained_test_input_text = False
+        
         # DEPRECATED
         if '%(test-file)' in self.command:
             # choose a temp file name and write the body to that file
@@ -584,14 +599,14 @@ class ShellImplementation(Implementation):
             os.close(fd)
             # replace all occurrences in command
             command = re.sub(r'\%\(test-file\)', test_filename, command)
-            body = None
+            command_contained_test_body_file = True
         # DEPRECATED
         if '%(test-text)' in self.command:
             # escape all single quotes in body
             body = re.sub(r"'", r"\'", body)
             # replace all occurrences in command
             command = re.sub(r'\%\(test-text\)', body, command)
-            body = None
+            command_contained_test_body_text = True
 
         # Preferred over test-file
         if '%(test-body-file)' in self.command:
@@ -604,14 +619,32 @@ class ShellImplementation(Implementation):
             os.close(fd)
             # replace all occurrences in command
             command = re.sub(r'\%\(test-body-file\)', test_filename, command)
-            body = None
+            command_contained_test_body_file = True
         # Preferred over test-text
         if '%(test-body-text)' in self.command:
             # escape all single quotes in body
             body = re.sub(r"'", r"\'", body)
             # replace all occurrences in command
             command = re.sub(r'\%\(test-body-text\)', body, command)
-            body = None
+            command_contained_test_body_text = True
+
+        if '%(test-input-file)' in self.command:
+            # choose a temp file name and write the input to that file
+            fd, test_input_filename = mkstemp(dir='.')
+            test_input_filename = basename(test_input_filename)
+            with open(test_input_filename, 'w') as file:
+                file.write(input)
+                file.close()
+            os.close(fd)
+            # replace all occurrences in command
+            command = re.sub(r'\%\(test-input-file\)', test_input_filename, command)
+            command_contained_test_input_file = True
+        if '%(test-input-text)' in self.command:
+            # escape all single quotes in input
+            body = re.sub(r"'", r"\'", body)
+            # replace all occurrences in command
+            command = re.sub(r'\%\(test-input-text\)', input, command)
+            command_contained_test_input_text = True
 
         if '%(output-file)' in self.command:
             # choose a temp file name to read output from later
@@ -624,7 +657,14 @@ class ShellImplementation(Implementation):
         # subshell the command and return the output
         pipe = Popen(command, shell=True,
                      stdin=PIPE, stdout=PIPE, stderr=PIPE)
-        outputs = pipe.communicate(input=body)
+        # XXX How *exactly* do we decide what to send to the command's standard input?
+        # XXX Check and/or update the spec.
+        pipe_input = None
+        if not (command_contained_test_input_file or command_contained_test_input_text):
+            pipe_input = input
+        if not (command_contained_test_body_file or command_contained_test_body_text):
+            pipe_input = body
+        outputs = pipe.communicate(input=pipe_input)
         if pipe.returncode == 0:
             if output_filename is None:
                 output = self.normalize_output(outputs[0])
