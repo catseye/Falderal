@@ -195,6 +195,10 @@ class TestText(Block):
     pass
 
 
+class TestInput(Block):
+    pass
+
+
 class ExpectedError(Block):
     pass
 
@@ -211,6 +215,7 @@ class InterveningMarkdown(Block):
 
 PREFIX = {
     '    | ': TestText,
+    '    + ': TestInput,
     '    ? ': ExpectedError,
     '    = ': ExpectedResult,
     '    ->': Pragma,
@@ -250,14 +255,15 @@ class Document(object):
         >>> d.append("    | This is some test input.\n")
         >>> d.append("    | It extends over two lines.")
         >>> d.append('    ? Expected Error')
-        >>> d.append('    | Indented test')
-        >>> d.append('    = Indented result')
+        >>> d.append('    | Test with input')
+        >>> d.append('    + input-for-test')
+        >>> d.append('    = Expected result on output')
         >>> d.parse_lines_to_blocks()
         >>> [b.__class__.__name__ for b in d.blocks]
         ['InterveningMarkdown', 'Pragma', 'TestText', 'ExpectedError',
-         'TestText', 'ExpectedResult']
+         'TestText', 'TestInput', 'ExpectedResult']
         >>> [b.line_num for b in d.blocks]
-        [1, 2, 3, 5, 6, 7]
+        [1, 2, 3, 5, 6, 7, 8]
 
         """
         state = '***'
@@ -301,17 +307,18 @@ class Document(object):
         >>> d.append("    | This is some test input.")
         >>> d.append("    | It extends over two lines.")
         >>> d.append('    ? Expected Error')
-        >>> d.append('    | Indented test\n')
-        >>> d.append('    = Indented result')
+        >>> d.append('    | Test with input')
+        >>> d.append('    + input-for-test')
+        >>> d.append('    = Expected result on output')
         >>> d.append('    -> Tests for functionality "Run Thing"')
         >>> d.append("    | Thing")
         >>> d.append('    ? Oops')
         >>> tests = d.parse_blocks_to_tests(funs)
         >>> [t.input for t in tests]
         ['This is some test input.\nIt extends over two lines.',
-         'Indented test', 'Thing']
+         'Test with input', 'Thing']
         >>> [t.expectation for t in tests]
-        [ErrorOutcome('Expected Error'), OutputOutcome('Indented result'),
+        [ErrorOutcome('Expected Error'), OutputOutcome('Expected result on output'),
          ErrorOutcome('Oops')]
         >>> [t.functionality.name for t in tests]
         ['Parse Thing', 'Parse Thing', 'Run Thing']
@@ -332,7 +339,7 @@ class Document(object):
         >>> d.parse_blocks_to_tests({})
         Traceback (most recent call last):
         ...
-        FalderalSyntaxError: line 2: expectation must be preceded by test input
+        FalderalSyntaxError: line 2: expectation must be preceded by test text or test input
 
         >>> d = Document()
         >>> d.append('    -> Hello, this is pragma')
@@ -340,7 +347,7 @@ class Document(object):
         >>> d.parse_blocks_to_tests({})
         Traceback (most recent call last):
         ...
-        FalderalSyntaxError: line 2: expectation must be preceded by test input
+        FalderalSyntaxError: line 2: expectation must be preceded by test text or test input
 
         >>> d = Document()
         >>> d.append('    | This is test')
@@ -348,7 +355,15 @@ class Document(object):
         >>> d.parse_blocks_to_tests({})
         Traceback (most recent call last):
         ...
-        FalderalSyntaxError: line 2: test input must be followed by expectation
+        FalderalSyntaxError: line 2: test text must be followed by expectation or test input
+
+        >>> d = Document()
+        >>> d.append('    -> Hello, this is pragma')
+        >>> d.append('    + Input to where exactly?')
+        >>> d.parse_blocks_to_tests({})
+        Traceback (most recent call last):
+        ...
+        FalderalSyntaxError: line 2: test input must be preceded by test text
 
         >>> d = Document()
         >>> funs = {}
@@ -370,29 +385,51 @@ class Document(object):
         current_functionality = None
         prev_block = None
         last_desc_block = None
+        last_test_input_block = None
         for block in self.blocks:
+            # First, handle ExpectedError/ExpectedOutcome blocks.
             expectation_class = None
             if isinstance(block, ExpectedError):
                 expectation_class = ErrorOutcome
             if isinstance(block, ExpectedResult):
                 expectation_class = OutputOutcome
             if expectation_class:
-                if isinstance(prev_block, TestText):
-                    if current_functionality is None:
-                        raise FalderalSyntaxError(
-                            ("line %d: " % block.line_num) +
-                            "functionality under test not specified")
-                    test = Test(text_block=prev_block,
-                                expectation=expectation_class(block.text()),
-                                functionality=current_functionality,
-                                desc_block=last_desc_block)
-                    tests.append(test)
-                else:
+                # Expectations must be preceded by TestText or TestInput.
+                if not (isinstance(prev_block, TestText) or isinstance(prev_block, TestInput)):
                     raise FalderalSyntaxError(
                         ("line %d: " % block.line_num) +
-                        "expectation must be preceded by test input")
+                        "expectation must be preceded by test text or test input")
+                if current_functionality is None:
+                    raise FalderalSyntaxError(
+                        ("line %d: " % block.line_num) +
+                        "functionality under test not specified")
+                test = Test(text_block=last_test_text_block,
+                            #input_block=last_test_input_block,
+                            expectation=expectation_class(block.text()),
+                            functionality=current_functionality,
+                            desc_block=last_desc_block)
+                tests.append(test)
+                last_test_text_block = None
+                last_test_input_block = None
+            elif isinstance(block, TestInput):
+                # Test input must be preceded by TestText.
+                if not isinstance(prev_block, TestText):
+                    raise FalderalSyntaxError(
+                        ("line %d: " % block.line_num) +
+                        "test input must be preceded by test text")
+                # If we see a TestInput block, record it.
+                last_test_input_block = block
+            elif isinstance(block, TestText):
+                # If we see a TestText block, record it.
+                last_test_text_block = block
             else:
+                # All others must not follow TestText, or TestInput, as those need to be
+                # followed by an expectation or test input
                 if isinstance(prev_block, TestText):
+                    raise FalderalSyntaxError(
+                        ("line %d: " % block.line_num) +
+                        "test text must be followed by expectation or test input")
+                if isinstance(prev_block, TestInput):
                     raise FalderalSyntaxError(
                         ("line %d: " % block.line_num) +
                         "test input must be followed by expectation")
