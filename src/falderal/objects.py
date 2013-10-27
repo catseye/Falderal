@@ -374,7 +374,7 @@ class Document(object):
                         raise FalderalSyntaxError(
                             ("line %d: " % block.line_num) +
                             "functionality under test not specified")
-                    test = Test(input=prev_block.text(),
+                    test = Test(text_block=prev_block,
                                 expectation=expectation_class(block.text()),
                                 functionality=current_functionality,
                                 desc_block=last_desc_block)
@@ -585,18 +585,36 @@ class ShellImplementation(Implementation):
 class Test(object):
     """An object representing a Falderal test.
 
+    Normally a TestText block is given as the text_block argument,
+    and the input is derived from it.  However in the absence of a
+    TestText block (as in many of the internal tests) an input may
+    be passed alone.
+
+    >>> b = TestText('    |')
+    >>> b.append('    | foo')
+    >>> b.append('    | bar')
+    >>> t = Test(text_block=b)
+    >>> print t.input
+    foo
+    bar
+
     """
-    def __init__(self, input=None, expectation=None, functionality=None,
-                 desc_block=None):
+    def __init__(self, text_block=None, input=None, expectation=None,
+                 functionality=None, desc_block=None):
+        self.text_block = text_block
         self.input = input
+        if self.input is None:
+            self.input = self.text_block.text()
         self.expectation = expectation
         self.functionality = functionality
         self.desc_block = desc_block
     
     def __repr__(self):
         return (
-            "Test(input=%r, expectation=%r, functionality=%r, desc_block=%r)" %
-            (self.input, self.expectation, self.functionality, self.desc_block)
+            ("Test(text_block=%r, input=%r, expectation=%r, " +
+             "functionality=%r, desc_block=%r)") %
+            (self.text_block, self.input, self.expectation,
+             self.functionality, self.desc_block)
         )
 
     def __str__(self):
