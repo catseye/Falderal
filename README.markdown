@@ -1,7 +1,7 @@
 Falderal
 ========
 
-Version 0.8 "Ukranian Village"
+Version 0.9-PRE "Navy Pier"
 
 This is the reference distribution of Falderal, a file format for literate
 test suites.  Falderal is particularly suited for:

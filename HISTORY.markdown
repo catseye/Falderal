@@ -1,6 +1,14 @@
 History
 =======
 
+Version 0.9-PRE "Navy Pier" (current development version):
+
+* `py-falderal` now insists that blocks are indented four spaces, as the
+  specification says.  It ignores blocks that are not indented.
+* In an error report `py-falderal` reports the location (filename and line
+  number of the beginning of the test text) of each test that failed.
+* Several internal renamings of object classes for greater clarity.
+
 Version 0.8 "Ukranian Village" (current released version):
 
 * The reference implementation is now `py-falderal`.
