@@ -457,20 +457,6 @@ class Document(object):
                         )
                         implementation = ShellImplementation(command)
                         functionality.add_implementation(implementation)
-                    match = re.match(r'^\s*Functionality\s*\"(.*?)\"\s*is\s+implemented\s+by\s+Haskell\s+function\s*(.*?)\:(.*?)\s*$', pragma_text)
-                    if match:
-                        functionality_name = match.group(1)
-                        module = match.group(2)
-                        function = match.group(3)
-                        command = r'ghc -e "do c <- readFile \"%%(test-file)\"; putStrLn $ %s.%s c" %s.hs' % (
-                            module, function, module
-                        )
-                        functionality = functionalities.setdefault(
-                            functionality_name,
-                            Functionality(functionality_name)
-                        )
-                        implementation = ShellImplementation(command)
-                        functionality.add_implementation(implementation)
                 elif isinstance(block, InterveningMarkdown):
                     if not re.match(r'^\s*$', block.text(seperator=' ')):
                         last_desc_block = block
