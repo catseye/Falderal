@@ -8,12 +8,23 @@ import sys
 from falderal.objects import Document, FalderalSyntaxError
 
 
+##### Exceptions #####
+
+class FalderalLintingError(ValueError):
+    pass
+
+
+##### Main #####
+
 def main(args):
     parser = OptionParser()
 
     parser.add_option("-b", "--substring-error",
                       action="store_true", default=False,
                       help="match expected errors as substrings")
+    parser.add_option("--cavalier",
+                      action="store_true", default=False,
+                      help="don't perform sanity linting before running tests")
     parser.add_option("-d", "--dump",
                       action="store_true", default=False,
                       help="print out info about parsed tests, don't run them")
@@ -50,14 +61,31 @@ def main(args):
             documents.append(Document.load(filename))
         for document in documents:
             tests += document.parse_blocks_to_tests(functionalities)
-    except FalderalSyntaxError as e:
+
+        if not options.cavalier:
+            if not documents:
+                raise FalderalLintingError("No test documents were specified")
+            if not functionalities:
+                raise FalderalLintingError(
+                    "No functionalities were found in any of the test documents"
+                )
+            for name in functionalities:
+                functionality = functionalities[name]
+                if not functionality.implementations:
+                    raise FalderalLintingError(
+                        "No implementations were found for the functionality '%s'" %
+                        functionality.name
+                    )
+            if not tests:
+                raise FalderalLintingError(
+                    "No tests were found in any of the test documents"
+                )
+
+    except (FalderalSyntaxError, FalderalLintingError) as e:
         # if options.show_full_exception: do that, else
         sys.stderr.write('%s: %s\n' % (e.__class__.__name__, str(e)))
         return 1
 
-    # XXX lint: check for no tests, or no implementations of a functionality
-    # that is being tested, or a functionality that is not being tested, and
-    # break with an error unless some option to suppress this is present
 
     if options.dump:
         print "Functionalities:"

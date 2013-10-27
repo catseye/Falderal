@@ -5,7 +5,19 @@
 bin/falderal -t || exit 1
 
 cd tests
-for TEST in test1 test2 test3 test4 test5 test9 test10 test11 test-utf8 test-crlf; do
+
+FIRST_TESTS="
+test1 test2 test3 test4 test5 test9 test10 test11 test-utf8 test-crlf
+"
+for TEST in ${FIRST_TESTS}; do
+    echo ${TEST}...
+    ../bin/falderal --cavalier ${TEST}.markdown > ${TEST}.actual 2>&1
+    diff -u ${TEST}.expected ${TEST}.actual || exit 1
+done
+
+# tests for listing
+LINTING_TESTS="test-no-tests"
+for TEST in ${LINTING_TESTS}; do
     echo ${TEST}...
     ../bin/falderal ${TEST}.markdown > ${TEST}.actual 2>&1
     diff -u ${TEST}.expected ${TEST}.actual || exit 1

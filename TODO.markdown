@@ -132,15 +132,6 @@ that stdout and stderr will always be combined deterministically, and
 having both kinds of expectations would allow non-deterministic combinations
 of the two to be matched.)
 
-### lint test documents by default
-
-Unless some command line option is given (call it `--cavalier`, maybe,) if
-any of the following is true, we should abort quickly with an error message:
-
--   Parsing the given documents resulted in no tests.  (This is implied by:
-    there were no documents given.)
--   For one or more functionalities, there were no implementations specified.
-
 ### catch KeyboardInterrupt, report on all results so far
 
 When a test suite takes a long time to run, it would be very nice if

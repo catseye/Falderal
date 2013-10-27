@@ -19,6 +19,11 @@ Version 0.9-PRE "Navy Pier" (current development version):
   are now created where the system wants them to be created (but you can set
   the `TMP` environment variable to "." if you really want them to be created
   in the current directory.)
+* `py-falderal` now complains and stops early if there were no documents
+  specified, no functionality definitions were found in any of the documents,
+  no implementations were found for some defined functionality, or if no
+  tests were found in any of the documents, unless `--cavalier` is passed on
+  the command line.
 
 Version 0.8 "Ukranian Village" (current released version):
 
