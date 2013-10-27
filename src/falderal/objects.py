@@ -34,16 +34,13 @@ DEFAULT_OPTIONS = Options()
 
 ##### Test Results #####
 
-class RunResult(object):
-    """The result (either expected or actual) of running a test case.
+class Outcome(object):
+    """The outcome (either the expected outcome, or the actual outcome)
+    of running a test case.
 
-    This is used both for the results of running an implementation of
-    the functionality the test is defined for, and for specifying what
-    the expected result of the test is.
-
-    Note that RunResults are different from TestResults; depending on
-    how the Test is set up, either kind of RunResult may be a Success
-    or Failure.
+    Note that Outcomes are different from TestResults.  Outcomes are
+    the result of doing the thing the test asks, TestResults are the
+    result of judging whether the Outcome was correct.
 
     """
     def __init__(self, text):
@@ -53,22 +50,23 @@ class RunResult(object):
         return '%s(%r)' % (self.__class__.__name__, self.text)
 
 
-class OutputResult(RunResult):
+class OutputOutcome(Outcome):
     def __str__(self):
         return 'output:\n' + self.text
 
 
-class ErrorResult(RunResult):
+class ErrorOutcome(Outcome):
     def __str__(self):
         return 'error:\n' + self.text
 
 
 class TestResult(object):
-    """The result of a test.
+    """The result of a test, representing whether the outcome was
+    correct or not.
 
-    Note that TestResults are different from RunResults; depending on
-    how the Test is set up, either kind of RunResult may be a Success
-    or Failure.
+    Note that Outcomes are different from TestResults.  Outcomes are
+    the result of doing the thing the test asks, TestResults are the
+    result of judging whether the Outcome was correct.
 
     """
     def short_description(self):
@@ -303,8 +301,8 @@ class Document(object):
         ['This is some test input.\nIt extends over two lines.',
          'Indented test', 'Thing']
         >>> [t.expectation for t in tests]
-        [ErrorResult('Expected Error'), OutputResult('Indented result'),
-         ErrorResult('Oops')]
+        [ErrorOutcome('Expected Error'), OutputOutcome('Indented result'),
+         ErrorOutcome('Oops')]
         >>> [t.functionality.name for t in tests]
         ['Parse Thing', 'Parse Thing', 'Run Thing']
         >>> sorted(funs.keys())
@@ -365,9 +363,9 @@ class Document(object):
         for block in self.blocks:
             expectation_class = None
             if isinstance(block, ExpectedError):
-                expectation_class = ErrorResult
+                expectation_class = ErrorOutcome
             if isinstance(block, ExpectedResult):
-                expectation_class = OutputResult
+                expectation_class = OutputOutcome
             if expectation_class:
                 if isinstance(prev_block, TestText):
                     if current_functionality is None:
@@ -480,9 +478,9 @@ class CallableImplementation(Implementation):
     def run(self, input=None):
         try:
             result = self.callable(input)
-            return OutputResult(result)
+            return OutputOutcome(result)
         except Exception as e:
-            return ErrorResult(str(e))
+            return ErrorOutcome(str(e))
 
 
 class ShellImplementation(Implementation):
@@ -499,23 +497,23 @@ class ShellImplementation(Implementation):
         r"""
         >>> i = ShellImplementation('cat')
         >>> i.run('text')
-        OutputResult('text')
+        OutputOutcome('text')
 
         >>> i = ShellImplementation('cat fhofhofhf')
         >>> i.run('text')
-        ErrorResult('cat: fhofhofhf: No such file or directory')
+        ErrorOutcome('cat: fhofhofhf: No such file or directory')
 
         >>> i = ShellImplementation('cat %(test-file)')
         >>> i.run('text')
-        OutputResult('text')
+        OutputOutcome('text')
 
         >>> i = ShellImplementation('echo %(test-text)')
         >>> i.run('text')
-        OutputResult('text')
+        OutputOutcome('text')
 
         >>> i = ShellImplementation('cat >%(output-file)')
         >>> i.run('text')
-        OutputResult('text')
+        OutputOutcome('text')
 
         """
         # expand variables in the command
@@ -558,9 +556,9 @@ class ShellImplementation(Implementation):
                 f = open(output_filename, 'r')
                 output = f.read()
                 f.close()
-            result = OutputResult(output)
+            result = OutputOutcome(output)
         else:
-            result = ErrorResult(self.normalize_output(outputs[1]))
+            result = ErrorOutcome(self.normalize_output(outputs[1]))
 
         # clean up temporary files
         for filename in (test_filename, output_filename):
@@ -626,30 +624,30 @@ class Test(object):
 
         >>> f = Functionality('Cat File')
         >>> f.add_implementation(CallableImplementation(lambda x: x))
-        >>> t = Test(input='foo', expectation=OutputResult('foo'),
+        >>> t = Test(input='foo', expectation=OutputOutcome('foo'),
         ...          functionality=f)
         >>> [r.short_description() for r in t.run()]
         ['success']
 
         >>> f = Functionality('Cat File')
         >>> f.add_implementation(CallableImplementation(lambda x: x))
-        >>> t = Test(input='foo', expectation=OutputResult('bar'),
+        >>> t = Test(input='foo', expectation=OutputOutcome('bar'),
         ...          functionality=f)
         >>> [r.short_description() for r in t.run()]
-        ["expected OutputResult('bar'), got OutputResult('foo')"]
+        ["expected OutputOutcome('bar'), got OutputOutcome('foo')"]
 
         >>> f = Functionality('Cat File')
         >>> f.add_implementation(CallableImplementation(lambda x: x))
-        >>> t = Test(input='foo', expectation=ErrorResult('foo'),
+        >>> t = Test(input='foo', expectation=ErrorOutcome('foo'),
         ...          functionality=f)
         >>> [r.short_description() for r in t.run()]
-        ["expected ErrorResult('foo'), got OutputResult('foo')"]
+        ["expected ErrorOutcome('foo'), got OutputOutcome('foo')"]
 
         >>> f = Functionality('Cat File')
         >>> def e(x):
         ...     raise ValueError(x)
         >>> f.add_implementation(CallableImplementation(e))
-        >>> t = Test(input='foo', expectation=ErrorResult('foo'),
+        >>> t = Test(input='foo', expectation=ErrorOutcome('foo'),
         ...          functionality=f)
         >>> [r.short_description() for r in t.run()]
         ['success']
@@ -658,19 +656,19 @@ class Test(object):
         >>> def e(x):
         ...     raise ValueError(x)
         >>> f.add_implementation(CallableImplementation(e))
-        >>> t = Test(input='foo', expectation=ErrorResult('bar'),
+        >>> t = Test(input='foo', expectation=ErrorOutcome('bar'),
         ...          functionality=f)
         >>> [r.short_description() for r in t.run()]
-        ["expected ErrorResult('bar'), got ErrorResult('foo')"]
+        ["expected ErrorOutcome('bar'), got ErrorOutcome('foo')"]
 
         >>> f = Functionality('Cat File')
         >>> def e(x):
         ...     raise ValueError(x)
         >>> f.add_implementation(CallableImplementation(e))
-        >>> t = Test(input='foo', expectation=OutputResult('foo'),
+        >>> t = Test(input='foo', expectation=OutputOutcome('foo'),
         ...          functionality=f)
         >>> [r.short_description() for r in t.run()]
-        ["expected OutputResult('foo'), got ErrorResult('foo')"]
+        ["expected OutputOutcome('foo'), got ErrorOutcome('foo')"]
 
         A functionality can have multiple implementations.  We test them all.
 
@@ -683,11 +681,11 @@ class Test(object):
         ...     raise ValueError(x)
         >>> for c in (c1, c2, c3):
         ...     f.add_implementation(CallableImplementation(c))
-        >>> t = Test(input='foo', expectation=OutputResult('foo'),
+        >>> t = Test(input='foo', expectation=OutputOutcome('foo'),
         ...          functionality=f)
         >>> [r.short_description() for r in t.run()]
-        ['success', "expected OutputResult('foo'), got OutputResult('foo...')",
-         "expected OutputResult('foo'), got ErrorResult('foo')"]
+        ['success', "expected OutputOutcome('foo'), got OutputOutcome('foo...')",
+         "expected OutputOutcome('foo'), got ErrorOutcome('foo')"]
 
         """
         results = []
@@ -702,7 +700,7 @@ class Test(object):
     def judge(self, result, options):
         if not isinstance(result, self.expectation.__class__):
             return False
-        if options.substring_error and isinstance(result, ErrorResult):
+        if options.substring_error and isinstance(result, ErrorOutcome):
             return self.expectation.text in result.text
         else:
             return self.expectation.text == result.text
