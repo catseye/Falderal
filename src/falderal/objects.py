@@ -591,8 +591,7 @@ class ShellImplementation(Implementation):
         # DEPRECATED
         if '%(test-file)' in self.command:
             # choose a temp file name and write the body to that file
-            fd, test_filename = mkstemp(dir='.')
-            test_filename = basename(test_filename)
+            fd, test_filename = mkstemp()
             with open(test_filename, 'w') as file:
                 file.write(body)
                 file.close()
@@ -611,8 +610,7 @@ class ShellImplementation(Implementation):
         # Preferred over test-file
         if '%(test-body-file)' in self.command:
             # choose a temp file name and write the body to that file
-            fd, test_filename = mkstemp(dir='.')
-            test_filename = basename(test_filename)
+            fd, test_filename = mkstemp()
             with open(test_filename, 'w') as file:
                 file.write(body)
                 file.close()
@@ -630,8 +628,7 @@ class ShellImplementation(Implementation):
 
         if '%(test-input-file)' in self.command:
             # choose a temp file name and write the input to that file
-            fd, test_input_filename = mkstemp(dir='.')
-            test_input_filename = basename(test_input_filename)
+            fd, test_input_filename = mkstemp()
             with open(test_input_filename, 'w') as file:
                 file.write(input)
                 file.close()
@@ -648,8 +645,7 @@ class ShellImplementation(Implementation):
 
         if '%(output-file)' in self.command:
             # choose a temp file name to read output from later
-            fd, output_filename = mkstemp(dir='.')
-            output_filename = basename(output_filename)
+            fd, output_filename = mkstemp()
             os.close(fd)
             # replace all occurrences in command
             command = re.sub(r'\%\(output-file\)', output_filename, command)
