@@ -659,22 +659,29 @@ class ShellImplementation(Implementation):
 class Test(object):
     """An object representing a Falderal test.
 
-    Normally a TestBody block is given as the text_block argument,
-    and the body is derived from it.  However in the absence of a
-    TestBody block (as in many of the internal tests) a body may
-    be passed alone.
+    Normally a TestBody block is given as the body_block argument,
+    and possibly a TestInput block is given as input_block,
+    and the body and input attributes are derived from it.  However
+    in the absence of these blocks (as in many of the internal tests)
+    a body and/or input may be passed alone.
+    
+    TODO: maybe write a helper function for that instead.
 
-    >>> b = TestBody('    |')
+    >>> b = TestBody('    | ')
     >>> b.append('    | foo')
     >>> b.append('    | bar')
-    >>> t = Test(body_block=b)
+    >>> i = TestInput('    + ')
+    >>> i.append('    + green')
+    >>> t = Test(body_block=b, input_block=i)
     >>> print t.body
     foo
     bar
+    >>> print t.input
+    green
 
     """
     def __init__(self, body_block=None, input_block=None, expectation=None,
-                 functionality=None, desc_block=None, body=None):
+                 functionality=None, desc_block=None, body=None, input=None):
         self.body_block = body_block
         self.input_block = input_block
         self.expectation = expectation
@@ -683,13 +690,16 @@ class Test(object):
         self.body = body
         if self.body is None:
             self.body = self.body_block.text()
+        self.input = input
+        if self.input is None and self.input_block is not None:
+            self.input = self.input_block.text()
     
     def __repr__(self):
         return (
             ("Test(body_block=%r, input_block=%r, expectation=%r, " +
-             "functionality=%r, desc_block=%r, body=%r)") %
+             "functionality=%r, desc_block=%r, body=%r, input=%r)") %
             (self.body_block, self.input_block, self.expectation,
-             self.functionality, self.desc_block, self.body)
+             self.functionality, self.desc_block, self.body, self.input)
         )
 
     def __str__(self):
@@ -747,6 +757,13 @@ class Test(object):
         >>> [r.short_description() for r in t.run()]
         ["expected OutputOutcome('foo'), got ErrorOutcome('foo')"]
 
+        >>> f = Functionality('Cat File with Input')
+        >>> f.add_implementation(CallableImplementation(lambda x, y: x + y))
+        >>> t = Test(body='foo', input='bar', expectation=OutputOutcome('foobar'),
+        ...          functionality=f)
+        >>> [r.short_description() for r in t.run()]
+        ['success']
+
         A functionality can have multiple implementations.  We test them all.
 
         >>> f = Functionality('Cat File')
@@ -767,7 +784,7 @@ class Test(object):
         """
         results = []
         for implementation in self.functionality.implementations:
-            result = implementation.run(body=self.body)
+            result = implementation.run(body=self.body, input=self.input)
             if self.judge(result, options):
                 results.append(Success(self, implementation))
             else:
