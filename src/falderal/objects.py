@@ -317,6 +317,10 @@ class Document(object):
         >>> [t.body for t in tests]
         ['This is some test input.\nIt extends over two lines.',
          'Test with input', 'Thing']
+        >>> [t.input_block for t in tests]
+        [None, TestInput('    + ', line_num=7, filename=None), None]
+        >>> tests[1].input_block.text()
+        'input-for-test'
         >>> [t.expectation for t in tests]
         [ErrorOutcome('Expected Error'), OutputOutcome('Expected result on output'),
          ErrorOutcome('Oops')]
@@ -405,7 +409,7 @@ class Document(object):
                         ("line %d: " % block.line_num) +
                         "functionality under test not specified")
                 test = Test(body_block=last_test_body_block,
-                            #input_block=last_test_input_block,
+                            input_block=last_test_input_block,
                             expectation=expectation_class(block.text()),
                             functionality=current_functionality,
                             desc_block=last_desc_block)
