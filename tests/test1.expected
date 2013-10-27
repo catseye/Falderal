@@ -4,7 +4,7 @@ Cat dogs, too. (Intentional fail.)
 
 Location: test1.markdown, line 28
 Impl    : shell command "python cat.py"
-Input   : meow
+Body    : meow
 Expected: output:
 woof
 Actual  : output:
@@ -16,7 +16,7 @@ Cat dogs, too. (Intentional fail.)
 
 Location: test1.markdown, line 31
 Impl    : shell command "python cat.py"
-Input   : 
+Body    : 
 purr
 prrr
 prreow

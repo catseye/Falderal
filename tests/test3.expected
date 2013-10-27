@@ -1,1 +1,1 @@
-FalderalSyntaxError: line 14: test text must be followed by expectation or test input
+FalderalSyntaxError: line 14: test body must be followed by expectation or test input

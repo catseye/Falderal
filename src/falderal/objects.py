@@ -120,9 +120,9 @@ class Failure(TestResult):
 
     def report(self):
         print "FAILED  : " + self.format_text_block(self.test.description)
-        print "Location: " + self.test.text_block.location()
+        print "Location: " + self.test.body_block.location()
         print "Impl    : " + self.format_text_block(self.implementation)
-        print "Input   : " + self.format_text_block(self.test.input)
+        print "Body    : " + self.format_text_block(self.test.body)
         print "Expected: " + self.format_text_block(self.test.expectation)
         print "Actual  : " + self.format_text_block(self.actual)
         print
@@ -141,16 +141,16 @@ class Block(object):
     """A segment of a Falderal-formatted file.
 
     >>> b = Block('| ')
-    >>> b.append('| test input line 1')
-    >>> b.append('| test input line 2')
+    >>> b.append('| test body line 1')
+    >>> b.append('| test body line 2')
     >>> print b.text(prefix=True)
-    | test input line 1
-    | test input line 2
+    | test body line 1
+    | test body line 2
     >>> print b.text()
-    test input line 1
-    test input line 2
+    test body line 1
+    test body line 2
     >>> print b.text(seperator='')
-    test input line 1test input line 2
+    test body line 1test body line 2
 
     """
     def __init__(self, prefix, line_num=None, filename=None):
@@ -191,7 +191,7 @@ class Pragma(Block):
     pass
 
 
-class TestText(Block):
+class TestBody(Block):
     pass
 
 
@@ -214,7 +214,7 @@ class InterveningMarkdown(Block):
 ##### Documents #####
 
 PREFIX = {
-    '    | ': TestText,
+    '    | ': TestBody,
     '    + ': TestInput,
     '    ? ': ExpectedError,
     '    = ': ExpectedResult,
@@ -260,8 +260,8 @@ class Document(object):
         >>> d.append('    = Expected result on output')
         >>> d.parse_lines_to_blocks()
         >>> [b.__class__.__name__ for b in d.blocks]
-        ['InterveningMarkdown', 'Pragma', 'TestText', 'ExpectedError',
-         'TestText', 'TestInput', 'ExpectedResult']
+        ['InterveningMarkdown', 'Pragma', 'TestBody', 'ExpectedError',
+         'TestBody', 'TestInput', 'ExpectedResult']
         >>> [b.line_num for b in d.blocks]
         [1, 2, 3, 5, 6, 7, 8]
 
@@ -314,7 +314,7 @@ class Document(object):
         >>> d.append("    | Thing")
         >>> d.append('    ? Oops')
         >>> tests = d.parse_blocks_to_tests(funs)
-        >>> [t.input for t in tests]
+        >>> [t.body for t in tests]
         ['This is some test input.\nIt extends over two lines.',
          'Test with input', 'Thing']
         >>> [t.expectation for t in tests]
@@ -326,7 +326,7 @@ class Document(object):
         ['Parse Thing', 'Run Thing']
 
         >>> d = Document()
-        >>> d.append("    | This is some test input.")
+        >>> d.append("    | This is some test body.")
         >>> d.append('    = Expected')
         >>> d.parse_blocks_to_tests({})
         Traceback (most recent call last):
@@ -339,7 +339,7 @@ class Document(object):
         >>> d.parse_blocks_to_tests({})
         Traceback (most recent call last):
         ...
-        FalderalSyntaxError: line 2: expectation must be preceded by test text or test input
+        FalderalSyntaxError: line 2: expectation must be preceded by test body or test input
 
         >>> d = Document()
         >>> d.append('    -> Hello, this is pragma')
@@ -347,7 +347,7 @@ class Document(object):
         >>> d.parse_blocks_to_tests({})
         Traceback (most recent call last):
         ...
-        FalderalSyntaxError: line 2: expectation must be preceded by test text or test input
+        FalderalSyntaxError: line 2: expectation must be preceded by test body or test input
 
         >>> d = Document()
         >>> d.append('    | This is test')
@@ -355,7 +355,7 @@ class Document(object):
         >>> d.parse_blocks_to_tests({})
         Traceback (most recent call last):
         ...
-        FalderalSyntaxError: line 2: test text must be followed by expectation or test input
+        FalderalSyntaxError: line 2: test body must be followed by expectation or test input
 
         >>> d = Document()
         >>> d.append('    -> Hello, this is pragma')
@@ -363,7 +363,7 @@ class Document(object):
         >>> d.parse_blocks_to_tests({})
         Traceback (most recent call last):
         ...
-        FalderalSyntaxError: line 2: test input must be preceded by test text
+        FalderalSyntaxError: line 2: test input must be preceded by test body
 
         >>> d = Document()
         >>> funs = {}
@@ -385,6 +385,7 @@ class Document(object):
         current_functionality = None
         prev_block = None
         last_desc_block = None
+        last_test_body_block = None
         last_test_input_block = None
         for block in self.blocks:
             # First, handle ExpectedError/ExpectedOutcome blocks.
@@ -394,41 +395,41 @@ class Document(object):
             if isinstance(block, ExpectedResult):
                 expectation_class = OutputOutcome
             if expectation_class:
-                # Expectations must be preceded by TestText or TestInput.
-                if not (isinstance(prev_block, TestText) or isinstance(prev_block, TestInput)):
+                # Expectations must be preceded by TestBody or TestInput.
+                if not (isinstance(prev_block, TestBody) or isinstance(prev_block, TestInput)):
                     raise FalderalSyntaxError(
                         ("line %d: " % block.line_num) +
-                        "expectation must be preceded by test text or test input")
+                        "expectation must be preceded by test body or test input")
                 if current_functionality is None:
                     raise FalderalSyntaxError(
                         ("line %d: " % block.line_num) +
                         "functionality under test not specified")
-                test = Test(text_block=last_test_text_block,
+                test = Test(body_block=last_test_body_block,
                             #input_block=last_test_input_block,
                             expectation=expectation_class(block.text()),
                             functionality=current_functionality,
                             desc_block=last_desc_block)
                 tests.append(test)
-                last_test_text_block = None
+                last_test_body_block = None
                 last_test_input_block = None
             elif isinstance(block, TestInput):
-                # Test input must be preceded by TestText.
-                if not isinstance(prev_block, TestText):
+                # Test input must be preceded by TestBody.
+                if not isinstance(prev_block, TestBody):
                     raise FalderalSyntaxError(
                         ("line %d: " % block.line_num) +
-                        "test input must be preceded by test text")
+                        "test input must be preceded by test body")
                 # If we see a TestInput block, record it.
                 last_test_input_block = block
-            elif isinstance(block, TestText):
-                # If we see a TestText block, record it.
-                last_test_text_block = block
+            elif isinstance(block, TestBody):
+                # If we see a TestBody block, record it.
+                last_test_body_block = block
             else:
-                # All others must not follow TestText, or TestInput, as those need to be
+                # All others must not follow TestBody, or TestInput, as those need to be
                 # followed by an expectation or test input
-                if isinstance(prev_block, TestText):
+                if isinstance(prev_block, TestBody):
                     raise FalderalSyntaxError(
                         ("line %d: " % block.line_num) +
-                        "test text must be followed by expectation or test input")
+                        "test body must be followed by expectation or test input")
                 if isinstance(prev_block, TestInput):
                     raise FalderalSyntaxError(
                         ("line %d: " % block.line_num) +
@@ -630,36 +631,37 @@ class ShellImplementation(Implementation):
 class Test(object):
     """An object representing a Falderal test.
 
-    Normally a TestText block is given as the text_block argument,
-    and the input is derived from it.  However in the absence of a
-    TestText block (as in many of the internal tests) an input may
+    Normally a TestBody block is given as the text_block argument,
+    and the body is derived from it.  However in the absence of a
+    TestBody block (as in many of the internal tests) a body may
     be passed alone.
 
-    >>> b = TestText('    |')
+    >>> b = TestBody('    |')
     >>> b.append('    | foo')
     >>> b.append('    | bar')
-    >>> t = Test(text_block=b)
-    >>> print t.input
+    >>> t = Test(body_block=b)
+    >>> print t.body
     foo
     bar
 
     """
-    def __init__(self, text_block=None, input=None, expectation=None,
-                 functionality=None, desc_block=None):
-        self.text_block = text_block
-        self.input = input
-        if self.input is None:
-            self.input = self.text_block.text()
+    def __init__(self, body_block=None, input_block=None, expectation=None,
+                 functionality=None, desc_block=None, body=None):
+        self.body_block = body_block
+        self.input_block = input_block
         self.expectation = expectation
         self.functionality = functionality
         self.desc_block = desc_block
+        self.body = body
+        if self.body is None:
+            self.body = self.body_block.text()
     
     def __repr__(self):
         return (
-            ("Test(text_block=%r, input=%r, expectation=%r, " +
-             "functionality=%r, desc_block=%r)") %
-            (self.text_block, self.input, self.expectation,
-             self.functionality, self.desc_block)
+            ("Test(body_block=%r, input_block=%r, expectation=%r, " +
+             "functionality=%r, desc_block=%r, body=%r)") %
+            (self.body_block, self.input_block, self.expectation,
+             self.functionality, self.desc_block, self.body)
         )
 
     def __str__(self):
@@ -671,21 +673,21 @@ class Test(object):
 
         >>> f = Functionality('Cat File')
         >>> f.add_implementation(CallableImplementation(lambda x: x))
-        >>> t = Test(input='foo', expectation=OutputOutcome('foo'),
+        >>> t = Test(body='foo', expectation=OutputOutcome('foo'),
         ...          functionality=f)
         >>> [r.short_description() for r in t.run()]
         ['success']
 
         >>> f = Functionality('Cat File')
         >>> f.add_implementation(CallableImplementation(lambda x: x))
-        >>> t = Test(input='foo', expectation=OutputOutcome('bar'),
+        >>> t = Test(body='foo', expectation=OutputOutcome('bar'),
         ...          functionality=f)
         >>> [r.short_description() for r in t.run()]
         ["expected OutputOutcome('bar'), got OutputOutcome('foo')"]
 
         >>> f = Functionality('Cat File')
         >>> f.add_implementation(CallableImplementation(lambda x: x))
-        >>> t = Test(input='foo', expectation=ErrorOutcome('foo'),
+        >>> t = Test(body='foo', expectation=ErrorOutcome('foo'),
         ...          functionality=f)
         >>> [r.short_description() for r in t.run()]
         ["expected ErrorOutcome('foo'), got OutputOutcome('foo')"]
@@ -694,7 +696,7 @@ class Test(object):
         >>> def e(x):
         ...     raise ValueError(x)
         >>> f.add_implementation(CallableImplementation(e))
-        >>> t = Test(input='foo', expectation=ErrorOutcome('foo'),
+        >>> t = Test(body='foo', expectation=ErrorOutcome('foo'),
         ...          functionality=f)
         >>> [r.short_description() for r in t.run()]
         ['success']
@@ -703,7 +705,7 @@ class Test(object):
         >>> def e(x):
         ...     raise ValueError(x)
         >>> f.add_implementation(CallableImplementation(e))
-        >>> t = Test(input='foo', expectation=ErrorOutcome('bar'),
+        >>> t = Test(body='foo', expectation=ErrorOutcome('bar'),
         ...          functionality=f)
         >>> [r.short_description() for r in t.run()]
         ["expected ErrorOutcome('bar'), got ErrorOutcome('foo')"]
@@ -712,7 +714,7 @@ class Test(object):
         >>> def e(x):
         ...     raise ValueError(x)
         >>> f.add_implementation(CallableImplementation(e))
-        >>> t = Test(input='foo', expectation=OutputOutcome('foo'),
+        >>> t = Test(body='foo', expectation=OutputOutcome('foo'),
         ...          functionality=f)
         >>> [r.short_description() for r in t.run()]
         ["expected OutputOutcome('foo'), got ErrorOutcome('foo')"]
@@ -728,7 +730,7 @@ class Test(object):
         ...     raise ValueError(x)
         >>> for c in (c1, c2, c3):
         ...     f.add_implementation(CallableImplementation(c))
-        >>> t = Test(input='foo', expectation=OutputOutcome('foo'),
+        >>> t = Test(body='foo', expectation=OutputOutcome('foo'),
         ...          functionality=f)
         >>> [r.short_description() for r in t.run()]
         ['success', "expected OutputOutcome('foo'), got OutputOutcome('foo...')",
@@ -737,7 +739,7 @@ class Test(object):
         """
         results = []
         for implementation in self.functionality.implementations:
-            result = implementation.run(input=self.input)
+            result = implementation.run(input=self.body)
             if self.judge(result, options):
                 results.append(Success(self, implementation))
             else:
