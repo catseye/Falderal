@@ -2,6 +2,7 @@ FAILED  :
 
 Cat dogs, too. (Intentional fail.)
 
+Location: test-utf8.markdown, line 22
 Impl    : shell command "python cat.py"
 Input   : n ← ★
 Expected: output:
@@ -13,6 +14,7 @@ FAILED  :
 
 Cat (file) dogs, too. (Intentional fail.)
 
+Location: test-utf8.markdown, line 37
 Impl    : shell command "python cat.py -f %(test-file) -o %(output-file)"
 Input   : n ← ★
 Expected: output:

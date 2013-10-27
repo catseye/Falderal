@@ -120,6 +120,7 @@ class Failure(TestResult):
 
     def report(self):
         print "FAILED  : " + self.format_text_block(self.test.description)
+        print "Location: " + self.test.text_block.location()
         print "Impl    : " + self.format_text_block(self.implementation)
         print "Input   : " + self.format_text_block(self.test.input)
         print "Expected: " + self.format_text_block(self.test.expectation)
@@ -165,6 +166,12 @@ class Block(object):
 
     def __str__(self):
         return repr(self)
+
+    def location(self):
+        filename = self.filename
+        if filename is None:
+            filename = "<<input file>>"
+        return "%s, line %s" % (filename, self.line_num)
 
     def append(self, line):
         self.lines.append(line[len(self.prefix):])
@@ -218,6 +225,7 @@ class Document(object):
     def __init__(self):
         self.lines = []
         self.blocks = None
+        self.filename = None
 
     @classmethod
     def load(cls, filename):
@@ -226,6 +234,7 @@ class Document(object):
         for line in f:
             d.append(line)
         f.close()
+        d.filename = filename
         return d
 
     def append(self, line):
@@ -268,7 +277,8 @@ class Document(object):
                 if block is not None:
                     blocks.append(block)
                 BlockClass = PREFIX.get(state, InterveningMarkdown)
-                block = BlockClass(state, line_num=line_num)
+                block = BlockClass(state, line_num=line_num,
+                                   filename=self.filename)
                 block.append(line)
             line_num += 1
         if block is not None:
