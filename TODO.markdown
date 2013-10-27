@@ -178,33 +178,6 @@ OTOH, you'd often want to pipe the output to less, which will disable
 colourization anyway, on the tty check.  So maybe look at how `cdiff` allows
 colourized text to be paged, first.
 
-### Support cd'ing to directory containing Falderal file before running tests
-
-2011-12-01
-
-For Falderal files which specify implementations of functionalities by shell
-commands, it is useful for them to be able to locate the shell command
-they want to run. If it is not on the search path, the directory in which
-`falderal` is invoked is used as the directory on which relative paths are
-based.
-
-This is less useful than using the directory that the Falderal file is in,
-as the directory on which relative paths are based. So, it would be useful
-to `cd` into that directory before running the tests. Add an option to
-`falderal` to do this automatically, or maybe by default. This would let
-the user invoke `falderal` from any location they like, so long as the
-Falderal document is in the right place.
-
-(This was written against Test.Falderal but similar considerations could
-be made for py-falderal.)
-
-### Show filenames and implementations in standard failure report
-
-2011-12-11
-
-To make the standard failure report more useful, it should show the source
-Falderal document filename(s) in the summary.
-
 ### Flag invalid sequences of lines as errors
 
 2011-08-05
