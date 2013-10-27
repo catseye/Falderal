@@ -164,29 +164,6 @@ phase which simply splits every `InterveningMarkdown` block into multiple
 blocks, at its headers.  It should understand both underlined and atx-style
 headers.
 
-### Display functionality, filename, line number, in each test result
-
-### permit UTF-8 encoded input to Haskell function-implemented tests
-
-Falderal test documents are assumed to be UTF-8 encoded Markdown.
-
-`py-falderal` runs "Haskell function"-implemented tests with a little `ghc`
-hack that uses `readFile`.
-
-But `readFile` on modern Haskell doesn't, by itself, understand UTF-8.
-
-`py-falderal`'s little hack in this regard could use improvement.
-
-No, it seems this is nothing to do with `py-falderal`, but rather, some
-change to the version of Haskell supported by the `ghc` bundled with the
-Haskell Platform.  Closing as invalid.
-
-So, the problem *actually* seems to be that Haskell's `readFile`, by
-itself, doesn't know how to read UTF-8 files.  `readFile` is used in
-`py-falderal`'s "implemented by Haskell function" support (hack).  Which
-means that tests containing UTF-8 can't be run with this implementation
-support (hack) right now.
-
 ### option to colourize test result output
 
 Using one of the approaches listed here:
@@ -226,12 +203,7 @@ be made for py-falderal.)
 2011-12-11
 
 To make the standard failure report more useful, it should show the source
-Falderal document filename(s) in the summary, the relevant source filename
-in each error, and the implementation used to test the functionality in
-each error.
-
-(This was written against Test.Falderal but similar considerations could
-be made for py-falderal.)
+Falderal document filename(s) in the summary.
 
 ### Flag invalid sequences of lines as errors
 

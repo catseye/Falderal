@@ -121,6 +121,7 @@ class Failure(TestResult):
     def report(self):
         print "FAILED  : " + self.format_text_block(self.test.description)
         print "Location: " + self.test.body_block.location()
+        print "Function: " + self.format_text_block(self.test.functionality.name)
         print "Impl    : " + self.format_text_block(self.implementation)
         print "Body    : " + self.format_text_block(self.test.body)
         print "Expected: " + self.format_text_block(self.test.expectation)

@@ -3,6 +3,7 @@ FAILED  :
 No CRLFs in test report (Intentional fail.)
 
 Location: test-crlf.markdown, line 24
+Function: CRLF
 Impl    : shell command "python crlf.py"
 Body    : 
 one
