@@ -186,7 +186,7 @@ class Pragma(Block):
     pass
 
 
-class TestInput(Block):
+class TestText(Block):
     pass
 
 
@@ -205,7 +205,7 @@ class InterveningMarkdown(Block):
 ##### Documents #####
 
 PREFIX = {
-    '    | ': TestInput,
+    '    | ': TestText,
     '    ? ': ExpectedError,
     '    = ': ExpectedResult,
     '    ->': Pragma,
@@ -247,8 +247,8 @@ class Document(object):
         >>> d.append('    = Indented result')
         >>> d.parse_lines_to_blocks()
         >>> [b.__class__.__name__ for b in d.blocks]
-        ['InterveningMarkdown', 'Pragma', 'TestInput', 'ExpectedError',
-         'TestInput', 'ExpectedResult']
+        ['InterveningMarkdown', 'Pragma', 'TestText', 'ExpectedError',
+         'TestText', 'ExpectedResult']
         >>> [b.line_num for b in d.blocks]
         [1, 2, 3, 5, 6, 7]
 
@@ -369,7 +369,7 @@ class Document(object):
             if isinstance(block, ExpectedResult):
                 expectation_class = OutputResult
             if expectation_class:
-                if isinstance(prev_block, TestInput):
+                if isinstance(prev_block, TestText):
                     if current_functionality is None:
                         raise FalderalSyntaxError(
                             ("line %d: " % block.line_num) +
@@ -384,7 +384,7 @@ class Document(object):
                         ("line %d: " % block.line_num) +
                         "expectation must be preceded by test input")
             else:
-                if isinstance(prev_block, TestInput):
+                if isinstance(prev_block, TestText):
                     raise FalderalSyntaxError(
                         ("line %d: " % block.line_num) +
                         "test input must be followed by expectation")
