@@ -510,9 +510,9 @@ class Implementation(object):
     def __init__(self):
         pass
 
-    def run(self, input=None):
+    def run(self, body=None, input=None):
         """Returns the RunResult of running this implementation on the
-        given input.
+        given test body and input.
 
         """
         raise NotImplementedError("subclass needs to implement run()")
@@ -527,9 +527,9 @@ class CallableImplementation(Implementation):
     def __init__(self, callable):
         self.callable = callable
 
-    def run(self, input=None):
+    def run(self, body=None, input=None):
         try:
-            result = self.callable(input)
+            result = self.callable(body, input)
             return OutputOutcome(result)
         except Exception as e:
             return ErrorOutcome(str(e))
@@ -545,26 +545,26 @@ class ShellImplementation(Implementation):
     def __str__(self):
         return repr(self)
 
-    def run(self, input=None):
+    def run(self, body=None, input=None):
         r"""
         >>> i = ShellImplementation('cat')
-        >>> i.run('text')
+        >>> i.run(body='text')
         OutputOutcome('text')
 
         >>> i = ShellImplementation('cat fhofhofhf')
-        >>> i.run('text')
+        >>> i.run(body='text')
         ErrorOutcome('cat: fhofhofhf: No such file or directory')
 
         >>> i = ShellImplementation('cat %(test-body-file)')
-        >>> i.run('text')
+        >>> i.run(body='text')
         OutputOutcome('text')
 
         >>> i = ShellImplementation('echo %(test-body-text)')
-        >>> i.run('text')
+        >>> i.run(body='text')
         OutputOutcome('text')
 
         >>> i = ShellImplementation('cat >%(output-file)')
-        >>> i.run('text')
+        >>> i.run(body='text')
         OutputOutcome('text')
 
         """
@@ -579,19 +579,19 @@ class ShellImplementation(Implementation):
             fd, test_filename = mkstemp(dir='.')
             test_filename = basename(test_filename)
             with open(test_filename, 'w') as file:
-                file.write(input)
+                file.write(body)
                 file.close()
             os.close(fd)
             # replace all occurrences in command
             command = re.sub(r'\%\(test-file\)', test_filename, command)
-            input = None
+            body = None
         # DEPRECATED
         if '%(test-text)' in self.command:
-            # escape all single quotes in input
-            input = re.sub(r"'", r"\'", input)
+            # escape all single quotes in body
+            body = re.sub(r"'", r"\'", body)
             # replace all occurrences in command
-            command = re.sub(r'\%\(test-text\)', input, command)
-            input = None
+            command = re.sub(r'\%\(test-text\)', body, command)
+            body = None
 
         # Preferred over test-file
         if '%(test-body-file)' in self.command:
@@ -599,19 +599,19 @@ class ShellImplementation(Implementation):
             fd, test_filename = mkstemp(dir='.')
             test_filename = basename(test_filename)
             with open(test_filename, 'w') as file:
-                file.write(input)
+                file.write(body)
                 file.close()
             os.close(fd)
             # replace all occurrences in command
             command = re.sub(r'\%\(test-body-file\)', test_filename, command)
-            input = None
+            body = None
         # Preferred over test-text
         if '%(test-body-text)' in self.command:
-            # escape all single quotes in input
-            input = re.sub(r"'", r"\'", input)
+            # escape all single quotes in body
+            body = re.sub(r"'", r"\'", body)
             # replace all occurrences in command
-            command = re.sub(r'\%\(test-body-text\)', input, command)
-            input = None
+            command = re.sub(r'\%\(test-body-text\)', body, command)
+            body = None
 
         if '%(output-file)' in self.command:
             # choose a temp file name to read output from later
@@ -624,7 +624,7 @@ class ShellImplementation(Implementation):
         # subshell the command and return the output
         pipe = Popen(command, shell=True,
                      stdin=PIPE, stdout=PIPE, stderr=PIPE)
-        outputs = pipe.communicate(input=input)
+        outputs = pipe.communicate(input=body)
         if pipe.returncode == 0:
             if output_filename is None:
                 output = self.normalize_output(outputs[0])
@@ -700,28 +700,28 @@ class Test(object):
         the functionality being tested.
 
         >>> f = Functionality('Cat File')
-        >>> f.add_implementation(CallableImplementation(lambda x: x))
+        >>> f.add_implementation(CallableImplementation(lambda x, y: x))
         >>> t = Test(body='foo', expectation=OutputOutcome('foo'),
         ...          functionality=f)
         >>> [r.short_description() for r in t.run()]
         ['success']
 
         >>> f = Functionality('Cat File')
-        >>> f.add_implementation(CallableImplementation(lambda x: x))
+        >>> f.add_implementation(CallableImplementation(lambda x, y: x))
         >>> t = Test(body='foo', expectation=OutputOutcome('bar'),
         ...          functionality=f)
         >>> [r.short_description() for r in t.run()]
         ["expected OutputOutcome('bar'), got OutputOutcome('foo')"]
 
         >>> f = Functionality('Cat File')
-        >>> f.add_implementation(CallableImplementation(lambda x: x))
+        >>> f.add_implementation(CallableImplementation(lambda x, y: x))
         >>> t = Test(body='foo', expectation=ErrorOutcome('foo'),
         ...          functionality=f)
         >>> [r.short_description() for r in t.run()]
         ["expected ErrorOutcome('foo'), got OutputOutcome('foo')"]
 
         >>> f = Functionality('Cat File')
-        >>> def e(x):
+        >>> def e(x, y):
         ...     raise ValueError(x)
         >>> f.add_implementation(CallableImplementation(e))
         >>> t = Test(body='foo', expectation=ErrorOutcome('foo'),
@@ -730,7 +730,7 @@ class Test(object):
         ['success']
 
         >>> f = Functionality('Cat File')
-        >>> def e(x):
+        >>> def e(x, y):
         ...     raise ValueError(x)
         >>> f.add_implementation(CallableImplementation(e))
         >>> t = Test(body='foo', expectation=ErrorOutcome('bar'),
@@ -739,7 +739,7 @@ class Test(object):
         ["expected ErrorOutcome('bar'), got ErrorOutcome('foo')"]
 
         >>> f = Functionality('Cat File')
-        >>> def e(x):
+        >>> def e(x, y):
         ...     raise ValueError(x)
         >>> f.add_implementation(CallableImplementation(e))
         >>> t = Test(body='foo', expectation=OutputOutcome('foo'),
@@ -750,12 +750,12 @@ class Test(object):
         A functionality can have multiple implementations.  We test them all.
 
         >>> f = Functionality('Cat File')
-        >>> def c1(x):
-        ...     return x
-        >>> def c2(x):
-        ...     return x + '...'
-        >>> def c3(x):
-        ...     raise ValueError(x)
+        >>> def c1(body, input):
+        ...     return body
+        >>> def c2(body, input):
+        ...     return body + '...'
+        >>> def c3(body, input):
+        ...     raise ValueError(body)
         >>> for c in (c1, c2, c3):
         ...     f.add_implementation(CallableImplementation(c))
         >>> t = Test(body='foo', expectation=OutputOutcome('foo'),
@@ -767,7 +767,7 @@ class Test(object):
         """
         results = []
         for implementation in self.functionality.implementations:
-            result = implementation.run(input=self.body)
+            result = implementation.run(body=self.body)
             if self.judge(result, options):
                 results.append(Success(self, implementation))
             else:
