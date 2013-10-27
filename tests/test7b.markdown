@@ -7,7 +7,7 @@ tests for that functionality, even when they're not in
 the same file.
 
     -> Functionality "Cat" is implemented by
-    -> shell command "python cat.py -f %(test-file)"
+    -> shell command "python cat.py -f %(test-body-file)"
 
     -> Tests for functionality "Cat"
 

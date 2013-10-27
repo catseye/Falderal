@@ -15,7 +15,7 @@ FAILED  :
 Cat (file) dogs, too. (Intentional fail.)
 
 Location: test-utf8.markdown, line 37
-Impl    : shell command "python cat.py -f %(test-file) -o %(output-file)"
+Impl    : shell command "python cat.py -f %(test-body-file) -o %(output-file)"
 Body    : n ← ★
 Expected: output:
 m ← ★

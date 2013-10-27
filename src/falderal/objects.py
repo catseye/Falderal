@@ -555,11 +555,11 @@ class ShellImplementation(Implementation):
         >>> i.run('text')
         ErrorOutcome('cat: fhofhofhf: No such file or directory')
 
-        >>> i = ShellImplementation('cat %(test-file)')
+        >>> i = ShellImplementation('cat %(test-body-file)')
         >>> i.run('text')
         OutputOutcome('text')
 
-        >>> i = ShellImplementation('echo %(test-text)')
+        >>> i = ShellImplementation('echo %(test-body-text)')
         >>> i.run('text')
         OutputOutcome('text')
 
@@ -572,8 +572,10 @@ class ShellImplementation(Implementation):
         test_filename = None
         output_filename = None
         command = self.command
+
+        # DEPRECATED
         if '%(test-file)' in self.command:
-            # choose a temp file name and write the input to that file
+            # choose a temp file name and write the body to that file
             fd, test_filename = mkstemp(dir='.')
             test_filename = basename(test_filename)
             with open(test_filename, 'w') as file:
@@ -583,12 +585,34 @@ class ShellImplementation(Implementation):
             # replace all occurrences in command
             command = re.sub(r'\%\(test-file\)', test_filename, command)
             input = None
+        # DEPRECATED
         if '%(test-text)' in self.command:
             # escape all single quotes in input
             input = re.sub(r"'", r"\'", input)
             # replace all occurrences in command
             command = re.sub(r'\%\(test-text\)', input, command)
             input = None
+
+        # Preferred over test-file
+        if '%(test-body-file)' in self.command:
+            # choose a temp file name and write the body to that file
+            fd, test_filename = mkstemp(dir='.')
+            test_filename = basename(test_filename)
+            with open(test_filename, 'w') as file:
+                file.write(input)
+                file.close()
+            os.close(fd)
+            # replace all occurrences in command
+            command = re.sub(r'\%\(test-body-file\)', test_filename, command)
+            input = None
+        # Preferred over test-text
+        if '%(test-body-text)' in self.command:
+            # escape all single quotes in input
+            input = re.sub(r"'", r"\'", input)
+            # replace all occurrences in command
+            command = re.sub(r'\%\(test-body-text\)', input, command)
+            input = None
+
         if '%(output-file)' in self.command:
             # choose a temp file name to read output from later
             fd, output_filename = mkstemp(dir='.')

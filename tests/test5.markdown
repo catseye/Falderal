@@ -4,11 +4,11 @@ Falderal Test 5
 Tests for variable substitution, and missing EOL at end
 of output.
 
-Note the use of single quotes around the `%(test-text)` variable;
+Note the use of single quotes around the `%(test-body-text)` variable;
 without these, shell chaos is likely to result.
 
     -> Functionality "Echo" is implemented by
-    -> shell command "python echo.py '%(test-text)'"
+    -> shell command "python echo.py '%(test-body-text)'"
 
     -> Tests for functionality "Echo"
 
@@ -21,7 +21,7 @@ without these, shell chaos is likely to result.
     = hi
 
     -> Functionality "Echo, no newline" is implemented by
-    -> shell command "python echo.py -n '%(test-text)'"
+    -> shell command "python echo.py -n '%(test-body-text)'"
 
     -> Tests for functionality "Echo, no newline"
 
@@ -33,11 +33,11 @@ without these, shell chaos is likely to result.
     = hi
     = hi
 
-Note that single quotes needn't be supplied around `%(test-file)`
+Note that single quotes needn't be supplied around `%(test-body-file)`
 or `%(output-file)`.
 
     -> Functionality "Cat, from file" is implemented by
-    -> shell command "python cat.py -f %(test-file)"
+    -> shell command "python cat.py -f %(test-body-file)"
 
     -> Tests for functionality "Cat, from file"
 
@@ -63,7 +63,7 @@ or `%(output-file)`.
     = hi
 
     -> Functionality "Cat, to and from file" is implemented by
-    -> shell command "python cat.py -f %(test-file) -o %(output-file)"
+    -> shell command "python cat.py -f %(test-body-file) -o %(output-file)"
 
     -> Tests for functionality "Cat, to and from file"
 

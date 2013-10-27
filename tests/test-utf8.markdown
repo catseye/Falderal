@@ -23,7 +23,7 @@ Cat dogs, too. (Intentional fail.)
     = m ← ★
 
     -> Functionality "Cat (file)" is implemented by
-    -> shell command "python cat.py -f %(test-file) -o %(output-file)"
+    -> shell command "python cat.py -f %(test-body-file) -o %(output-file)"
 
     -> Tests for functionality "Cat (file)"
 
