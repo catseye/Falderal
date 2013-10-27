@@ -205,15 +205,12 @@ class InterveningMarkdown(Block):
 ##### Documents #####
 
 PREFIX = {
-    '| ': TestInput,
-    '? ': ExpectedError,
-    '= ': ExpectedResult,
-    '->': Pragma,
-    '> ': LiterateCode,
+    '    | ': TestInput,
+    '    ? ': ExpectedError,
+    '    = ': ExpectedResult,
+    '    ->': Pragma,
+    '    > ': LiterateCode,
 }
-
-for prefix in ('| ', '? ', '= ', '->'):
-    PREFIX['    ' + prefix] = PREFIX[prefix]
 
 
 class Document(object):
@@ -242,10 +239,10 @@ class Document(object):
 
         >>> d = Document()
         >>> d.append('This is a test file.')
-        >>> d.append('-> This is a pragma.')
-        >>> d.append("| This is some test input.\n")
-        >>> d.append("| It extends over two lines.")
-        >>> d.append('? Expected Error')
+        >>> d.append('    -> This is a pragma.')
+        >>> d.append("    | This is some test input.\n")
+        >>> d.append("    | It extends over two lines.")
+        >>> d.append('    ? Expected Error')
         >>> d.append('    | Indented test')
         >>> d.append('    = Indented result')
         >>> d.parse_lines_to_blocks()
@@ -292,15 +289,15 @@ class Document(object):
 
         >>> d = Document()
         >>> d.append('This is a test file.')
-        >>> d.append('-> Tests for functionality "Parse Thing"')
-        >>> d.append("| This is some test input.")
-        >>> d.append("| It extends over two lines.")
-        >>> d.append('? Expected Error')
+        >>> d.append('    -> Tests for functionality "Parse Thing"')
+        >>> d.append("    | This is some test input.")
+        >>> d.append("    | It extends over two lines.")
+        >>> d.append('    ? Expected Error')
         >>> d.append('    | Indented test\n')
         >>> d.append('    = Indented result')
-        >>> d.append('-> Tests for functionality "Run Thing"')
-        >>> d.append("| Thing")
-        >>> d.append('? Oops')
+        >>> d.append('    -> Tests for functionality "Run Thing"')
+        >>> d.append("    | Thing")
+        >>> d.append('    ? Oops')
         >>> tests = d.parse_blocks_to_tests(funs)
         >>> [t.input for t in tests]
         ['This is some test input.\nIt extends over two lines.',
@@ -314,8 +311,8 @@ class Document(object):
         ['Parse Thing', 'Run Thing']
 
         >>> d = Document()
-        >>> d.append("| This is some test input.")
-        >>> d.append('= Expected')
+        >>> d.append("    | This is some test input.")
+        >>> d.append('    = Expected')
         >>> d.parse_blocks_to_tests({})
         Traceback (most recent call last):
         ...
@@ -323,22 +320,22 @@ class Document(object):
 
         >>> d = Document()
         >>> d.append('This is a test file.')
-        >>> d.append('? Expected Error')
+        >>> d.append('    ? Expected Error')
         >>> d.parse_blocks_to_tests({})
         Traceback (most recent call last):
         ...
         FalderalSyntaxError: line 2: expectation must be preceded by test input
 
         >>> d = Document()
-        >>> d.append('-> This is pragma')
-        >>> d.append('= Expected')
+        >>> d.append('    -> Hello, this is pragma')
+        >>> d.append('    = Expected')
         >>> d.parse_blocks_to_tests({})
         Traceback (most recent call last):
         ...
         FalderalSyntaxError: line 2: expectation must be preceded by test input
 
         >>> d = Document()
-        >>> d.append('| This is test')
+        >>> d.append('    | This is test')
         >>> d.append('This is text')
         >>> d.parse_blocks_to_tests({})
         Traceback (most recent call last):
@@ -347,11 +344,11 @@ class Document(object):
 
         >>> d = Document()
         >>> funs = {}
-        >>> d.append('-> Functionality "Parse Stuff" is implemented by '
+        >>> d.append('    -> Functionality "Parse Stuff" is implemented by '
         ...          'shell command "parse"')
         >>> d.append('')
-        >>> d.append('-> Functionality "Parse Stuff" is')
-        >>> d.append('-> implemented by shell command "pxxxy"')
+        >>> d.append('    -> Functionality "Parse Stuff" is')
+        >>> d.append('    -> implemented by shell command "pxxxy"')
         >>> tests = d.parse_blocks_to_tests(funs)
         >>> len(funs.keys())
         1
