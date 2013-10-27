@@ -6,8 +6,19 @@ Version 0.9-PRE "Navy Pier" (current development version):
 * `py-falderal` now insists that blocks are indented four spaces, as the
   specification says.  It ignores blocks that are not indented.
 * In an error report `py-falderal` reports the location (filename and line
-  number of the beginning of the test text) of each test that failed.
-* Several internal renamings of object classes for greater clarity.
+  number of the beginning of the test text) of each test that failed, as
+  well as the name of the functionality that was being tested.
+* Several internal renamings of class and variable names for greater clarity.
+* Trying to standardize on the terminology "test body" for the body of a
+  test (as opposed to its "input", and opposed to it being passed to a shell
+  command line "as text".)
+* Support for specifying a block of text to be used as input for a test.
+* Dropped support for "implemented by Haskell function" backwards-compatibility.
+* Temporary files are no longer always created in the current directory.  That
+  was a workaround to support `ghc` from Haskell Platform under Cygwin.  They
+  are now created where the system wants them to be created (but you can set
+  the `TMP` environment variable to "." if you really want them to be created
+  in the current directory.)
 
 Version 0.8 "Ukranian Village" (current released version):
 
