@@ -24,6 +24,9 @@ Version 0.9-PRE "Navy Pier" (current development version):
   no implementations were found for some defined functionality, or if no
   tests were found in any of the documents, unless `--cavalier` is passed on
   the command line.
+* In `--verbose` mode, `py-falderal` will issue warnings about any test that
+  has been run twice (i.e. more than run on identical test body text and
+  implementation.)
 
 Version 0.8 "Ukranian Village" (current released version):
 

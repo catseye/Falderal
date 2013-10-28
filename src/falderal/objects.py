@@ -514,6 +514,12 @@ class CallableImplementation(Implementation):
     def __init__(self, callable):
         self.callable = callable
 
+    def __repr__(self):
+        return '%s(%r)' % (self.__class__.__name__, self.callable)
+
+    def __str__(self):
+        return 'callable "%r"' % self.callable
+
     def run(self, body=None, input=None):
         try:
             result = self.callable(body, input)
@@ -527,10 +533,10 @@ class ShellImplementation(Implementation):
         self.command = command
 
     def __repr__(self):
-        return "ShellImplementation(%r)" % self.name
+        return '%s(%r)' % (self.__class__.__name__, self.command)
 
     def __str__(self):
-        return repr(self)
+        return 'shell command "%s"' % self.command
 
     def run(self, body=None, input=None):
         r"""
@@ -669,12 +675,6 @@ class ShellImplementation(Implementation):
     def normalize_output(self, text):
         text = re.sub(r'\r\n', '\n', text)
         return text.strip('\r\n')
-
-    def __repr__(self):
-        return '%s(%r)' % (self.__class__.__name__, self.command)
-
-    def __str__(self):
-        return 'shell command "%s"' % self.command
 
 
 ##### Tests #####

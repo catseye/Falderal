@@ -18,7 +18,6 @@ class FalderalLintingError(ValueError):
 
 def main(args):
     parser = OptionParser()
-
     parser.add_option("-b", "--substring-error",
                       action="store_true", default=False,
                       help="match expected errors as substrings")
@@ -86,7 +85,6 @@ def main(args):
         sys.stderr.write('%s: %s\n' % (e.__class__.__name__, str(e)))
         return 1
 
-
     if options.dump:
         print "Functionalities:"
         for name in functionalities:
@@ -100,10 +98,26 @@ def main(args):
 
     # run tests
     results = []
+    dup_check = {}
     for test in tests:
         if options.verbose:
             print str(test)
-        results += test.run(options=options)
+        these_results = test.run(options=options)
+        if options.verbose:
+            for result in these_results:
+                key = repr(test.body_block.text()) + repr(result.implementation)
+                location = "%s, line %d" % (
+                    test.body_block.filename, test.body_block.line_num
+                )
+                dup_check.setdefault(key, []).append(location)
+        results += these_results
+
+    if options.verbose:
+        for key in dup_check:
+            if len(dup_check[key]) != 1:
+                print "WARNING: test/impl combination %s was run %d times %r" % (
+                    key, len(dup_check[key]), dup_check[key]
+                )
 
     # report on results
     for result in results:
