@@ -132,12 +132,6 @@ that stdout and stderr will always be combined deterministically, and
 having both kinds of expectations would allow non-deterministic combinations
 of the two to be matched.)
 
-### catch KeyboardInterrupt, report on all results so far
-
-When a test suite takes a long time to run, it would be very nice if
-interrupting it with `^C` were to show a report of all the tests that did
-manage to run, plus a count of how many were not run.
-
 ### Split InterveningMarkdown blocks to make nice test descriptions
 
 For example, if we have

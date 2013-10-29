@@ -27,6 +27,9 @@ Version 0.9-PRE "Navy Pier" (current development version):
 * In `--verbose` mode, `py-falderal` will issue warnings about any test that
   has been run twice (i.e. more than run on identical test body text and
   implementation.)
+* If `py-falderal` catches a `KeyboardInterrupt` exception while running tests,
+  it shows a report of all the tests that it did manage to run until that
+  point, and a warning message to the effect that not all tests were run.
 
 Version 0.8 "Ukranian Village" (current released version):
 

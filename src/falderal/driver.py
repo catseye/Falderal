@@ -99,18 +99,23 @@ def main(args):
     # run tests
     results = []
     dup_check = {}
-    for test in tests:
-        if options.verbose:
-            print str(test)
-        these_results = test.run(options=options)
-        if options.verbose:
-            for result in these_results:
-                key = repr(test.body_block.text()) + repr(result.implementation)
-                location = "%s, line %d" % (
-                    test.body_block.filename, test.body_block.line_num
-                )
-                dup_check.setdefault(key, []).append(location)
-        results += these_results
+    all_ran = False
+    try:
+        for test in tests:
+            if options.verbose:
+                print str(test)
+            these_results = test.run(options=options)
+            if options.verbose:
+                for result in these_results:
+                    key = repr(test.body_block.text()) + repr(result.implementation)
+                    location = "%s, line %d" % (
+                        test.body_block.filename, test.body_block.line_num
+                    )
+                    dup_check.setdefault(key, []).append(location)
+            results += these_results
+        all_ran = True
+    except KeyboardInterrupt:
+        pass
 
     if options.verbose:
         for key in dup_check:
@@ -124,6 +129,11 @@ def main(args):
         result.report()
     num_results = len(results)
     num_failures = len([x for x in results if not x.is_successful()])
+    if not all_ran:
+        print '**************************************************************'
+        print '** TESTING TERMINATED PREMATURELY -- NOT ALL TESTS WERE RUN **'
+        print '**************************************************************'
+
     print '--------------------------------'
     print 'Total test runs: %d, failures: %d' % (num_results, num_failures)
     print '--------------------------------'
