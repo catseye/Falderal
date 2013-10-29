@@ -31,7 +31,7 @@ Version 0.9-PRE "Navy Pier" (current development version):
   it shows a report of all the tests that it did manage to run until that
   point, and a warning message to the effect that not all tests were run.
 
-Version 0.8 "Ukranian Village" (current released version):
+Version 0.8 "Ukrainian Village" (current released version):
 
 * The reference implementation is now `py-falderal`.
 * Blocks *must* now be indented four spaces.  That Falderal test documents
