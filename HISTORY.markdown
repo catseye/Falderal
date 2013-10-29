@@ -1,7 +1,7 @@
 History
 =======
 
-Version 0.9-PRE "Navy Pier" (current development version):
+Version 0.9 "Navy Pier" (current released version):
 
 * `py-falderal` now insists that blocks are indented four spaces, as the
   specification says.  It ignores blocks that are not indented.
@@ -31,7 +31,7 @@ Version 0.9-PRE "Navy Pier" (current development version):
   it shows a report of all the tests that it did manage to run until that
   point, and a warning message to the effect that not all tests were run.
 
-Version 0.8 "Ukrainian Village" (current released version):
+Version 0.8 "Ukrainian Village" (previous released version):
 
 * The reference implementation is now `py-falderal`.
 * Blocks *must* now be indented four spaces.  That Falderal test documents
@@ -53,7 +53,7 @@ Version 0.8 "Ukrainian Village" (current released version):
   it just before loading a "tests" Falderal file which specified the
   functionalities being tested, but not their implementations.
 
-Version 0.7 "Ogden Avenue" (previous released version):
+Version 0.7 "Ogden Avenue":
 
 * **Note that this is the final version of Falderal where `Test.Falderal`
   is the reference implementation.**  In subsequent versions,
