@@ -7,92 +7,42 @@ py-falderal issue tracker on github)
 Falderal Literate Test Format
 -----------------------------
 
-### Support specifying input to tests
+### Policy for expecting both errors and output, success and failure
 
-2011-10-13
+Policy should be this, by example:
 
-Since Falderal is shaping up to be (good at being) a test framework for
-languages, often, each test presents an example program in the language
-being tested. And guess what, some programs don't just produce output,
-they take input, too. It would be really handy, then, to be able to specify
-some input to provide to a test when it is run. This could be specified in a
-block after the test contents block, with its own introducer. Example with
-a simple Scheme-like language:
+    | test
+    = foo
 
-    | (* 5 (read))
-    : 100
-    = 500
+Means: I expect this to succeed and to produce `foo` on stdout, and
+I don't care what's on stderr (or — stderr should be empty?)
+    
+    | test
+    = foo
+    ? bar
 
-The same test block could be re-used with multiple input blocks.
+Means: I expect this to succeed, to produce `foo` on stdout, and to
+produce `bar` on stderr.
 
-    | (* 5 (read))
-    : 100
-    = 500
+    | test
+    ? foo
 
-    : 5
-    = 25
+Means: I expect this to fail, and to produce `foo` on stderr.
+And to not care about stdout (or expect it to be empty.)
 
-How to actually implement this might take some thinking. For shell commands,
-different `%test` and `%input` variables could be used, like
+    | test
+    ? foo
+    = bar
 
-    shell command "myinterp %test <%input >%output"
+Means: I expect this to fail, to produce `foo` on stderr, and to
+produce `bar` on stdout.
 
-For Haskell functions, the obvious thing is to have the function be
-`String -> String -> String`, but do we insist all Haskell functions to be
-tested have that signature even if they don't have separate input, or do we
-have a different pragma to indicate "with input", or...?
+In other words, an error expectation may follow an output expectation
+and vice versa.  Error expectations always match stderr, output expectations
+always match stdout.  Which one's first should dictate whether we expect
+the command to succeed or fail.
 
-### Allow expectations to be transformed during comparison
-
-2011-11-08
-
-It would be nice to allow expectations to be transformed before they are
-compared to the actual output. The main use case for this that I can think of
-is to allow the expected output to be "pretty printed" (that is, nicely
-formatted) in the Falderal file, while the functionality being tested just
-produces a dump. The nicely formatted expected output should be "crunched"
-into the same ugly format as the dump.
-
-This doesn't work as well the other way; although one could compose the
-functionality being tested with an actual pretty-printer, that would
-prescribe a certain indentation scheme etc. that the expected output would
-have to match exactly. It would be rather better if the writer of the tests
-could format their expected output as they find most aesthetically pleasing
-in their literate tests, and have that be transformed instead.
-
-This might be somewhat tricky, however; if the transformation applied is
-too powerful, it can distort or eliminate the meaning of the test, and erode
-confidence.
-
-### Allow use of patterns in expected output
-
-2011-05-17
-
-Likely by way of regexps. This would be particularly valuable in
-exception-expecting tests, where we don't care about details such as the
-line number of the Haskell file at which the exception occurred.
-
-### Allow equivalency tests to be defined and run.
-
-2011-05-17
-
-To test functions of type `(Eq a) => String -> a`, you should be able to
-give give multiple input strings in a set; if the function does not map
-them all to the same value, that's a test failure.
-
-Syntax for an equivalency test might look like this:
-
-    | 2+2
-    ==
-    | 3+1
-    ==
-    | 7-3
-
-
-py-falderal
------------
-
-### Policy and/or options for looking at stdout and stderr
+What's after here hasn't been re-edited yet.
 
 When you have a program that produces output on both stdout and stderr,
 whether it fails or not, you might want to expect text on both stdout and
@@ -131,6 +81,86 @@ both `=` and `?` expectations on a single test.  (I can't convince myself
 that stdout and stderr will always be combined deterministically, and
 having both kinds of expectations would allow non-deterministic combinations
 of the two to be matched.)
+
+### Support specifying different input to multiple tests with same body
+
+We can currently say
+
+    | (* 5 (read))
+    + 100
+    = 500
+
+It would be nice if the same test body block could be re-used with multiple
+test input blocks.
+
+    | (* 5 (read))
+    + 100
+    = 500
+
+    + 5
+    = 25
+
+### Allow expectations to be transformed during comparison
+
+It would be nice to allow expectations to be transformed before they are
+compared to the actual output. The main use case for this that I can think of
+is to allow the expected output to be "pretty printed" (that is, nicely
+formatted) in the Falderal file, while the functionality being tested just
+produces a dump. The nicely formatted expected output should be "crunched"
+into the same ugly format as the dump.
+
+This doesn't work as well the other way; although one could compose the
+functionality being tested with an actual pretty-printer, that would
+prescribe a certain indentation scheme etc. that the expected output would
+have to match exactly. It would be rather better if the writer of the tests
+could format their expected output as they find most aesthetically pleasing
+in their literate tests, and have that be transformed instead.
+
+This might be somewhat tricky, however; if the transformation applied is
+too powerful, it can distort or eliminate the meaning of the test, and erode
+confidence.
+
+### Allow use of patterns in expected output
+
+Likely by way of regexps. This would be particularly valuable in
+exception-expecting tests, where we don't care about details such as the
+line number of the Haskell file at which the exception occurred.
+
+### Allow equivalency tests to be defined and run.
+
+To test functions of type `(Eq a) => String -> a`, you should be able to
+give give multiple input strings in a set; if the function does not map
+them all to the same value, that's a test failure.
+
+Syntax for an equivalency test might look like this:
+
+    | 2+2
+    ==
+    | 3+1
+    ==
+    | 7-3
+
+
+py-falderal
+-----------
+
+### Test report accumulation
+
+Multiple runs of `falderal` ought to be able to accumulate their results
+to a temporary file.  No report should be generated if this is selected.
+At the end, the report can be generated from the file.
+
+    rm -f FILE
+    falderal --record-to FILE tests1.markdown
+    falderal --record-to FILE tests2.markdown
+    falderal --report-from FILE
+
+### Support 'weak' testing
+
+In which we only care about whether the command succeeded or failed.
+In practice, this could be useful for testing the parser (just test
+if these forms parse.)  Or, if not this, then think of something that
+would make just testing parsers more useful.
 
 ### Split InterveningMarkdown blocks to make nice test descriptions
 

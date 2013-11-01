@@ -1,6 +1,10 @@
 History
 =======
 
+Version 0.10-PRE "Shedd Aquarium" (current development version):
+
+* (nothing yet)
+
 Version 0.9 "Navy Pier" (current released version):
 
 * `py-falderal` now insists that blocks are indented four spaces, as the
