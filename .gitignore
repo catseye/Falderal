@@ -2,3 +2,4 @@ impl/Test.Falderal/bin
 *.o
 *.hi
 *.pyc
+*.actual

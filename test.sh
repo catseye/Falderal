@@ -8,6 +8,7 @@ cd tests
 
 FIRST_TESTS="
 test1 test2 test3 test4 test5 test9 test10 test11 test-utf8 test-crlf
+test-err-no-stderr
 "
 for TEST in ${FIRST_TESTS}; do
     echo ${TEST}...
@@ -15,7 +16,7 @@ for TEST in ${FIRST_TESTS}; do
     diff -u ${TEST}.expected ${TEST}.actual || exit 1
 done
 
-# tests for listing
+# tests for linting
 LINTING_TESTS="test-no-tests"
 for TEST in ${LINTING_TESTS}; do
     echo ${TEST}...
