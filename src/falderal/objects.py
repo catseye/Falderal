@@ -654,16 +654,23 @@ class ShellImplementation(Implementation):
         if not (command_contained_test_body_file or command_contained_test_body_text):
             pipe_input = body
         outputs = pipe.communicate(input=pipe_input)
-        if pipe.returncode == 0:
+
+        def get_stdout(outputs):
             if output_filename is None:
-                output = self.normalize_output(outputs[0])
+                return self.normalize_output(outputs[0])
             else:
-                f = open(output_filename, 'r')
-                output = f.read()
-                f.close()
-            result = OutputOutcome(output)
+                with open(output_filename, 'r') as f:
+                    output = f.read()
+                return output
+            
+        if pipe.returncode == 0:
+            result = OutputOutcome(get_stdout(outputs))
         else:
-            result = ErrorOutcome(self.normalize_output(outputs[1]))
+            # first look for error message on stderr.  if empty, try stdout.
+            error_message = self.normalize_output(outputs[1])
+            if not error_message:
+                error_message = self.normalize_output(get_stdout(outputs))
+            result = ErrorOutcome(error_message)
 
         # clean up temporary files
         for filename in (test_filename, output_filename):
