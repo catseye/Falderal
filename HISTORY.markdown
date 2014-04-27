@@ -5,7 +5,15 @@ Version 0.10-PRE "Shedd Aquarium" (current development version):
 
 * (nothing yet)
 
-Version 0.9 "Navy Pier" (current released version):
+Version 0.9-2014.0427 "Municipal Pier #2" (current released version):
+
+* For a test of a shell command implementation that expects a failure,
+  if no output was found on standard error, the output of standard output
+  is checked against the failure expectation instead.  The primary use case
+  for this is Hugs, which (unlike `ghc`) displays error messages on stdout
+  rather than stderr.  "Municipal Pier #2" was the original name of Navy Pier.
+
+Version 0.9 "Navy Pier" (previous released version):
 
 * `py-falderal` now insists that blocks are indented four spaces, as the
   specification says.  It ignores blocks that are not indented.
@@ -35,7 +43,7 @@ Version 0.9 "Navy Pier" (current released version):
   it shows a report of all the tests that it did manage to run until that
   point, and a warning message to the effect that not all tests were run.
 
-Version 0.8 "Ukrainian Village" (previous released version):
+Version 0.8 "Ukrainian Village":
 
 * The reference implementation is now `py-falderal`.
 * Blocks *must* now be indented four spaces.  That Falderal test documents
