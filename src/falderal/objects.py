@@ -592,7 +592,7 @@ class ShellImplementation(Implementation):
         if '%(test-file)' in self.command:
             # choose a temp file name and write the body to that file
             fd, test_filename = mkstemp()
-            with open(test_filename, 'w') as file:
+            with codecs.open(test_filename, 'w', 'UTF-8') as file:
                 file.write(body)
                 file.close()
             os.close(fd)
