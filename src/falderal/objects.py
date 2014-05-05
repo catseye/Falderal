@@ -688,7 +688,7 @@ class ShellImplementation(Implementation):
         return result
 
     def normalize_output(self, text):
-        text = text.decode('UTF-8')
+        text = text.decode('UTF-8', errors='ignore')
         text = re.sub(r'\r\n', '\n', text)
         return text.strip('\r\n')
 
