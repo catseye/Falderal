@@ -24,6 +24,19 @@ m ← ★
 Actual  : output:
 n ← ★
 
+FAILED  : 
+
+Cat (input) dogs with its input, too. (Intentional fail.)
+
+Location: test-utf8.markdown, line 53
+Function: Cat (input)
+Impl    : shell command "python cat.py -f %(test-input-file) -o %(output-file)"
+Body    : m ← ★
+Expected: output:
+m ← ★
+Actual  : output:
+n ← ♡
+
 --------------------------------
-Total test runs: 4, failures: 2
+Total test runs: 6, failures: 3
 --------------------------------

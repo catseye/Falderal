@@ -1,10 +1,11 @@
+import codecs
 import os
 from os.path import basename
 import re
 from subprocess import Popen, PIPE
 from tempfile import mkstemp
 
-# Note: the __str__ method of all the classes defined herein should
+# Note: the __unicode__ method of all the classes defined herein should
 # produce a short, human-readable summary of the contents of the object,
 # suitable for displaying in the test results but not necessarily
 # complete.  __repr__ should produce something complete, when it is
@@ -44,6 +45,7 @@ class Outcome(object):
 
     """
     def __init__(self, text):
+        assert isinstance(text, unicode), repr(text)
         self.text = text
 
     def __repr__(self):
@@ -51,13 +53,13 @@ class Outcome(object):
 
 
 class OutputOutcome(Outcome):
-    def __str__(self):
-        return 'output:\n' + self.text
+    def __unicode__(self):
+        return u'output:\n' + self.text
 
 
 class ErrorOutcome(Outcome):
-    def __str__(self):
-        return 'error:\n' + self.text
+    def __unicode__(self):
+        return u'error:\n' + self.text
 
 
 class TestResult(object):
@@ -78,16 +80,16 @@ class TestResult(object):
     def is_successful(self):
         raise NotImplementedError
 
-    def format_text_block(self, obj):
+    def format_text_block(self, text):
         """If the given text extends over more than one line, precede it
         with a newline.
 
         """
-        text = str(obj)
-        if '\n' in text and not text.startswith(('output:', 'error:')):
-            return '\n' + text
+        text = unicode(text)
+        if u'\n' in text and not text.startswith((u'output:', u'error:')):
+            return (u'\n' + text).encode('UTF-8')
         else:
-            return text
+            return text.encode('UTF-8')
 
 
 class Success(TestResult):
@@ -124,6 +126,8 @@ class Failure(TestResult):
         print "Function: " + self.format_text_block(self.test.functionality.name)
         print "Impl    : " + self.format_text_block(self.implementation)
         print "Body    : " + self.format_text_block(self.test.body)
+        #if input is not None:
+        #print "Input   : " + self.format_text_block(self.test.input)
         print "Expected: " + self.format_text_block(self.test.expectation)
         print "Actual  : " + self.format_text_block(self.actual)
         print
@@ -141,9 +145,9 @@ class Failure(TestResult):
 class Block(object):
     """A segment of a Falderal-formatted file.
 
-    >>> b = Block('| ')
-    >>> b.append('| test body line 1')
-    >>> b.append('| test body line 2')
+    >>> b = Block(u'| ')
+    >>> b.append(u'| test body line 1')
+    >>> b.append(u'| test body line 2')
     >>> print b.text(prefix=True)
     | test body line 1
     | test body line 2
@@ -155,6 +159,7 @@ class Block(object):
 
     """
     def __init__(self, prefix, line_num=None, filename=None):
+        assert isinstance(prefix, unicode), repr(prefix)
         self.prefix = prefix
         self.lines = []
         self.line_num = line_num
@@ -165,8 +170,8 @@ class Block(object):
             self.__class__.__name__, self.prefix, self.line_num, self.filename
         )
 
-    def __str__(self):
-        return repr(self)
+    def __unicode__(self):
+        return unicode(repr(self))
 
     def location(self):
         filename = self.filename
@@ -175,6 +180,7 @@ class Block(object):
         return "%s, line %s" % (filename, self.line_num)
 
     def append(self, line):
+        assert isinstance(line, unicode)
         self.lines.append(line[len(self.prefix):])
 
     def text(self, prefix=False, seperator='\n'):
@@ -215,12 +221,12 @@ class InterveningMarkdown(Block):
 ##### Documents #####
 
 PREFIX = {
-    '    | ': TestBody,
-    '    + ': TestInput,
-    '    ? ': ExpectedError,
-    '    = ': ExpectedResult,
-    '    ->': Pragma,
-    '    > ': LiterateCode,
+    u'    | ': TestBody,
+    u'    + ': TestInput,
+    u'    ? ': ExpectedError,
+    u'    = ': ExpectedResult,
+    u'    ->': Pragma,
+    u'    > ': LiterateCode,
 }
 
 
@@ -236,7 +242,7 @@ class Document(object):
     @classmethod
     def load(cls, filename):
         d = cls()
-        f = open(filename)
+        f = codecs.open(filename, 'r', 'UTF-8')
         for line in f:
             d.append(line)
         f.close()
@@ -244,21 +250,22 @@ class Document(object):
         return d
 
     def append(self, line):
-        line = line.rstrip('\r\n')
+        assert isinstance(line, unicode)
+        line = line.rstrip(u'\r\n')
         self.lines.append(line)
 
     def parse_lines_to_blocks(self):
         r"""Parse the lines of the Document into Blocks.
 
         >>> d = Document()
-        >>> d.append('This is a test file.')
-        >>> d.append('    -> This is a pragma.')
-        >>> d.append("    | This is some test input.\n")
-        >>> d.append("    | It extends over two lines.")
-        >>> d.append('    ? Expected Error')
-        >>> d.append('    | Test with input')
-        >>> d.append('    + input-for-test')
-        >>> d.append('    = Expected result on output')
+        >>> d.append(u'This is a test file.')
+        >>> d.append(u'    -> This is a pragma.')
+        >>> d.append(u"    | This is some test input.\n")
+        >>> d.append(u"    | It extends over two lines.")
+        >>> d.append(u'    ? Expected Error')
+        >>> d.append(u'    | Test with input')
+        >>> d.append(u'    + input-for-test')
+        >>> d.append(u'    = Expected result on output')
         >>> d.parse_lines_to_blocks()
         >>> [b.__class__.__name__ for b in d.blocks]
         ['InterveningMarkdown', 'Pragma', 'TestBody', 'ExpectedError',
@@ -272,7 +279,7 @@ class Document(object):
         block = None
         line_num = 1
         for line in self.lines:
-            found_prefix = ''
+            found_prefix = u''
             for prefix in PREFIX.keys():
                 if line.startswith(prefix):
                     found_prefix = prefix
@@ -297,74 +304,74 @@ class Document(object):
 
         >>> funs = {}
         >>> d = Document()
-        >>> d.append("This is a text file.")
-        >>> d.append('It contains NO tests.')
+        >>> d.append(u"This is a text file.")
+        >>> d.append(u'It contains NO tests.')
         >>> d.parse_blocks_to_tests(funs)
         []
 
         >>> d = Document()
-        >>> d.append('This is a test file.')
-        >>> d.append('    -> Tests for functionality "Parse Thing"')
-        >>> d.append("    | This is some test input.")
-        >>> d.append("    | It extends over two lines.")
-        >>> d.append('    ? Expected Error')
-        >>> d.append('    | Test with input')
-        >>> d.append('    + input-for-test')
-        >>> d.append('    = Expected result on output')
-        >>> d.append('    -> Tests for functionality "Run Thing"')
-        >>> d.append("    | Thing")
-        >>> d.append('    ? Oops')
+        >>> d.append(u'This is a test file.')
+        >>> d.append(u'    -> Tests for functionality "Parse Thing"')
+        >>> d.append(u"    | This is some test input.")
+        >>> d.append(u"    | It extends over two lines.")
+        >>> d.append(u'    ? Expected Error')
+        >>> d.append(u'    | Test with input')
+        >>> d.append(u'    + input-for-test')
+        >>> d.append(u'    = Expected result on output')
+        >>> d.append(u'    -> Tests for functionality "Run Thing"')
+        >>> d.append(u"    | Thing")
+        >>> d.append(u'    ? Oops')
         >>> tests = d.parse_blocks_to_tests(funs)
         >>> [t.body for t in tests]
-        ['This is some test input.\nIt extends over two lines.',
-         'Test with input', 'Thing']
+        [u'This is some test input.\nIt extends over two lines.',
+         u'Test with input', u'Thing']
         >>> [t.input_block for t in tests]
-        [None, TestInput('    + ', line_num=7, filename=None), None]
+        [None, TestInput(u'    + ', line_num=7, filename=None), None]
         >>> tests[1].input_block.text()
-        'input-for-test'
+        u'input-for-test'
         >>> [t.expectation for t in tests]
-        [ErrorOutcome('Expected Error'), OutputOutcome('Expected result on output'),
-         ErrorOutcome('Oops')]
+        [ErrorOutcome(u'Expected Error'), OutputOutcome(u'Expected result on output'),
+         ErrorOutcome(u'Oops')]
         >>> [t.functionality.name for t in tests]
-        ['Parse Thing', 'Parse Thing', 'Run Thing']
+        [u'Parse Thing', u'Parse Thing', u'Run Thing']
         >>> sorted(funs.keys())
-        ['Parse Thing', 'Run Thing']
+        [u'Parse Thing', u'Run Thing']
 
         >>> d = Document()
-        >>> d.append("    | This is some test body.")
-        >>> d.append('    = Expected')
+        >>> d.append(u"    | This is some test body.")
+        >>> d.append(u'    = Expected')
         >>> d.parse_blocks_to_tests({})
         Traceback (most recent call last):
         ...
         FalderalSyntaxError: line 2: functionality under test not specified
 
         >>> d = Document()
-        >>> d.append('This is a test file.')
-        >>> d.append('    ? Expected Error')
+        >>> d.append(u'This is a test file.')
+        >>> d.append(u'    ? Expected Error')
         >>> d.parse_blocks_to_tests({})
         Traceback (most recent call last):
         ...
         FalderalSyntaxError: line 2: expectation must be preceded by test body or test input
 
         >>> d = Document()
-        >>> d.append('    -> Hello, this is pragma')
-        >>> d.append('    = Expected')
+        >>> d.append(u'    -> Hello, this is pragma')
+        >>> d.append(u'    = Expected')
         >>> d.parse_blocks_to_tests({})
         Traceback (most recent call last):
         ...
         FalderalSyntaxError: line 2: expectation must be preceded by test body or test input
 
         >>> d = Document()
-        >>> d.append('    | This is test')
-        >>> d.append('This is text')
+        >>> d.append(u'    | This is test')
+        >>> d.append(u'This is text')
         >>> d.parse_blocks_to_tests({})
         Traceback (most recent call last):
         ...
         FalderalSyntaxError: line 2: test body must be followed by expectation or test input
 
         >>> d = Document()
-        >>> d.append('    -> Hello, this is pragma')
-        >>> d.append('    + Input to where exactly?')
+        >>> d.append(u'    -> Hello, this is pragma')
+        >>> d.append(u'    + Input to where exactly?')
         >>> d.parse_blocks_to_tests({})
         Traceback (most recent call last):
         ...
@@ -372,16 +379,16 @@ class Document(object):
 
         >>> d = Document()
         >>> funs = {}
-        >>> d.append('    -> Functionality "Parse Stuff" is implemented by '
-        ...          'shell command "parse"')
-        >>> d.append('')
-        >>> d.append('    -> Functionality "Parse Stuff" is')
-        >>> d.append('    -> implemented by shell command "pxxxy"')
+        >>> d.append(u'    -> Functionality "Parse Stuff" is implemented by '
+        ...          u'shell command "parse"')
+        >>> d.append(u'')
+        >>> d.append(u'    -> Functionality "Parse Stuff" is')
+        >>> d.append(u'    -> implemented by shell command "pxxxy"')
         >>> tests = d.parse_blocks_to_tests(funs)
         >>> len(funs.keys())
         1
         >>> [i for i in funs["Parse Stuff"].implementations]
-        [ShellImplementation('parse'), ShellImplementation('pxxxy')]
+        [ShellImplementation(u'parse'), ShellImplementation(u'pxxxy')]
 
         """
         if self.blocks is None:
@@ -482,8 +489,8 @@ class Functionality(object):
     def __repr__(self):
         return "Functionality(%r)" % self.name
 
-    def __str__(self):
-        return repr(self)
+    def __unicode__(self):
+        return unicode(repr(self))
 
     def add_implementation(self, implementation):
         self.implementations.append(implementation)
@@ -517,15 +524,15 @@ class CallableImplementation(Implementation):
     def __repr__(self):
         return '%s(%r)' % (self.__class__.__name__, self.callable)
 
-    def __str__(self):
-        return 'callable "%r"' % self.callable
+    def __unicode__(self):
+        return u'callable "%r"' % self.callable
 
     def run(self, body=None, input=None):
         try:
             result = self.callable(body, input)
             return OutputOutcome(result)
         except Exception as e:
-            return ErrorOutcome(str(e))
+            return ErrorOutcome(unicode(e))
 
 
 class ShellImplementation(Implementation):
@@ -535,40 +542,40 @@ class ShellImplementation(Implementation):
     def __repr__(self):
         return '%s(%r)' % (self.__class__.__name__, self.command)
 
-    def __str__(self):
-        return 'shell command "%s"' % self.command
+    def __unicode__(self):
+        return u'shell command "%s"' % self.command
 
     def run(self, body=None, input=None):
         r"""
         >>> i = ShellImplementation('cat')
-        >>> i.run(body='text')
-        OutputOutcome('text')
+        >>> i.run(body=u'text')
+        OutputOutcome(u'text')
 
         >>> i = ShellImplementation('cat fhofhofhf')
-        >>> i.run(body='text')
-        ErrorOutcome('cat: fhofhofhf: No such file or directory')
+        >>> i.run(body=u'text')
+        ErrorOutcome(u'cat: fhofhofhf: No such file or directory')
 
         >>> i = ShellImplementation('cat %(test-body-file)')
-        >>> i.run(body='text')
-        OutputOutcome('text')
+        >>> i.run(body=u'text')
+        OutputOutcome(u'text')
 
         >>> i = ShellImplementation("echo '%(test-body-text)'")
-        >>> i.run(body='text')
-        OutputOutcome('text')
+        >>> i.run(body=u'text')
+        OutputOutcome(u'text')
 
         >>> i = ShellImplementation('cat >%(output-file)')
-        >>> i.run(body='text')
-        OutputOutcome('text')
+        >>> i.run(body=u'text')
+        OutputOutcome(u'text')
 
         >>> i = ShellImplementation("echo '%(test-body-text)' '%(test-input-text)'")
-        >>> i.run(body='text', input='zzrk')
-        OutputOutcome('text zzrk')
+        >>> i.run(body=u'text', input=u'zzrk')
+        OutputOutcome(u'text zzrk')
 
         Here the body is sent to cat's stdin, but cat ignores it.
         
         >>> i = ShellImplementation('cat >%(output-file) <%(test-input-file)')
-        >>> i.run(body='text', input='zzrk')
-        OutputOutcome('zzrk')
+        >>> i.run(body=u'text', input=u'zzrk')
+        OutputOutcome(u'zzrk')
 
         """
         # expand variables in the command
@@ -604,7 +611,7 @@ class ShellImplementation(Implementation):
         if '%(test-body-file)' in self.command:
             # choose a temp file name and write the body to that file
             fd, test_filename = mkstemp()
-            with open(test_filename, 'w') as file:
+            with codecs.open(test_filename, 'w', 'UTF-8') as file:
                 file.write(body)
                 file.close()
             os.close(fd)
@@ -622,8 +629,9 @@ class ShellImplementation(Implementation):
         if '%(test-input-file)' in self.command:
             # choose a temp file name and write the input to that file
             fd, test_input_filename = mkstemp()
-            with open(test_input_filename, 'w') as file:
-                file.write(input)
+            with codecs.open(test_input_filename, 'w', 'UTF-8') as file:
+                if input is not None:
+                    file.write(input)
                 file.close()
             os.close(fd)
             # replace all occurrences in command
@@ -650,16 +658,16 @@ class ShellImplementation(Implementation):
         # XXX Check and/or update the spec.
         pipe_input = None
         if not (command_contained_test_input_file or command_contained_test_input_text):
-            pipe_input = input
+            pipe_input = None if input is None else input.encode('UTF-8')
         if not (command_contained_test_body_file or command_contained_test_body_text):
-            pipe_input = body
+            pipe_input = None if body is None else body.encode('UTF-8')
         outputs = pipe.communicate(input=pipe_input)
 
         def get_stdout(outputs):
             if output_filename is None:
                 return self.normalize_output(outputs[0])
             else:
-                with open(output_filename, 'r') as f:
+                with codecs.open(output_filename, 'r', 'UTF-8') as f:
                     output = f.read()
                 return output
             
@@ -680,6 +688,7 @@ class ShellImplementation(Implementation):
         return result
 
     def normalize_output(self, text):
+        text = text.decode('UTF-8')
         text = re.sub(r'\r\n', '\n', text)
         return text.strip('\r\n')
 
@@ -697,11 +706,11 @@ class Test(object):
     
     TODO: maybe write a helper function for that instead.
 
-    >>> b = TestBody('    | ')
-    >>> b.append('    | foo')
-    >>> b.append('    | bar')
-    >>> i = TestInput('    + ')
-    >>> i.append('    + green')
+    >>> b = TestBody(u'    | ')
+    >>> b.append(u'    | foo')
+    >>> b.append(u'    | bar')
+    >>> i = TestInput(u'    + ')
+    >>> i.append(u'    + green')
     >>> t = Test(body_block=b, input_block=i)
     >>> print t.body
     foo
@@ -719,10 +728,12 @@ class Test(object):
         self.desc_block = desc_block
         self.body = body
         if self.body is None:
-            self.body = self.body_block.text()
+            self.body = unicode(self.body_block.text())
         self.input = input
         if self.input is None and self.input_block is not None:
-            self.input = self.input_block.text()
+            self.input = unicode(self.input_block.text())
+        assert isinstance(self.body, unicode)
+        assert self.input is None or isinstance(self.input, unicode)
     
     def __repr__(self):
         return (
@@ -733,7 +744,7 @@ class Test(object):
         )
 
     def __str__(self):
-        return repr(self)
+        return unicode(repr(self))
 
     def run(self, options=DEFAULT_OPTIONS):
         """Returns a list of Results, one for each implementation of
@@ -741,30 +752,30 @@ class Test(object):
 
         >>> f = Functionality('Cat File')
         >>> f.add_implementation(CallableImplementation(lambda x, y: x))
-        >>> t = Test(body='foo', expectation=OutputOutcome('foo'),
+        >>> t = Test(body=u'foo', expectation=OutputOutcome(u'foo'),
         ...          functionality=f)
         >>> [r.short_description() for r in t.run()]
         ['success']
 
         >>> f = Functionality('Cat File')
         >>> f.add_implementation(CallableImplementation(lambda x, y: x))
-        >>> t = Test(body='foo', expectation=OutputOutcome('bar'),
+        >>> t = Test(body=u'foo', expectation=OutputOutcome(u'bar'),
         ...          functionality=f)
         >>> [r.short_description() for r in t.run()]
-        ["expected OutputOutcome('bar'), got OutputOutcome('foo')"]
+        ["expected OutputOutcome(u'bar'), got OutputOutcome(u'foo')"]
 
         >>> f = Functionality('Cat File')
         >>> f.add_implementation(CallableImplementation(lambda x, y: x))
-        >>> t = Test(body='foo', expectation=ErrorOutcome('foo'),
+        >>> t = Test(body=u'foo', expectation=ErrorOutcome(u'foo'),
         ...          functionality=f)
         >>> [r.short_description() for r in t.run()]
-        ["expected ErrorOutcome('foo'), got OutputOutcome('foo')"]
+        ["expected ErrorOutcome(u'foo'), got OutputOutcome(u'foo')"]
 
         >>> f = Functionality('Cat File')
         >>> def e(x, y):
         ...     raise ValueError(x)
         >>> f.add_implementation(CallableImplementation(e))
-        >>> t = Test(body='foo', expectation=ErrorOutcome('foo'),
+        >>> t = Test(body=u'foo', expectation=ErrorOutcome(u'foo'),
         ...          functionality=f)
         >>> [r.short_description() for r in t.run()]
         ['success']
@@ -773,23 +784,23 @@ class Test(object):
         >>> def e(x, y):
         ...     raise ValueError(x)
         >>> f.add_implementation(CallableImplementation(e))
-        >>> t = Test(body='foo', expectation=ErrorOutcome('bar'),
+        >>> t = Test(body=u'foo', expectation=ErrorOutcome(u'bar'),
         ...          functionality=f)
         >>> [r.short_description() for r in t.run()]
-        ["expected ErrorOutcome('bar'), got ErrorOutcome('foo')"]
+        ["expected ErrorOutcome(u'bar'), got ErrorOutcome(u'foo')"]
 
         >>> f = Functionality('Cat File')
         >>> def e(x, y):
         ...     raise ValueError(x)
         >>> f.add_implementation(CallableImplementation(e))
-        >>> t = Test(body='foo', expectation=OutputOutcome('foo'),
+        >>> t = Test(body=u'foo', expectation=OutputOutcome(u'foo'),
         ...          functionality=f)
         >>> [r.short_description() for r in t.run()]
-        ["expected OutputOutcome('foo'), got ErrorOutcome('foo')"]
+        ["expected OutputOutcome(u'foo'), got ErrorOutcome(u'foo')"]
 
         >>> f = Functionality('Cat File with Input')
         >>> f.add_implementation(CallableImplementation(lambda x, y: x + y))
-        >>> t = Test(body='foo', input='bar', expectation=OutputOutcome('foobar'),
+        >>> t = Test(body=u'foo', input=u'bar', expectation=OutputOutcome(u'foobar'),
         ...          functionality=f)
         >>> [r.short_description() for r in t.run()]
         ['success']
@@ -805,11 +816,11 @@ class Test(object):
         ...     raise ValueError(body)
         >>> for c in (c1, c2, c3):
         ...     f.add_implementation(CallableImplementation(c))
-        >>> t = Test(body='foo', expectation=OutputOutcome('foo'),
+        >>> t = Test(body=u'foo', expectation=OutputOutcome(u'foo'),
         ...          functionality=f)
         >>> [r.short_description() for r in t.run()]
-        ['success', "expected OutputOutcome('foo'), got OutputOutcome('foo...')",
-         "expected OutputOutcome('foo'), got ErrorOutcome('foo')"]
+        ['success', "expected OutputOutcome(u'foo'), got OutputOutcome(u'foo...')",
+         "expected OutputOutcome(u'foo'), got ErrorOutcome(u'foo')"]
 
         """
         results = []

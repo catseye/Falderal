@@ -36,3 +36,20 @@ Cat (file) dogs, too. (Intentional fail.)
 
     | n ← ★
     = m ← ★
+
+    -> Functionality "Cat (input)" is implemented by
+    -> shell command "python cat.py -f %(test-input-file) -o %(output-file)"
+
+    -> Tests for functionality "Cat (input)"
+
+Cat (input) cats with its input.
+
+    | ignored ← ♡
+    + n ← ♡
+    = n ← ♡
+
+Cat (input) dogs with its input, too. (Intentional fail.)
+
+    | m ← ★
+    + n ← ♡
+    = m ← ★
