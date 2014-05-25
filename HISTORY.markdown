@@ -3,17 +3,26 @@ History
 
 Version 0.10-PRE "Shedd Aquarium" (current development version):
 
-* (nothing yet)
+*   (nothing yet)
 
-Version 0.9-2014.0427 "Municipal Pier #2" (current released version):
+Version 0.9-2014.0525 "Municipal Pier #2, May 25th 2014" (current released
+version):
 
-* For a test of a shell command implementation that expects a failure,
-  if no output was found on standard error, the output of standard output
-  is checked against the failure expectation instead.  The primary use case
-  for this is Hugs, which (unlike `ghc`) displays error messages on stdout
-  rather than stderr.  "Municipal Pier #2" was the original name of Navy Pier.
+*   Shell implementations assume input and output is encoded UTF-8; any
+    malformed UTF-8 is simply ignored (for better or worse, for now.)
+    Falderal documents are assumed to be encoded in UTF-8; this includes
+    test bodies, expectations, etc.  Internally, in the reference
+    implementation, all strings are stored as Unicode.
 
-Version 0.9 "Navy Pier" (previous released version):
+Version 0.9-2014.0427 "Municipal Pier #2" (previous released version):
+
+*   For a test of a shell command implementation that expects a failure,
+    if no output was found on standard error, the output of standard output
+    is checked against the failure expectation instead.  The primary use case
+    for this is Hugs, which (unlike `ghc`) displays error messages on stdout
+    rather than stderr.  "Municipal Pier #2" was the original name of Navy Pier.
+
+Version 0.9 "Navy Pier":
 
 * `py-falderal` now insists that blocks are indented four spaces, as the
   specification says.  It ignores blocks that are not indented.
