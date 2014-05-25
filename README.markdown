@@ -1,7 +1,7 @@
 Falderal
 ========
 
-Version 0.9-2014.0525 "Municipal Pier #2, May 25th 2014"
+Version 0.10-PRE "Shedd Aquarium"
 
 This is the reference distribution of Falderal, a file format for literate
 test suites.  Falderal is particularly suited for:
