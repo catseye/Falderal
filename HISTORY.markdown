@@ -3,7 +3,7 @@ History
 
 Version 0.10-PRE "Shedd Aquarium" (current development version):
 
-*   (nothing yet)
+*   Removed the old, bitrotting Haskell implementation.
 
 Version 0.9-2014.0525 "Municipal Pier #2, May 25th 2014" (current released
 version):
