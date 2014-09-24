@@ -7,7 +7,7 @@ was produced simply contains (rather than totally equals)
 the expected error text.
 
     -> Functionality "Fail" is implemented by shell command
-    -> "python fail.py foo '%(test-text)' 1"
+    -> "python fail.py foo '%(test-body-text)' 1"
 
     -> Tests for functionality "Fail"
 

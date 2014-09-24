@@ -587,27 +587,7 @@ class ShellImplementation(Implementation):
         command_contained_test_body_text = False
         command_contained_test_input_file = False
         command_contained_test_input_text = False
-        
-        # DEPRECATED
-        if '%(test-file)' in self.command:
-            # choose a temp file name and write the body to that file
-            fd, test_filename = mkstemp()
-            with codecs.open(test_filename, 'w', 'UTF-8') as file:
-                file.write(body)
-                file.close()
-            os.close(fd)
-            # replace all occurrences in command
-            command = re.sub(r'\%\(test-file\)', test_filename, command)
-            command_contained_test_body_file = True
-        # DEPRECATED
-        if '%(test-text)' in self.command:
-            # escape all single quotes in body
-            body = re.sub(r"'", r"\'", body)
-            # replace all occurrences in command
-            command = re.sub(r'\%\(test-text\)', body, command)
-            command_contained_test_body_text = True
 
-        # Preferred over test-file
         if '%(test-body-file)' in self.command:
             # choose a temp file name and write the body to that file
             fd, test_filename = mkstemp()
@@ -618,7 +598,7 @@ class ShellImplementation(Implementation):
             # replace all occurrences in command
             command = re.sub(r'\%\(test-body-file\)', test_filename, command)
             command_contained_test_body_file = True
-        # Preferred over test-text
+
         if '%(test-body-text)' in self.command:
             # escape all single quotes in body
             body = re.sub(r"'", r"\'", body)
@@ -637,6 +617,7 @@ class ShellImplementation(Implementation):
             # replace all occurrences in command
             command = re.sub(r'\%\(test-input-file\)', test_input_filename, command)
             command_contained_test_input_file = True
+
         if '%(test-input-text)' in self.command:
             # escape all single quotes in input
             body = re.sub(r"'", r"\'", body)
