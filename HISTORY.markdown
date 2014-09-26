@@ -6,6 +6,7 @@ Version 0.10-PRE "Shedd Aquarium" (current development version):
 *   Removed the old, bitrotting Haskell implementation.
 *   Removed deprecated `%(test-text)` and `%(test-file)` variables
     (`%(test-body-text)` and `%(test-body-file)` should be used now.)
+*   Added some adapters in the `script/` directory of the repo.
 
 Version 0.9-2014.0525 "Municipal Pier #2, May 25th 2014" (current released
 version):
