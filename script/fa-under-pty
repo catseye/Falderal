@@ -17,11 +17,9 @@ else:
     accum = ''
     SIZE = 1024
     done = False
-    while not done:
-        s = os.read(fd, SIZE)
-        if len(s) < SIZE:
-            done = True
-        accum += s
+    f = os.fdopen(fd)
+    s = f.read()
+    f.close()
     (pid, exitcode) = os.waitpid(pid, 0)
     core_dumped = (exitcode & 128) == 128
     exitcode = exitcode >> 8
