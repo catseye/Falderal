@@ -104,8 +104,6 @@ This distribution contains:
     the `bin` directory of this distribution to your `$PATH`.  This
     implementation is (somewhat) documented in `doc/py-falderal.markdown`.
 *   `src` — source code for py-falderal.
-*   `impl/Test.Falderal` — a (lagging, and not conformant) implementation of
-    Falderal in Haskell.
 *   `tests` — a set of tests for Falderal itself.  (Note that these are not
     written in Falderal, as that would just be too confusing.)
 *   `HISTORY.markdown` — changelog for releases of Falderal.

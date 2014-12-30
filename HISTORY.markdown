@@ -6,7 +6,10 @@ Version 0.10-PRE "Shedd Aquarium" (current development version):
 *   Removed the old, bitrotting Haskell implementation.
 *   Removed deprecated `%(test-text)` and `%(test-file)` variables
     (`%(test-body-text)` and `%(test-body-file)` should be used now.)
-*   Added some adapters in the `script/` directory of the repo.
+*   Added some adapters in the `script/` directory of the repo:
+    *   `fa-under-pty` runs a target program under a pseudoterminal
+    *   `fa-bin-to-hex` converts 8-bit binary output to hexadecimal codes 
+    *   `fa-hex-to-bin` converts hexadecimal codes to 8-bit binary output
 
 Version 0.9-2014.0525 "Municipal Pier #2, May 25th 2014" (current released
 version):

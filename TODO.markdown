@@ -189,9 +189,9 @@ http://stackoverflow.com/questions/287871/print-in-terminal-with-colors-using-py
 if stdout is not a tty) to colorize the output with, of course, pass=green,
 fail=red.
 
-OTOH, you'd often want to pipe the output to less, which will disable
-colourization anyway, on the tty check.  So maybe look at how `cdiff` allows
-colourized text to be paged, first.
+But, you'd often want to pipe the output to `less`, which by default makes
+control characters visible, defeating colourization.  But there is a flag
+to less, `less -R`, which retains colourization.  So use that.
 
 ### Flag invalid sequences of lines as errors
 
