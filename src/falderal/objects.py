@@ -318,22 +318,29 @@ class Document(object):
         >>> d.append(u'    | Test with input')
         >>> d.append(u'    + input-for-test')
         >>> d.append(u'    = Expected result on output')
+        >>> d.append(u'    + Other input-for-test')
+        >>> d.append(u'    = Other Expected result on output')
         >>> d.append(u'    -> Tests for functionality "Run Thing"')
         >>> d.append(u"    | Thing")
         >>> d.append(u'    ? Oops')
         >>> tests = d.parse_blocks_to_tests(funs)
         >>> [t.body for t in tests]
         [u'This is some test input.\nIt extends over two lines.',
-         u'Test with input', u'Thing']
+         u'Test with input', u'Test with input', u'Thing']
         >>> [t.input_block for t in tests]
-        [None, TestInput(u'    + ', line_num=7, filename=None), None]
+        [None, TestInput(u'    + ', line_num=7, filename=None),
+         TestInput(u'    + ', line_num=9, filename=None), None]
         >>> tests[1].input_block.text()
         u'input-for-test'
+        >>> tests[2].input_block.text()
+        u'Other input-for-test'
         >>> [t.expectation for t in tests]
-        [ErrorOutcome(u'Expected Error'), OutputOutcome(u'Expected result on output'),
+        [ErrorOutcome(u'Expected Error'),
+         OutputOutcome(u'Expected result on output'),
+         OutputOutcome(u'Other Expected result on output'),
          ErrorOutcome(u'Oops')]
         >>> [t.functionality.name for t in tests]
-        [u'Parse Thing', u'Parse Thing', u'Run Thing']
+        [u'Parse Thing', u'Parse Thing', u'Parse Thing', u'Run Thing']
         >>> sorted(funs.keys())
         [u'Parse Thing', u'Run Thing']
 
@@ -398,6 +405,7 @@ class Document(object):
         prev_block = None
         last_desc_block = None
         last_test_body_block = None
+        last_used_test_body_block = None
         last_test_input_block = None
         for block in self.blocks:
             # First, handle ExpectedError/ExpectedOutcome blocks.
@@ -422,14 +430,20 @@ class Document(object):
                             functionality=current_functionality,
                             desc_block=last_desc_block)
                 tests.append(test)
+                last_used_test_body_block = last_test_body_block
                 last_test_body_block = None
                 last_test_input_block = None
             elif isinstance(block, TestInput):
-                # Test input must be preceded by TestBody.
+                # First test input must be preceded by TestBody.
                 if not isinstance(prev_block, TestBody):
-                    raise FalderalSyntaxError(
-                        ("line %d: " % block.line_num) +
-                        "test input must be preceded by test body")
+                    if last_used_test_body_block is None:
+                        raise FalderalSyntaxError(
+                            ("line %d: " % block.line_num) +
+                            "test input must be preceded by test body")
+                    else:
+                        # Subsequent test input not preceded by body
+                        # shares most recently defined body.
+                        last_test_body_block = last_used_test_body_block
                 # If we see a TestInput block, record it.
                 last_test_input_block = block
             elif isinstance(block, TestBody):

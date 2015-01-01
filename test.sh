@@ -2,7 +2,7 @@
 
 # Really crude test harness for py-falderal itself...
 
-bin/falderal -t || exit 1
+bin/falderal -v -t || exit 1
 
 cd tests
 

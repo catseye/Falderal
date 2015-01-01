@@ -82,24 +82,6 @@ that stdout and stderr will always be combined deterministically, and
 having both kinds of expectations would allow non-deterministic combinations
 of the two to be matched.)
 
-### Support specifying different input to multiple tests with same body
-
-We can currently say
-
-    | (* 5 (read))
-    + 100
-    = 500
-
-It would be nice if the same test body block could be re-used with multiple
-test input blocks.
-
-    | (* 5 (read))
-    + 100
-    = 500
-
-    + 5
-    = 25
-
 ### Allow expectations to be transformed during comparison
 
 It would be nice to allow expectations to be transformed before they are

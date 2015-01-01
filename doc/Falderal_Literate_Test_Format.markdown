@@ -6,10 +6,10 @@ This document describes the proposed Falderal Literate Test Format.
 Status
 ------
 
-This document is a *draft*.  It is nominally "version 0.9" because it
-describes something that version 0.9 of `py-falderal` mostly implements.
+This document is a *draft*.  It is nominally "version 0.10" because it
+describes something that version 0.10 of `py-falderal` mostly implements.
 We will deign to note which sections of this document the current released
-version of `pt-falderal` implements, and which it does not.  However,
+version of `py-falderal` implements, and which it does not.  However,
 this document is a work in progress, subject to change, and subject to get
 out of sync with `py-falderal`.  It should not be considered to be
 anything except a draft until it is described as "version 1.0".
@@ -57,8 +57,10 @@ occur:
     
 *   Test body text should occur after intervening text.
 *   Test body test may be optionally followed by test input text.
-    Test input text must be immediately preceded by test body text,
+*   The first test input text must be immediately preceded by test body text,
     with no intervening text.
+*   Subsequent test input texts need not be preceded by a test body text;
+    in this case, the previously-defined test body text will be used again.
 *   Test body text must be followed by either test input text, expected
     output text, or expected error text, with no intervening text.
 *   Either expected output or error text must follow either test body
@@ -231,6 +233,9 @@ Valid examples:
     + input to give it
     ? error to expect
 
+    + different input to give the immediately previously defined test body
+    ? different error to expect
+
 Invalid examples:
 
     | thing to test
@@ -240,7 +245,7 @@ Invalid examples:
     + input to give it
     = output to expect
 
-...test input must be preceded by a test body.
+...test input must be preceded by a test body (if this is the first test.)
 
     ? error to expect
 
