@@ -1,7 +1,7 @@
 History
 =======
 
-Version 0.10-PRE "Shedd Aquarium" (current development version):
+Version 0.10 "Shedd Aquarium" (current released version):
 
 *   Removed the old, bitrotting Haskell implementation.
 *   Removed deprecated `%(test-text)` and `%(test-file)` variables
@@ -14,7 +14,7 @@ Version 0.10-PRE "Shedd Aquarium" (current development version):
     there was a previous test, and the test body of the previous test will
     be re-used with the new input in the new test.
 
-Version 0.9-2014.0525 "Municipal Pier #2, May 25th 2014" (current released
+Version 0.9-2014.0525 "Municipal Pier #2, May 25th 2014" (previous released
 version):
 
 *   Shell implementations assume input and output is encoded UTF-8; any
@@ -23,7 +23,7 @@ version):
     test bodies, expectations, etc.  Internally, in the reference
     implementation, all strings are stored as Unicode.
 
-Version 0.9-2014.0427 "Municipal Pier #2" (previous released version):
+Version 0.9-2014.0427 "Municipal Pier #2":
 
 *   For a test of a shell command implementation that expects a failure,
     if no output was found on standard error, the output of standard output

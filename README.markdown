@@ -1,7 +1,7 @@
 Falderal
 ========
 
-Version 0.10-PRE "Shedd Aquarium"
+Version 0.10 "Shedd Aquarium"
 
 This is the reference distribution of Falderal, a file format for literate
 test suites.  Falderal is particularly suited for:
