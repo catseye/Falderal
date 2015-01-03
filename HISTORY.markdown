@@ -10,6 +10,9 @@ Version 0.10-PRE "Shedd Aquarium" (current development version):
     *   `fa-under-pty` runs a target program under a pseudoterminal
     *   `fa-bin-to-hex` converts 8-bit binary output to hexadecimal codes 
     *   `fa-hex-to-bin` converts hexadecimal codes to 8-bit binary output
+*   Added the rule that a test may consist of an input section (`+`) if
+    there was a previous test, and the test body of the previous test will
+    be re-used with the new input in the new test.
 
 Version 0.9-2014.0525 "Municipal Pier #2, May 25th 2014" (current released
 version):

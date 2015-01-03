@@ -1,11 +1,11 @@
-Falderal is distributed under the following, BSD-compatible licenses.
+Falderal is distributed under the following BSD-compatible licenses.
 
 All documentation is covered by this license, modelled after the
 "Report on the Programming Language Haskell 98" license:
 
 -----------------------------------------------------------------------------
 
-  Copyright (c)2011-2013 Chris Pressey, Cat's Eye Technologies.
+  Copyright (c)2011-2015 Chris Pressey, Cat's Eye Technologies.
   All rights reserved.
 
   The authors intend this Report to belong to the entire Falderal
@@ -19,12 +19,12 @@ All documentation is covered by this license, modelled after the
 -----------------------------------------------------------------------------
 
 All source code for the implementations of Falderal in this distribution
-(Test.Falderal, py-falderal) as well as the internal test suite itself is
-covered by this BSD 3-clause license:
+(py-falderal) as well as the internal test suite itself is covered by this
+BSD 3-clause license:
 
 -----------------------------------------------------------------------------
 
-Copyright (c)2011-2013 Cat's Eye Technologies.  All rights reserved.
+Copyright (c)2011-2015 Cat's Eye Technologies.  All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions
