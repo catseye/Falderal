@@ -1,5 +1,5 @@
-Falderal Test 9
----------------
+Falderal Test: Standard output and standard error
+-------------------------------------------------
 
 When we have a test that expects a successful result, the
 expected text is matched against standard output.

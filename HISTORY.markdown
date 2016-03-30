@@ -4,6 +4,8 @@ History
 Version 0.11-PRE "Dan Ryan Expressway" (current development version):
 
 *   Renamed the internal tests to have more descriptive names (in progress.)
+*   The first command-line argument being `test` for compatibility with
+    previous versions of `falderal` has been removed.
 
 Version 0.10 "Shedd Aquarium" (current released version):
 

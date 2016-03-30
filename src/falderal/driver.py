@@ -36,10 +36,6 @@ def main(args):
 
     (options, args) = parser.parse_args(args[1:])
 
-    # for compatibility with previous versions of falderal
-    if args and args[0] == 'test':
-        args = args[1:]
-
     if options.test:
         import doctest
         import falderal.objects
