@@ -7,7 +7,8 @@ bin/falderal -v -t || exit 1
 cd tests
 
 FIRST_TESTS="
-test1 test2 test3 test4 test5 test9 test10 test11 test-utf8 test-crlf
+test1 test2 test3 test4 test5 test9
+test-bad-indentation test-input-sections test-utf8 test-crlf
 test-err-no-stderr test-shared-body
 "
 for TEST in ${FIRST_TESTS}; do

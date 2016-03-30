@@ -1,6 +1,10 @@
 History
 =======
 
+Version 0.11-PRE "Dan Ryan Expressway" (current development version):
+
+*   Renamed the internal tests to have more descriptive names (in progress.)
+
 Version 0.10 "Shedd Aquarium" (current released version):
 
 *   Removed the old, bitrotting Haskell implementation.
