@@ -158,8 +158,10 @@ class Block(object):
     test body line 1test body line 2
 
     """
-    def __init__(self, line_num=None, filename=None):
-        self.lines = []
+    def __init__(self, line_num=None, filename=None, lines=None):
+        if lines is None:
+            lines = []
+        self.lines = lines
         self.line_num = line_num
         self.filename = filename
 
@@ -189,6 +191,7 @@ class Block(object):
             return seperator.join(prefix + line for line in self.lines)
 
     def classify(self):
+        """Returns a list of Blocks of more specific subclasses of Block."""
 
         PREFIX = {
             u'| ': TestBody,
@@ -199,14 +202,50 @@ class Block(object):
             u'> ': LiterateCode,
         }
 
+        contains_subblocks = False
         for prefix in PREFIX.keys():
             if all(line.startswith(prefix) for line in self.lines):
-                return PREFIX[prefix]
+                cls = PREFIX[prefix]
+                return [cls(
+                    line_num=self.line_num,
+                    filename=self.filename,
+                    lines=[line[len(prefix):] for line in self.lines],
+                )]
+            if any(line.startswith(prefix) for line in self.lines):
+                contains_subblocks = True
+                break
 
-        # TODO: if here, mixed block.  Further classify.  Split into blocks
-        # if it cannot be classified.
+        if not contains_subblocks:
+            return [InterveningMarkdown(
+                        line_num=self.line_num,
+                        filename=self.filename,
+                        lines=self.lines
+                    )]
 
-        raise NotImplementedError("mixed block")
+        # If we got here, it's a mixed block.
+        # TODO: Further classify.
+
+        # Split into individual blocks.
+        prefix = ''
+        blocks = []
+
+        def next(block):
+            if block is not None:
+                blocks.extend(block.classify())
+            return Block(line_num=self.line_num,
+                         filename=self.filename)
+
+        block = next(None)
+
+        for line in self.lines:
+            line_prefix = line[:2]
+            if line_prefix != prefix:
+                block = next(block)
+            block.append(line)
+
+        next(block)
+
+        return blocks
 
 
 class LiterateCode(Block):
@@ -286,17 +325,15 @@ class Document(object):
         """
         state = 'toplevel'
         blocks = []
-        block = None
         line_num = 1
 
         def next(block):
             if block is not None:
-                # TODO refine the block by calling block.classify()
-                blocks.append(block)
+                blocks.extend(block.classify())
             return Block(line_num=line_num,
                          filename=self.filename)
 
-        block = next(block)
+        block = next(None)
 
         for line in self.lines:
             if state == 'toplevel':
@@ -315,7 +352,7 @@ class Document(object):
             block.append(line)
             line_num += 1
 
-        block = next(block)
+        next(block)
 
         self.blocks = blocks
 
@@ -332,7 +369,7 @@ class Document(object):
         >>> d = Document()
         >>> d.append(u'This is a test file.')
         >>> d.append(u'    -> Tests for functionality "Parse Thing"')
-        >>> d.append(u"    | This is some test input.")
+        >>> d.append(u"    | This is some test body.")
         >>> d.append(u"    | It extends over two lines.")
         >>> d.append(u'    ? Expected Error')
         >>> d.append(u'    | Test with input')
@@ -343,9 +380,14 @@ class Document(object):
         >>> d.append(u'    -> Tests for functionality "Run Thing"')
         >>> d.append(u"    | Thing")
         >>> d.append(u'    ? Oops')
+        >>> d.parse_lines_to_blocks()
+        >>> [b.__class__.__name__ for b in d.blocks]
+        ['InterveningMarkdown', 'Pragma', 'TestBody', 'ExpectedError',
+         'TestBody', 'TestInput', 'ExpectedResult',
+         'TestInput', 'ExpectedResult', 'Pragma', 'TestBody', 'ExpectedError']
         >>> tests = d.parse_blocks_to_tests(funs)
         >>> [t.body for t in tests]
-        [u'This is some test input.\nIt extends over two lines.',
+        [u'This is some test body.\nIt extends over two lines.',
          u'Test with input', u'Test with input', u'Thing']
         >>> [t.input_block for t in tests]
         [None, TestInput(u'    + ', line_num=7, filename=None),
