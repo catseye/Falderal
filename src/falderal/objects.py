@@ -145,10 +145,10 @@ class Failure(TestResult):
 class Block(object):
     """A segment of a Falderal-formatted file.
 
-    >>> b = Block(u'| ')
-    >>> b.append(u'| test body line 1')
-    >>> b.append(u'| test body line 2')
-    >>> print b.text(prefix=True)
+    >>> b = Block()
+    >>> b.append(u'test body line 1')
+    >>> b.append(u'test body line 2')
+    >>> print b.text(prefix=u'| ')
     | test body line 1
     | test body line 2
     >>> print b.text()
@@ -158,16 +158,14 @@ class Block(object):
     test body line 1test body line 2
 
     """
-    def __init__(self, prefix, line_num=None, filename=None):
-        assert isinstance(prefix, unicode), repr(prefix)
-        self.prefix = prefix
+    def __init__(self, line_num=None, filename=None):
         self.lines = []
         self.line_num = line_num
         self.filename = filename
 
     def __repr__(self):
-        return "%s(%r, line_num=%r, filename=%r)" % (
-            self.__class__.__name__, self.prefix, self.line_num, self.filename
+        return "%s(line_num=%r, filename=%r)" % (
+            self.__class__.__name__, self.line_num, self.filename
         )
 
     def __unicode__(self):
@@ -181,13 +179,34 @@ class Block(object):
 
     def append(self, line):
         assert isinstance(line, unicode)
-        self.lines.append(line[len(self.prefix):])
+        self.lines.append(line)
 
-    def text(self, prefix=False, seperator='\n'):
-        if not prefix:
+    def text(self, prefix=None, seperator='\n'):
+        if prefix is None:
             return seperator.join(self.lines)
         else:
-            return seperator.join(self.prefix + line for line in self.lines)
+            assert isinstance(prefix, unicode), repr(prefix)
+            return seperator.join(prefix + line for line in self.lines)
+
+    def classify(self):
+
+        PREFIX = {
+            u'| ': TestBody,
+            u'+ ': TestInput,
+            u'? ': ExpectedError,
+            u'= ': ExpectedResult,
+            u'->': Pragma,
+            u'> ': LiterateCode,
+        }
+
+        for prefix in PREFIX.keys():
+            if all(line.startswith(prefix) for line in self.lines):
+                return PREFIX[prefix]
+
+        # TODO: if here, mixed block.  Further classify.  Split into blocks
+        # if it cannot be classified.
+
+        raise NotImplementedError("mixed block")
 
 
 class LiterateCode(Block):
@@ -219,15 +238,6 @@ class InterveningMarkdown(Block):
 
 
 ##### Documents #####
-
-PREFIX = {
-    u'    | ': TestBody,
-    u'    + ': TestInput,
-    u'    ? ': ExpectedError,
-    u'    = ': ExpectedResult,
-    u'    ->': Pragma,
-    u'    > ': LiterateCode,
-}
 
 
 class Document(object):
@@ -274,29 +284,39 @@ class Document(object):
         [1, 2, 3, 5, 6, 7, 8]
 
         """
-        state = '***'
+        state = 'toplevel'
         blocks = []
         block = None
         line_num = 1
+
+        def next(block):
+            if block is not None:
+                # TODO refine the block by calling block.classify()
+                blocks.append(block)
+            return Block(line_num=line_num,
+                         filename=self.filename)
+
+        block = next(block)
+
         for line in self.lines:
-            found_prefix = u''
-            for prefix in PREFIX.keys():
-                if line.startswith(prefix):
-                    found_prefix = prefix
-                    break
-            if found_prefix == state:
-                block.append(line)
-            else:
-                state = found_prefix
-                if block is not None:
-                    blocks.append(block)
-                BlockClass = PREFIX.get(state, InterveningMarkdown)
-                block = BlockClass(state, line_num=line_num,
-                                   filename=self.filename)
-                block.append(line)
+            if state == 'toplevel':
+                if line.startswith(u'    '):
+                    state = 'indented'
+                    block = next(block)
+
+            elif state == 'indented':
+                if not line.startswith(u'    '):
+                    state = 'toplevel'
+                    block = next(block)
+
+            if line.startswith(u'    '):
+                line = line[4:]
+
+            block.append(line)
             line_num += 1
-        if block is not None:
-            blocks.append(block)
+
+        block = next(block)
+
         self.blocks = blocks
 
     def parse_blocks_to_tests(self, functionalities):
