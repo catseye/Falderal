@@ -173,19 +173,19 @@ class Block(object):
     >>> b = Block()
     >>> b.append(u'-> This is a pragma.')
     >>> b.append(u'-> which extends over two lines')
-    >>> print b.classify()
+    >>> print b.split()
     [Pragma(line_num=1)]
 
     >>> b = Block()
     >>> b.append(u'| Test body here.')
     >>> b.append(u'= Expected result here.')
-    >>> print b.classify()
+    >>> print b.split()
     [TestBody(line_num=1), ExpectedResult(line_num=1)]
 
     >>> b = Block()
     >>> b.append(u'| Test body here.')
     >>> b.append(u'? Expected error here.')
-    >>> print b.classify()
+    >>> print b.split()
     [TestBody(line_num=1), ExpectedError(line_num=1)]
 
     """
@@ -261,7 +261,7 @@ class Block(object):
 
         return pairs
 
-    def classify(self):
+    def split(self):
         """Return a list of Blocks of more specific classes."""
 
         pattern = self.deconstruct()
@@ -294,6 +294,54 @@ class Block(object):
             ]
             if pattern_prefixes in valid_patterns:
                 return [self.PREFIX_MAP[prefix](line_num=self.line_num, filename=self.filename, lines=lines) for (prefix, lines) in pattern]
+            raise FalderalSyntaxError(
+                ("line %d: " % self.line_num) +
+                "incorrectly formatted test block")
+
+    def classify(self, current_functionality=None, last_desc_block=None):
+        """Return the Test or Pragma that this Block represents."""
+
+        pattern = self.deconstruct()
+        pattern_prefixes = [p[0] for p in pattern]
+
+        if '' in pattern_prefixes:
+            # There is plain, non-prefixed text embedded somewhere in this Block.
+            # TODO: interpret this according to the new, not-yet-written rules.
+            return []
+
+        if pattern_prefixes in [[u'= '], [u'? ']]:
+            raise FalderalSyntaxError(
+                ("line %d: " % self.line_num) +
+                "expectation must be preceded by test body or test input")
+
+        if pattern_prefixes in [[u'| ']]:
+            raise FalderalSyntaxError(
+                ("line %d: " % self.line_num) +
+                "test body must be followed by expectation or test input")
+
+        if pattern_prefixes == [u'->']:
+            # Pragma
+            pass
+        elif pattern_prefixes[-1] in [u'= ', u'? ']:
+            # TODO: valid patterns, several other things
+        
+            if current_functionality is None:
+                raise FalderalSyntaxError(
+                    ("line %d: " % self.line_num) +
+                    "functionality under test not specified")
+        
+            body_block = make_block_from_pattern(pattern, u'| ')
+            input_block = make_block_from_pattern(pattern, u'+ ')
+            expectation_block = make_block_from_pattern(pattern, pattern_prefixes[-1])
+
+            test = Test(body_block=body_block,
+                        input_block=input_block,
+                        expectation=expectation_block,
+                        functionality=current_functionality,
+                        desc_block=last_desc_block)
+        
+            return test
+        else:
             raise FalderalSyntaxError(
                 ("line %d: " % self.line_num) +
                 "incorrectly formatted test block")
@@ -426,8 +474,79 @@ class Document(object):
                     continue
                 new_blocks.append(block)
             else:
-                new_blocks.extend(block.classify())
+                new_blocks.extend(block.split())
         self.blocks = new_blocks
+
+    def parse_lines_to_tests(self):
+        r"""Parse the lines of the Document into Tests.
+
+        """
+        indent = None
+        blocks = []
+        line_num = 1
+        block = None
+
+        for line in self.lines:
+            # make sure we get a Block to start with
+            if indent is None:
+                if line.startswith(u'    '):
+                    indent = u''
+                else:
+                    indent = u'    '
+
+            if indent == u'':
+                if line.startswith(u'    '):
+                    indent = u'    '
+                    if block is not None:
+                        blocks.append(block)
+                    block = Block(
+                        line_num=line_num,
+                        filename=self.filename
+                    )
+            elif indent == u'    ':
+                if not line.startswith(u'    '):
+                    indent = u''
+                    if block is not None:
+                        blocks.append(block)
+                    block = InterveningText(
+                        line_num=line_num,
+                        filename=self.filename
+                    )
+
+            line = line[len(indent):]
+
+            block.append(line)
+            line_num += 1
+
+        if block is not None:
+            blocks.append(block)
+
+        # now process Blocks into Tests
+
+        last_desc_block = None
+        last_test_body_block = None
+        last_used_test_body_block = None
+        last_test_input_block = None
+
+        tests = []
+        for block in blocks:
+            if isinstance(block, InterveningText):
+                if block.is_empty():
+                    continue
+                last_desc_block = block
+                continue
+
+            test_or_pragma = block.classify()
+
+            if isinstance(test_or_pragma, Test):
+                tests.append(test_or_pragma)
+            elif isinstance(test_or_pragma, Pragma):
+                pass
+                # execute the pragma
+            else:
+                raise NotImplementedError('need Pragma or Test')
+
+        return tests
 
     def parse_blocks_to_tests(self, functionalities):
         r"""Assemble a list of Tests from the blocks in this Document.
