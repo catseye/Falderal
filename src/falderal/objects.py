@@ -155,12 +155,22 @@ class Block(object):
     test body line 1test body line 2
 
     """
+
     def __init__(self, line_num=None, filename=None, lines=None):
         if lines is None:
             lines = []
         self.lines = lines
         self.line_num = line_num
         self.filename = filename
+        self.PREFIX_MAP = {
+            u'| ': TestBody,
+            u'+ ': TestInput,
+            u'? ': ExpectedError,
+            u'= ': ExpectedResult,
+            u'->': Pragma,
+            u'> ': LiterateCode,
+        }
+        self.PREFIXES = self.PREFIX_MAP.keys()
 
     def __repr__(self):
         return "%s(line_num=%r, filename=%r)" % (
@@ -189,23 +199,13 @@ class Block(object):
         of prefixes occur in the block.  The lines in the list of lines
         have had their prefix stripped from them."""
 
-        PREFIX_MAP = {
-            u'| ': TestBody,
-            u'+ ': TestInput,
-            u'? ': ExpectedError,
-            u'= ': ExpectedResult,
-            u'->': Pragma,
-            u'> ': LiterateCode,
-        }
-        PREFIXES = PREFIX_MAP.keys()
-
         pairs = []
         prefix_state = None
         acc = []
 
-        for line in lines:
+        for line in self.lines:
             prefix_of_line = None
-            for prefix in PREFIXES:
+            for prefix in self.PREFIXES:
                 if line.startswith(prefix):
                     prefix_of_line = prefix
                     break
@@ -220,6 +220,16 @@ class Block(object):
         pairs.append((prefix_state, acc))
 
         return pairs
+
+    def classify(self):
+        """Return a list of Blocks of more specific classes."""
+
+        pattern = self.deconstruct()
+        pattern_prefixes = [p[0] for p in pattern]
+        if len(pattern_prefixes) == 1:
+            return [self.PREFIX_MAP[pattern_prefixes[0]](lines=self.lines)]
+
+        return []
 
 
 class LiterateCode(Block):
@@ -297,12 +307,19 @@ class Document(object):
         [1, 2, 3, 5, 6, 7, 8]
 
         """
-        indent = u''
+        indent = None
         blocks = []
         line_num = 1
         block = None
 
         for line in self.lines:
+            # make sure we get a Block to start with
+            if indent is None:
+                if line.startswith(u'    '):
+                    indent = u''
+                else:
+                    indent = u'    '
+
             if indent == u'':
                 if line.startswith(u'    '):
                     indent = u'    '
@@ -330,7 +347,14 @@ class Document(object):
         if block is not None:
             blocks.append(block)
 
-        self.blocks = blocks
+        # post-process blocks
+        new_blocks = []
+        for block in blocks:
+            if isinstance(block, InterveningText):
+                new_blocks.append(block)
+            else:
+                new_blocks.extend(block.classify())
+        self.blocks = new_blocks
 
     def parse_blocks_to_tests(self, functionalities):
         r"""Assemble a list of Tests from the blocks in this Document.
@@ -358,7 +382,7 @@ class Document(object):
         >>> d.append(u'    ? Oops')
         >>> d.parse_lines_to_blocks()
         >>> [b.__class__.__name__ for b in d.blocks]
-        ['InterveningMarkdown', 'Pragma', 'TestBody', 'ExpectedError',
+        ['InterveningText', 'Pragma', 'TestBody', 'ExpectedError',
          'TestBody', 'TestInput', 'ExpectedResult',
          'TestInput', 'ExpectedResult', 'Pragma', 'TestBody', 'ExpectedError']
         >>> tests = d.parse_blocks_to_tests(funs)
@@ -517,7 +541,7 @@ class Document(object):
                         )
                         implementation = ShellImplementation(command)
                         functionality.add_implementation(implementation)
-                elif isinstance(block, InterveningMarkdown):
+                elif isinstance(block, InterveningText):
                     if not re.match(r'^\s*$', block.text(seperator=' ')):
                         last_desc_block = block
             prev_block = block
