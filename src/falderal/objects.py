@@ -148,9 +148,6 @@ class Block(object):
     >>> b = Block()
     >>> b.append(u'test body line 1')
     >>> b.append(u'test body line 2')
-    >>> print b.text(prefix=u'| ')
-    | test body line 1
-    | test body line 2
     >>> print b.text()
     test body line 1
     test body line 2
@@ -183,17 +180,16 @@ class Block(object):
         assert isinstance(line, unicode)
         self.lines.append(line)
 
-    def text(self, prefix=None, seperator='\n'):
-        if prefix is None:
-            return seperator.join(self.lines)
-        else:
-            assert isinstance(prefix, unicode), repr(prefix)
-            return seperator.join(prefix + line for line in self.lines)
+    def text(self, seperator='\n'):
+        return seperator.join(self.lines)
 
-    def classify(self):
-        """Returns a list of Blocks of more specific subclasses of Block."""
+    def deconstruct(self):
+        """Return a list of pairs of (prefix, list of lines) representing
+        the contents of this Block.  The pairs are in the order the runs
+        of prefixes occur in the block.  The lines in the list of lines
+        have had their prefix stripped from them."""
 
-        PREFIX = {
+        PREFIX_MAP = {
             u'| ': TestBody,
             u'+ ': TestInput,
             u'? ': ExpectedError,
@@ -201,51 +197,29 @@ class Block(object):
             u'->': Pragma,
             u'> ': LiterateCode,
         }
+        PREFIXES = PREFIX_MAP.keys()
 
-        contains_subblocks = False
-        for prefix in PREFIX.keys():
-            if all(line.startswith(prefix) for line in self.lines):
-                cls = PREFIX[prefix]
-                return [cls(
-                    line_num=self.line_num,
-                    filename=self.filename,
-                    lines=[line[len(prefix):] for line in self.lines],
-                )]
-            if any(line.startswith(prefix) for line in self.lines):
-                contains_subblocks = True
-                break
+        pairs = []
+        prefix_state = None
+        acc = []
 
-        if not contains_subblocks:
-            return [InterveningMarkdown(
-                        line_num=self.line_num,
-                        filename=self.filename,
-                        lines=self.lines
-                    )]
+        for line in lines:
+            prefix_of_line = None
+            for prefix in PREFIXES:
+                if line.startswith(prefix):
+                    prefix_of_line = prefix
+                    break
+            if prefix_of_line == prefix_state:
+                acc.append(line[len(prefix_of_line):])
+            else:
+                pairs.append((prefix_state, acc))
+                prefix_state = prefix_of_line
+                acc = []
+                acc.append(line[len(prefix_of_line):])
 
-        # If we got here, it's a mixed block.
-        # TODO: Further classify.
+        pairs.append((prefix_state, acc))
 
-        # Split into individual blocks.
-        prefix = ''
-        blocks = []
-
-        def next(block):
-            if block is not None:
-                blocks.extend(block.classify())
-            return Block(line_num=self.line_num,
-                         filename=self.filename)
-
-        block = next(None)
-
-        for line in self.lines:
-            line_prefix = line[:2]
-            if line_prefix != prefix:
-                block = next(block)
-            block.append(line)
-
-        next(block)
-
-        return blocks
+        return pairs
 
 
 class LiterateCode(Block):
@@ -272,7 +246,7 @@ class ExpectedResult(Block):
     pass
 
 
-class InterveningMarkdown(Block):
+class InterveningText(Block):
     pass
 
 
@@ -317,42 +291,44 @@ class Document(object):
         >>> d.append(u'    = Expected result on output')
         >>> d.parse_lines_to_blocks()
         >>> [b.__class__.__name__ for b in d.blocks]
-        ['InterveningMarkdown', 'Pragma', 'TestBody', 'ExpectedError',
+        ['InterveningText', 'Pragma', 'TestBody', 'ExpectedError',
          'TestBody', 'TestInput', 'ExpectedResult']
         >>> [b.line_num for b in d.blocks]
         [1, 2, 3, 5, 6, 7, 8]
 
         """
-        state = 'toplevel'
+        indent = u''
         blocks = []
         line_num = 1
-
-        def next(block):
-            if block is not None:
-                blocks.extend(block.classify())
-            return Block(line_num=line_num,
-                         filename=self.filename)
-
-        block = next(None)
+        block = None
 
         for line in self.lines:
-            if state == 'toplevel':
+            if indent == u'':
                 if line.startswith(u'    '):
-                    state = 'indented'
-                    block = next(block)
-
-            elif state == 'indented':
+                    indent = u'    '
+                    if block is not None:
+                        blocks.append(block)
+                    block = Block(
+                        line_num=line_num,
+                        filename=self.filename
+                    )
+            elif indent == u'    ':
                 if not line.startswith(u'    '):
-                    state = 'toplevel'
-                    block = next(block)
+                    indent = u''
+                    if block is not None:
+                        blocks.append(block)
+                    block = InterveningText(
+                        line_num=line_num,
+                        filename=self.filename
+                    )
 
-            if line.startswith(u'    '):
-                line = line[4:]
+            line = line[len(indent):]
 
             block.append(line)
             line_num += 1
 
-        next(block)
+        if block is not None:
+            blocks.append(block)
 
         self.blocks = blocks
 
