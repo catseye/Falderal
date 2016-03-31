@@ -372,7 +372,25 @@ class LiterateCode(Block):
 
 
 class Pragma(Block):
-    pass
+    def execute(self, state):
+        pragma_text = self.text(seperator=' ')
+        match = re.match(r'^\s*Tests\s+for\s+functionality\s*\"(.*?)\"\s*$', pragma_text)
+        if match:
+            functionality_name = match.group(1)
+            state.current_functionality = state.functionalities.setdefault(
+                functionality_name,
+                Functionality(functionality_name)
+            )
+        match = re.match(r'^\s*Functionality\s*\"(.*?)\"\s*is\s+implemented\s+by\s+shell\s+command\s*\"(.*?)\"\s*$', pragma_text)
+        if match:
+            functionality_name = match.group(1)
+            command = match.group(2)
+            functionality = state.functionalities.setdefault(
+                functionality_name,
+                Functionality(functionality_name)
+            )
+            implementation = ShellImplementation(command)
+            functionality.add_implementation(implementation)
 
 
 class TestBody(Block):
@@ -512,6 +530,46 @@ class Document(object):
     def parse_lines_to_tests(self, functionalities):
         r"""Parse the lines of the Document into Tests.
 
+        >>> functionalities = {}
+        >>> d = Document()
+        >>> d.append(u'This is a test file.')
+        >>> d.append(u'    -> Tests for functionality "Parse Thing"')
+        >>> d.append(u'')
+        >>> d.append(u"    | This is some test body.")
+        >>> d.append(u"    | It extends over two lines.")
+        >>> d.append(u'    ? Expected Error')
+        >>> d.append(u'')
+        >>> d.append(u'    | Test with input')
+        >>> d.append(u'    + input-for-test')
+        >>> d.append(u'    = Expected result on output')
+        >>> d.append(u'')
+        >>> d.append(u'    + Other input-for-test')
+        >>> d.append(u'    = Other Expected result on output')
+        >>> d.append(u'')
+        >>> d.append(u'    -> Tests for functionality "Run Thing"')
+        >>> d.append(u'')
+        >>> d.append(u"    | Thing")
+        >>> d.append(u'    ? Oops')
+        >>> tests = d.parse_lines_to_tests(functionalities)
+        >>> [t.body for t in tests]
+        [u'This is some test body.\nIt extends over two lines.',
+         u'Test with input', u'Test with input', u'Thing']
+        >>> [t.input_block for t in tests]
+        [None, TestInput(line_num=8), TestInput(line_num=12), None]
+        >>> tests[1].input_block.text()
+        u'input-for-test'
+        >>> tests[2].input_block.text()
+        u'Other input-for-test'
+        >>> [t.expectation for t in tests]
+        [ErrorOutcome(u'Expected Error'),
+         OutputOutcome(u'Expected result on output'),
+         OutputOutcome(u'Other Expected result on output'),
+         ErrorOutcome(u'Oops')]
+        >>> [t.functionality.name for t in tests]
+        [u'Parse Thing', u'Parse Thing', u'Parse Thing', u'Run Thing']
+        >>> sorted(funs.keys())
+        [u'Parse Thing', u'Run Thing']
+
         """
         indent = None
         blocks = []
@@ -556,6 +614,7 @@ class Document(object):
         # now process Blocks into Tests
 
         state = ParseState()
+        state.functionalities = functionalities
 
         tests = []
         for block in blocks:
@@ -570,25 +629,7 @@ class Document(object):
             if isinstance(test_or_pragma, Test):
                 tests.append(test_or_pragma)
             elif isinstance(test_or_pragma, Pragma):
-                block = test_or_pragma
-                pragma_text = block.text(seperator=' ')
-                match = re.match(r'^\s*Tests\s+for\s+functionality\s*\"(.*?)\"\s*$', pragma_text)
-                if match:
-                    functionality_name = match.group(1)
-                    state.current_functionality = functionalities.setdefault(
-                        functionality_name,
-                        Functionality(functionality_name)
-                    )
-                match = re.match(r'^\s*Functionality\s*\"(.*?)\"\s*is\s+implemented\s+by\s+shell\s+command\s*\"(.*?)\"\s*$', pragma_text)
-                if match:
-                    functionality_name = match.group(1)
-                    command = match.group(2)
-                    functionality = functionalities.setdefault(
-                        functionality_name,
-                        Functionality(functionality_name)
-                    )
-                    implementation = ShellImplementation(command)
-                    functionality.add_implementation(implementation)
+                test_or_pragma.execute(state)
             else:
                 raise NotImplementedError('need Pragma or Test')
 
