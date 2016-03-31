@@ -1,6 +1,5 @@
 import codecs
 import os
-from os.path import basename
 import re
 from subprocess import Popen, PIPE
 from tempfile import mkstemp
@@ -205,6 +204,16 @@ class Block(object):
             u'> ': LiterateCode,
         }
         self.PREFIXES = self.PREFIX_MAP.keys()
+        self.VALID_PATTERNS = [
+            [u'->'],
+            [u'> '],
+            [u'| ', u'= '],
+            [u'| ', u'? '],
+            [u'| ', u'+ ', u'= '],
+            [u'| ', u'+ ', u'? '],
+            [u'+ ', u'= '],
+            [u'+ ', u'? '],
+        ]
 
     def __repr__(self):
         filename_repr = '' if self.filename is None else ', filename=%r' % self.filename
@@ -282,17 +291,7 @@ class Block(object):
                     ("line %d: " % self.line_num) +
                     "test body must be followed by expectation or test input")
 
-            valid_patterns = [
-                [u'->'],
-                [u'> '],
-                [u'| ', u'= '],
-                [u'| ', u'? '],
-                [u'| ', u'+ ', u'= '],
-                [u'| ', u'+ ', u'? '],
-                [u'+ ', u'= '],
-                [u'+ ', u'? '],
-            ]
-            if pattern_prefixes in valid_patterns:
+            if pattern_prefixes in self.VALID_PATTERNS:
                 return [self.PREFIX_MAP[prefix](line_num=self.line_num, filename=self.filename, lines=lines) for (prefix, lines) in pattern]
             raise FalderalSyntaxError(
                 ("line %d: " % self.line_num) +
@@ -319,12 +318,16 @@ class Block(object):
                 ("line %d: " % self.line_num) +
                 "test body must be followed by expectation or test input")
 
+        if pattern_prefixes not in self.VALID_PATTERNS:
+            raise FalderalSyntaxError(
+                ("line %d: " % self.line_num) +
+                "incorrectly formatted test block")
+
         if pattern_prefixes == [u'->']:
-            # Pragma
-            pass
+            return Pragma(line_num=self.line_num, filename=self.filename, lines=pattern[0][1])
         elif pattern_prefixes[-1] in [u'= ', u'? ']:
-            # TODO: valid patterns, several other things
-        
+            # TODO: several things
+
             if current_functionality is None:
                 raise FalderalSyntaxError(
                     ("line %d: " % self.line_num) +
@@ -477,7 +480,7 @@ class Document(object):
                 new_blocks.extend(block.split())
         self.blocks = new_blocks
 
-    def parse_lines_to_tests(self):
+    def parse_lines_to_tests(self, functionalities):
         r"""Parse the lines of the Document into Tests.
 
         """
@@ -527,6 +530,7 @@ class Document(object):
         last_test_body_block = None
         last_used_test_body_block = None
         last_test_input_block = None
+        current_functionality = None
 
         tests = []
         for block in blocks:
@@ -536,13 +540,30 @@ class Document(object):
                 last_desc_block = block
                 continue
 
-            test_or_pragma = block.classify()
+            test_or_pragma = block.classify(current_functionality=current_functionality)
 
             if isinstance(test_or_pragma, Test):
                 tests.append(test_or_pragma)
             elif isinstance(test_or_pragma, Pragma):
-                pass
-                # execute the pragma
+                block = test_or_pragma
+                pragma_text = block.text(seperator=' ')
+                match = re.match(r'^\s*Tests\s+for\s+functionality\s*\"(.*?)\"\s*$', pragma_text)
+                if match:
+                    functionality_name = match.group(1)
+                    current_functionality = functionalities.setdefault(
+                        functionality_name,
+                        Functionality(functionality_name)
+                    )
+                match = re.match(r'^\s*Functionality\s*\"(.*?)\"\s*is\s+implemented\s+by\s+shell\s+command\s*\"(.*?)\"\s*$', pragma_text)
+                if match:
+                    functionality_name = match.group(1)
+                    command = match.group(2)
+                    functionality = functionalities.setdefault(
+                        functionality_name,
+                        Functionality(functionality_name)
+                    )
+                    implementation = ShellImplementation(command)
+                    functionality.add_implementation(implementation)
             else:
                 raise NotImplementedError('need Pragma or Test')
 
