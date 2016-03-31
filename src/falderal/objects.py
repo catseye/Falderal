@@ -297,8 +297,18 @@ class Block(object):
                 ("line %d: " % self.line_num) +
                 "incorrectly formatted test block")
 
-    def classify(self, current_functionality=None, last_desc_block=None):
+    def classify(self, state):
         """Return the Test or Pragma that this Block represents."""
+
+        def make_block_from_pattern(pattern, prefix):
+            lines = None
+            for (candidate_prefix, candidate_lines) in pattern:
+                if candidate_prefix == prefix:
+                    lines = candidate_lines
+                    break
+            if lines is None:
+                return None
+            return self.PREFIX_MAP[prefix](line_num=self.line_num, filename=self.filename, lines=lines)
 
         pattern = self.deconstruct()
         pattern_prefixes = [p[0] for p in pattern]
@@ -328,20 +338,27 @@ class Block(object):
         elif pattern_prefixes[-1] in [u'= ', u'? ']:
             # TODO: several things
 
-            if current_functionality is None:
+            if state.current_functionality is None:
                 raise FalderalSyntaxError(
                     ("line %d: " % self.line_num) +
                     "functionality under test not specified")
         
-            body_block = make_block_from_pattern(pattern, u'| ')
-            input_block = make_block_from_pattern(pattern, u'+ ')
+            body_block = make_block_from_pattern(pattern, u'| ') or state.last_test_body_block
+            input_block = make_block_from_pattern(pattern, u'+ ') or state.last_test_input_block
             expectation_block = make_block_from_pattern(pattern, pattern_prefixes[-1])
+            expectation_class = None
+            if isinstance(expectation_block, ExpectedError):
+                expectation_class = ErrorOutcome
+            if isinstance(expectation_block, ExpectedResult):
+                expectation_class = OutputOutcome
+            assert expectation_class
+            expectation = expectation_class(expectation_block.text())
 
             test = Test(body_block=body_block,
                         input_block=input_block,
-                        expectation=expectation_block,
-                        functionality=current_functionality,
-                        desc_block=last_desc_block)
+                        expectation=expectation,
+                        functionality=state.current_functionality,
+                        desc_block=state.last_desc_block)
         
             return test
         else:
@@ -376,6 +393,18 @@ class ExpectedResult(Block):
 
 class InterveningText(Block):
     pass
+
+
+##### Parsing State #####
+
+
+class ParseState(object):
+    def __init__(self):
+        self.last_desc_block = None
+        self.last_test_body_block = None
+        self.last_test_input_block = None
+        self.current_functionality = None
+        self.functionalities = None
 
 
 ##### Documents #####
@@ -526,21 +555,17 @@ class Document(object):
 
         # now process Blocks into Tests
 
-        last_desc_block = None
-        last_test_body_block = None
-        last_used_test_body_block = None
-        last_test_input_block = None
-        current_functionality = None
+        state = ParseState()
 
         tests = []
         for block in blocks:
             if isinstance(block, InterveningText):
                 if block.is_empty():
                     continue
-                last_desc_block = block
+                state.last_desc_block = block
                 continue
 
-            test_or_pragma = block.classify(current_functionality=current_functionality)
+            test_or_pragma = block.classify(state)
 
             if isinstance(test_or_pragma, Test):
                 tests.append(test_or_pragma)
@@ -550,7 +575,7 @@ class Document(object):
                 match = re.match(r'^\s*Tests\s+for\s+functionality\s*\"(.*?)\"\s*$', pragma_text)
                 if match:
                     functionality_name = match.group(1)
-                    current_functionality = functionalities.setdefault(
+                    state.current_functionality = functionalities.setdefault(
                         functionality_name,
                         Functionality(functionality_name)
                     )
