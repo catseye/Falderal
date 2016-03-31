@@ -1,5 +1,5 @@
-Falderal Test 1
----------------
+Falderal Test: basic pass/fail
+------------------------------
 
 This is an example Falderal document which contains some
 intentionally failing tests.  It is intended to test that

@@ -2,12 +2,13 @@
 
 # Really crude test harness for py-falderal itself...
 
-bin/falderal -t || exit 1
+bin/falderal -v -t || exit 1
 
 cd tests
 
 FIRST_TESTS="
-test1 test2 test3 test4 test5
+test-pass-fail test-no-functionality test-ill-formed
+test4 test5
 test-utf8 test-crlf
 test-bad-indentation
 test-input-sections test-shared-body

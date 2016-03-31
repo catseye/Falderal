@@ -1,5 +1,5 @@
-Falderal Test 10
-----------------
+Falderal Test: Bad indentation
+------------------------------
 
 Since these blocks are not indented correctly, `py-falderal` should not
 load tests from them.  (Ideally it should produce warnings though.)

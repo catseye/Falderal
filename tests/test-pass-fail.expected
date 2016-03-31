@@ -2,7 +2,7 @@ FAILED  :
 
 Cat dogs, too. (Intentional fail.)
 
-Location: test1.markdown, line 28
+Location: test-pass-fail.markdown, line 28
 Function: Cat
 Impl    : shell command "python cat.py"
 Body    : meow
@@ -15,7 +15,7 @@ FAILED  :
 
 Cat dogs, too. (Intentional fail.)
 
-Location: test1.markdown, line 31
+Location: test-pass-fail.markdown, line 31
 Function: Cat
 Impl    : shell command "python cat.py"
 Body    : 

@@ -1,5 +1,5 @@
-Falderal Test 2
----------------
+Falderal Test: no functionality
+-------------------------------
 
 Since no functionality is specified for these tests,
 `py-falderal` should exit with an exception.

@@ -1,5 +1,5 @@
-Falderal Test 3
----------------
+Falderal Test: ill-formed
+-------------------------
 
 A Falderal document which is ill-formed.
 

@@ -1,5 +1,5 @@
-Falderal Test 11
-----------------
+Falderal Test: Input sections
+-----------------------------
 
 Test tests that have test input sections.
 
