@@ -272,6 +272,16 @@ class Block(object):
             # TODO: interpret this according to the new, not-yet-written rules.
             return []
         else:
+            if pattern_prefixes in [[u'= '], [u'? ']]:
+                raise FalderalSyntaxError(
+                    ("line %d: " % self.line_num) +
+                    "expectation must be preceded by test body or test input")
+
+            if pattern_prefixes in [[u'| ']]:
+                raise FalderalSyntaxError(
+                    ("line %d: " % self.line_num) +
+                    "test body must be followed by expectation or test input")
+
             valid_patterns = [
                 [u'->'],
                 [u'> '],
@@ -286,7 +296,7 @@ class Block(object):
                 return [self.PREFIX_MAP[prefix](line_num=self.line_num, filename=self.filename, lines=lines) for (prefix, lines) in pattern]
             raise FalderalSyntaxError(
                 ("line %d: " % self.line_num) +
-                "test block must consist of test body and/or test input, then expectation, in that order")
+                "incorrectly formatted test block")
 
 
 class LiterateCode(Block):
@@ -432,15 +442,20 @@ class Document(object):
         >>> d = Document()
         >>> d.append(u'This is a test file.')
         >>> d.append(u'    -> Tests for functionality "Parse Thing"')
+        >>> d.append(u'')
         >>> d.append(u"    | This is some test body.")
         >>> d.append(u"    | It extends over two lines.")
         >>> d.append(u'    ? Expected Error')
+        >>> d.append(u'')
         >>> d.append(u'    | Test with input')
         >>> d.append(u'    + input-for-test')
         >>> d.append(u'    = Expected result on output')
+        >>> d.append(u'')
         >>> d.append(u'    + Other input-for-test')
         >>> d.append(u'    = Other Expected result on output')
+        >>> d.append(u'')
         >>> d.append(u'    -> Tests for functionality "Run Thing"')
+        >>> d.append(u'')
         >>> d.append(u"    | Thing")
         >>> d.append(u'    ? Oops')
         >>> d.parse_lines_to_blocks()
@@ -453,8 +468,7 @@ class Document(object):
         [u'This is some test body.\nIt extends over two lines.',
          u'Test with input', u'Test with input', u'Thing']
         >>> [t.input_block for t in tests]
-        [None, TestInput(u'    + ', line_num=7, filename=None),
-         TestInput(u'    + ', line_num=9, filename=None), None]
+        [None, TestInput(line_num=8), TestInput(line_num=12), None]
         >>> tests[1].input_block.text()
         u'input-for-test'
         >>> tests[2].input_block.text()
@@ -475,7 +489,7 @@ class Document(object):
         >>> d.parse_blocks_to_tests({})
         Traceback (most recent call last):
         ...
-        FalderalSyntaxError: line 2: functionality under test not specified
+        FalderalSyntaxError: line 1: functionality under test not specified
 
         >>> d = Document()
         >>> d.append(u'This is a test file.')
@@ -491,7 +505,7 @@ class Document(object):
         >>> d.parse_blocks_to_tests({})
         Traceback (most recent call last):
         ...
-        FalderalSyntaxError: line 2: expectation must be preceded by test body or test input
+        FalderalSyntaxError: line 1: incorrectly formatted test block
 
         >>> d = Document()
         >>> d.append(u'    | This is test')
@@ -499,7 +513,7 @@ class Document(object):
         >>> d.parse_blocks_to_tests({})
         Traceback (most recent call last):
         ...
-        FalderalSyntaxError: line 2: test body must be followed by expectation or test input
+        FalderalSyntaxError: line 1: test body must be followed by expectation or test input
 
         >>> d = Document()
         >>> d.append(u'    -> Hello, this is pragma')
@@ -507,7 +521,7 @@ class Document(object):
         >>> d.parse_blocks_to_tests({})
         Traceback (most recent call last):
         ...
-        FalderalSyntaxError: line 2: test input must be preceded by test body
+        FalderalSyntaxError: line 1: incorrectly formatted test block
 
         >>> d = Document()
         >>> funs = {}
@@ -826,11 +840,11 @@ class Test(object):
     
     TODO: maybe write a helper function for that instead.
 
-    >>> b = TestBody(u'    | ')
-    >>> b.append(u'    | foo')
-    >>> b.append(u'    | bar')
-    >>> i = TestInput(u'    + ')
-    >>> i.append(u'    + green')
+    >>> b = TestBody()
+    >>> b.append(u'foo')
+    >>> b.append(u'bar')
+    >>> i = TestInput()
+    >>> i.append(u'green')
     >>> t = Test(body_block=b, input_block=i)
     >>> print t.body
     foo
