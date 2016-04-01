@@ -197,6 +197,8 @@ class Block(object):
     """
 
     PREFIXES = [
+        u'==> ',
+        u'??> ',
         u'| ',
         u'+ ',
         u'? ',
@@ -294,11 +296,26 @@ class Block(object):
                 line_num=self.line_num, filename=self.filename, lines=lines
             )
 
+        def reconstruct(pattern, except_prefixes):
+            new_pattern = []
+            lines = []
+            for (candidate_prefix, candidate_lines) in pattern:
+                if candidate_prefix in except_prefixes:
+                    new_pattern.append((candidate_prefix, candidate_lines))
+                else:
+                    lines.extend([candidate_prefix + line for line in candidate_lines])
+            return [(u'', lines)] + new_pattern
+
         if '' in pattern_prefixes:
             # There is plain, non-prefixed text embedded somewhere in this Block.
-            # TODO: interpret this according to the new, not-yet-written rules.
-            # For now, assume it is Just Indented Text And That Is OK.
-            return None
+            # We interpret this according to the new, not-yet-written rules.
+            if pattern_prefixes[-1] in [[u'==> ', u'??> ']]:
+                pattern = reconstruct(pattern, [u'==> ', u'??> '])
+                pattern_prefixes = [p[0] for p in pattern]
+            else:
+                # TODO:issue a warning unless cavalier
+                # For now, assume it is Just Indented Text And That Is OK.
+                return None
 
         if pattern_prefixes in [[u'= '], [u'? ']]:
             raise FalderalSyntaxError(
