@@ -1,0 +1,16 @@
+FAILED  : 
+
+Demonstrate error expectation (Intentional fail.)
+
+Location: test-pass-fail.markdown, line 55
+Function: Cat
+Impl    : shell command "python cat.py"
+Body    : meow
+Expected: error:
+woof
+Actual  : output:
+meow
+
+--------------------------------
+Total test runs: 6, failures: 1
+--------------------------------
