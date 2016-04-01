@@ -202,15 +202,13 @@ class Block(object):
         self.lines = lines
         self.line_num = line_num
         self.filename = filename
-        self.PREFIX_MAP = {
-            u'| ': TestBody,
-            u'+ ': TestInput,
-            u'? ': ExpectedError,
-            u'= ': ExpectedResult,
-            u'->': Pragma,
-            u'> ': LiterateCode,
-        }
-        self.PREFIXES = self.PREFIX_MAP.keys()
+        self.PREFIXES = [
+            u'| ',
+            u'+ ',
+            u'? ',
+            u'= ',
+            u'->',
+        ]
         self.VALID_PATTERNS = [
             [u'->'],
             [u'> '],
@@ -280,7 +278,7 @@ class Block(object):
     def classify(self, state):
         """Return the Test or Pragma that this Block represents."""
 
-        def make_block_from_pattern(pattern, prefix):
+        def make_block_from_pattern(cls, pattern, prefix):
             lines = None
             for (candidate_prefix, candidate_lines) in pattern:
                 if candidate_prefix == prefix:
@@ -288,7 +286,7 @@ class Block(object):
                     break
             if lines is None:
                 return None
-            return self.PREFIX_MAP[prefix](line_num=self.line_num, filename=self.filename, lines=lines)
+            return cls(line_num=self.line_num, filename=self.filename, lines=lines)
 
         pattern = self.deconstruct()
         pattern_prefixes = [p[0] for p in pattern]
@@ -324,16 +322,17 @@ class Block(object):
                     ("line %d: " % self.line_num) +
                     "functionality under test not specified")
         
-            body_block = make_block_from_pattern(pattern, u'| ') or state.last_test_body_block
-            input_block = make_block_from_pattern(pattern, u'+ ') or state.last_test_input_block
-            expectation_block = make_block_from_pattern(pattern, pattern_prefixes[-1])
-            expectation_class = None
-            if isinstance(expectation_block, ExpectedError):
-                expectation_class = ErrorOutcome
-            if isinstance(expectation_block, ExpectedResult):
-                expectation_class = OutputOutcome
-            assert expectation_class
-            expectation = expectation_class(expectation_block.text())
+            body_block = make_block_from_pattern(TestBody, pattern, u'| ') or state.last_test_body_block
+            input_block = make_block_from_pattern(TestInput, pattern, u'+ ') or state.last_test_input_block
+
+            if pattern_prefixes[-1] == u'= ':
+                expectation_block = make_block_from_pattern(ExpectedResult, pattern, u'= ')
+                expectation = OutputOutcome(expectation_block.text())
+            elif pattern_prefixes[-1] == u'? ':
+                expectation_block = make_block_from_pattern(ExpectedError, pattern, u'? ')
+                expectation = ErrorOutcome(expectation_block.text())
+            else:
+                raise NotImplementedError
 
             test = Test(body_block=body_block,
                         input_block=input_block,
@@ -349,10 +348,6 @@ class Block(object):
             raise FalderalSyntaxError(
                 ("line %d: " % self.line_num) +
                 "incorrectly formatted test block")
-
-
-class LiterateCode(Block):
-    pass
 
 
 class Pragma(Block):
@@ -418,7 +413,6 @@ class Document(object):
     """
     def __init__(self):
         self.lines = []
-        self.blocks = None
         self.filename = None
 
     @classmethod
@@ -627,7 +621,10 @@ class Document(object):
 
             test_or_pragma = block.classify(state)
 
-            if isinstance(test_or_pragma, Test):
+            if test_or_pragma is None:
+                # It was just some indented text which doesn't concern us
+                pass
+            elif isinstance(test_or_pragma, Test):
                 tests.append(test_or_pragma)
             elif isinstance(test_or_pragma, Pragma):
                 test_or_pragma.execute(state)
