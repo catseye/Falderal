@@ -55,7 +55,7 @@ def main(args):
         for filename in args:
             documents.append(Document.load(filename))
         for document in documents:
-            tests += document.parse_lines_to_tests(functionalities)
+            tests += document.extract_tests(functionalities)
 
         if not options.cavalier:
             if not documents:

@@ -315,8 +315,6 @@ class Block(object):
         if pattern_prefixes == [u'->']:
             return Pragma(line_num=self.line_num, filename=self.filename, lines=pattern[0][1])
         elif pattern_prefixes[-1] in [u'= ', u'? ']:
-            # TODO: several things
-
             if state.current_functionality is None:
                 raise FalderalSyntaxError(
                     ("line %d: " % self.line_num) +
@@ -326,10 +324,10 @@ class Block(object):
             input_block = make_block_from_pattern(TestInput, pattern, u'+ ') or state.last_test_input_block
 
             if pattern_prefixes[-1] == u'= ':
-                expectation_block = make_block_from_pattern(ExpectedResult, pattern, u'= ')
+                expectation_block = make_block_from_pattern(Block, pattern, u'= ')
                 expectation = OutputOutcome(expectation_block.text())
             elif pattern_prefixes[-1] == u'? ':
-                expectation_block = make_block_from_pattern(ExpectedError, pattern, u'? ')
+                expectation_block = make_block_from_pattern(Block, pattern, u'? ')
                 expectation = ErrorOutcome(expectation_block.text())
             else:
                 raise NotImplementedError
@@ -380,14 +378,6 @@ class TestInput(Block):
     pass
 
 
-class ExpectedError(Block):
-    pass
-
-
-class ExpectedResult(Block):
-    pass
-
-
 class InterveningText(Block):
     pass
 
@@ -430,140 +420,27 @@ class Document(object):
         line = line.rstrip(u'\r\n')
         self.lines.append(line)
 
-    def parse_lines_to_tests(self, functionalities):
-        r"""Parse the lines of the Document into Tests.
-
-        | >>> d = Document()
-        | >>> d.append(u'This is a test file.')
-        | >>> d.append(u'    -> This is a pragma.')
-        | >>> d.append(u'')
-        | >>> d.append(u"    | This is some test input.\n")
-        | >>> d.append(u"    | It extends over two lines.")
-        | >>> d.append(u'    ? Expected Error')
-        | >>> d.append(u'')
-        | >>> d.append(u'    | Test with input')
-        | >>> d.append(u'    + input-for-test')
-        | >>> d.append(u'    = Expected result on output')
-        | >>> d.parse_lines_to_blocks()
-        | >>> [block.lines for block in d.blocks if isinstance(block, InterveningText)]
-        | [[u'This is a test file.']]
-        | >>> [b.__class__.__name__ for b in d.blocks]
-        | ['InterveningText', 'Pragma', 'TestBody', 'ExpectedError',
-        |  'TestBody', 'TestInput', 'ExpectedResult']
-        | >>> [b.line_num for b in d.blocks]
-        | [1, 2, 4, 4, 8, 8, 8]
-
-        >>> functionalities = {}
-        >>> d = Document()
-        >>> d.append(u"This is a text file.")
-        >>> d.append(u'It contains NO tests.')
-        >>> d.parse_lines_to_tests(functionalities)
-        []
+    def parse_lines_to_blocks(self):
+        r"""Parse the lines of the Document into Blocks.
 
         >>> d = Document()
         >>> d.append(u'This is a test file.')
-        >>> d.append(u'    -> Tests for functionality "Parse Thing"')
+        >>> d.append(u'    -> This is a pragma.')
         >>> d.append(u'')
-        >>> d.append(u"    | This is some test body.")
-        >>> d.append(u'    = Expected result')
-        >>> d.parse_lines_to_tests(functionalities)
-        [Test(body_block=TestBody(line_num=4), input_block=None,
-              expectation=OutputOutcome(u'Expected result'),
-              functionality=Functionality(u'Parse Thing'),
-              desc_block=InterveningText(line_num=1),
-              body=u'This is some test body.', input=None)]
-
-        >>> d = Document()
-        >>> d.append(u'This is a test file.')
-        >>> d.append(u'    -> Tests for functionality "Parse Thing"')
-        >>> d.append(u'')
-        >>> d.append(u"    | This is some test body.")
+        >>> d.append(u"    | This is some test input.\n")
         >>> d.append(u"    | It extends over two lines.")
         >>> d.append(u'    ? Expected Error')
         >>> d.append(u'')
         >>> d.append(u'    | Test with input')
         >>> d.append(u'    + input-for-test')
         >>> d.append(u'    = Expected result on output')
-        >>> d.append(u'')
-        >>> d.append(u'    + Other input-for-test')
-        >>> d.append(u'    = Other Expected result on output')
-        >>> d.append(u'')
-        >>> d.append(u'    -> Tests for functionality "Run Thing"')
-        >>> d.append(u'')
-        >>> d.append(u"    | Thing")
-        >>> d.append(u'    ? Oops')
-        >>> tests = d.parse_lines_to_tests(functionalities)
-        >>> [t.body for t in tests]
-        [u'This is some test body.\nIt extends over two lines.',
-         u'Test with input', u'Test with input', u'Thing']
-        >>> [t.input_block for t in tests]
-        [None, TestInput(line_num=8), TestInput(line_num=12), None]
-        >>> tests[1].input_block.text()
-        u'input-for-test'
-        >>> tests[2].input_block.text()
-        u'Other input-for-test'
-        >>> [t.expectation for t in tests]
-        [ErrorOutcome(u'Expected Error'),
-         OutputOutcome(u'Expected result on output'),
-         OutputOutcome(u'Other Expected result on output'),
-         ErrorOutcome(u'Oops')]
-        >>> [t.functionality.name for t in tests]
-        [u'Parse Thing', u'Parse Thing', u'Parse Thing', u'Run Thing']
-        >>> sorted(functionalities.keys())
-        [u'Parse Thing', u'Run Thing']
-
-        >>> d = Document()
-        >>> d.append(u"    | This is some test body.")
-        >>> d.append(u'    = Expected')
-        >>> d.parse_lines_to_tests({})
-        Traceback (most recent call last):
-        ...
-        FalderalSyntaxError: line 1: functionality under test not specified
-
-        >>> d = Document()
-        >>> d.append(u'This is a test file.')
-        >>> d.append(u'    ? Expected Error')
-        >>> d.parse_lines_to_tests({})
-        Traceback (most recent call last):
-        ...
-        FalderalSyntaxError: line 2: expectation must be preceded by test body or test input
-
-        >>> d = Document()
-        >>> d.append(u'    -> Hello, this is pragma')
-        >>> d.append(u'    = Expected')
-        >>> d.parse_lines_to_tests({})
-        Traceback (most recent call last):
-        ...
-        FalderalSyntaxError: line 1: incorrectly formatted test block
-
-        >>> d = Document()
-        >>> d.append(u'    | This is test')
-        >>> d.append(u'This is text')
-        >>> d.parse_lines_to_tests({})
-        Traceback (most recent call last):
-        ...
-        FalderalSyntaxError: line 1: test body must be followed by expectation or test input
-
-        >>> d = Document()
-        >>> d.append(u'    -> Hello, this is pragma')
-        >>> d.append(u'    + Input to where exactly?')
-        >>> d.parse_lines_to_tests({})
-        Traceback (most recent call last):
-        ...
-        FalderalSyntaxError: line 1: incorrectly formatted test block
-
-        >>> d = Document()
-        >>> funs = {}
-        >>> d.append(u'    -> Functionality "Parse Stuff" is implemented by '
-        ...          u'shell command "parse"')
-        >>> d.append(u'')
-        >>> d.append(u'    -> Functionality "Parse Stuff" is')
-        >>> d.append(u'    -> implemented by shell command "pxxxy"')
-        >>> tests = d.parse_lines_to_tests(funs)
-        >>> len(funs.keys())
-        1
-        >>> [i for i in funs["Parse Stuff"].implementations]
-        [ShellImplementation(u'parse'), ShellImplementation(u'pxxxy')]
+        >>> blocks = d.parse_lines_to_blocks()
+        >>> [block.lines for block in blocks if isinstance(block, InterveningText)]
+        [[u'This is a test file.'], [u''], [u'']]
+        >>> [b.__class__.__name__ for b in blocks]
+        ['InterveningText', 'Block', 'InterveningText', 'Block', 'InterveningText', 'Block']
+        >>> [b.line_num for b in blocks]
+        [1, 2, 3, 4, 7, 8]
 
         """
         indent = None
@@ -606,8 +483,9 @@ class Document(object):
         if block is not None:
             blocks.append(block)
 
-        # now process Blocks into Tests
+        return blocks
 
+    def parse_blocks_to_tests(self, blocks, functionalities):
         state = ParseState()
         state.functionalities = functionalities
 
@@ -631,6 +509,126 @@ class Document(object):
             else:
                 raise NotImplementedError('need Pragma or Test, not ' + repr(test_or_pragma))
 
+        return tests
+
+    def extract_tests(self, functionalities):
+        r"""Extract all Tests from this Document.
+
+        >>> functionalities = {}
+        >>> d = Document()
+        >>> d.append(u"This is a text file.")
+        >>> d.append(u'It contains NO tests.')
+        >>> d.extract_tests(functionalities)
+        []
+
+        >>> d = Document()
+        >>> d.append(u'This is a test file.')
+        >>> d.append(u'    -> Tests for functionality "Parse Thing"')
+        >>> d.append(u'')
+        >>> d.append(u"    | This is some test body.")
+        >>> d.append(u'    = Expected result')
+        >>> d.extract_tests(functionalities)
+        [Test(body_block=TestBody(line_num=4), input_block=None,
+              expectation=OutputOutcome(u'Expected result'),
+              functionality=Functionality(u'Parse Thing'),
+              desc_block=InterveningText(line_num=1),
+              body=u'This is some test body.', input=None)]
+
+        >>> d = Document()
+        >>> d.append(u'This is a test file.')
+        >>> d.append(u'    -> Tests for functionality "Parse Thing"')
+        >>> d.append(u'')
+        >>> d.append(u"    | This is some test body.")
+        >>> d.append(u"    | It extends over two lines.")
+        >>> d.append(u'    ? Expected Error')
+        >>> d.append(u'')
+        >>> d.append(u'    | Test with input')
+        >>> d.append(u'    + input-for-test')
+        >>> d.append(u'    = Expected result on output')
+        >>> d.append(u'')
+        >>> d.append(u'    + Other input-for-test')
+        >>> d.append(u'    = Other Expected result on output')
+        >>> d.append(u'')
+        >>> d.append(u'    -> Tests for functionality "Run Thing"')
+        >>> d.append(u'')
+        >>> d.append(u"    | Thing")
+        >>> d.append(u'    ? Oops')
+        >>> tests = d.extract_tests(functionalities)
+        >>> [t.body for t in tests]
+        [u'This is some test body.\nIt extends over two lines.',
+         u'Test with input', u'Test with input', u'Thing']
+        >>> [t.input_block for t in tests]
+        [None, TestInput(line_num=8), TestInput(line_num=12), None]
+        >>> tests[1].input_block.text()
+        u'input-for-test'
+        >>> tests[2].input_block.text()
+        u'Other input-for-test'
+        >>> [t.expectation for t in tests]
+        [ErrorOutcome(u'Expected Error'),
+         OutputOutcome(u'Expected result on output'),
+         OutputOutcome(u'Other Expected result on output'),
+         ErrorOutcome(u'Oops')]
+        >>> [t.functionality.name for t in tests]
+        [u'Parse Thing', u'Parse Thing', u'Parse Thing', u'Run Thing']
+        >>> sorted(functionalities.keys())
+        [u'Parse Thing', u'Run Thing']
+
+        >>> d = Document()
+        >>> d.append(u"    | This is some test body.")
+        >>> d.append(u'    = Expected')
+        >>> d.extract_tests({})
+        Traceback (most recent call last):
+        ...
+        FalderalSyntaxError: line 1: functionality under test not specified
+
+        >>> d = Document()
+        >>> d.append(u'This is a test file.')
+        >>> d.append(u'    ? Expected Error')
+        >>> d.extract_tests({})
+        Traceback (most recent call last):
+        ...
+        FalderalSyntaxError: line 2: expectation must be preceded by test body or test input
+
+        >>> d = Document()
+        >>> d.append(u'    -> Hello, this is pragma')
+        >>> d.append(u'    = Expected')
+        >>> d.extract_tests({})
+        Traceback (most recent call last):
+        ...
+        FalderalSyntaxError: line 1: incorrectly formatted test block
+
+        >>> d = Document()
+        >>> d.append(u'    | This is test')
+        >>> d.append(u'This is text')
+        >>> d.extract_tests({})
+        Traceback (most recent call last):
+        ...
+        FalderalSyntaxError: line 1: test body must be followed by expectation or test input
+
+        >>> d = Document()
+        >>> d.append(u'    -> Hello, this is pragma')
+        >>> d.append(u'    + Input to where exactly?')
+        >>> d.extract_tests({})
+        Traceback (most recent call last):
+        ...
+        FalderalSyntaxError: line 1: incorrectly formatted test block
+
+        >>> d = Document()
+        >>> funs = {}
+        >>> d.append(u'    -> Functionality "Parse Stuff" is implemented by '
+        ...          u'shell command "parse"')
+        >>> d.append(u'')
+        >>> d.append(u'    -> Functionality "Parse Stuff" is')
+        >>> d.append(u'    -> implemented by shell command "pxxxy"')
+        >>> tests = d.extract_tests(funs)
+        >>> len(funs.keys())
+        1
+        >>> [i for i in funs["Parse Stuff"].implementations]
+        [ShellImplementation(u'parse'), ShellImplementation(u'pxxxy')]
+
+        """
+        blocks = self.parse_lines_to_blocks()
+        tests = self.parse_blocks_to_tests(blocks, functionalities)
         return tests
 
 

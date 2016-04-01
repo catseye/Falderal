@@ -7,8 +7,8 @@ bin/falderal -v -t || exit 1
 cd tests
 
 FIRST_TESTS="
-test-pass-fail test-no-functionality test-ill-formed
-test4 test5
+test-pass-fail test-no-functionality test-ill-formed test-no-test-body
+test-var-subst-no-eol
 test-utf8 test-crlf
 test-bad-indentation
 test-input-sections test-shared-body
