@@ -28,10 +28,12 @@ for TEST in ${LINTING_TESTS}; do
     diff -u ${TEST}.expected ${TEST}.actual || exit 1
 done
 
-# two-part tests
-for TEST in test6 test7 test8; do
+TWO_PART_TESTS="
+test-no-functionality-leak test-implementations-global test-appliances
+"
+for TEST in ${TWO_PART_TESTS}; do
     echo ${TEST}...
-    ../bin/falderal ${TEST}a.markdown ${TEST}b.markdown > ${TEST}.actual 2>&1
+    ../bin/falderal ${TEST}-a.markdown ${TEST}-b.markdown > ${TEST}.actual 2>&1
     diff -u ${TEST}.expected ${TEST}.actual || exit 1
 done
 

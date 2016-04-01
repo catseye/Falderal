@@ -3,9 +3,11 @@ History
 
 Version 0.11-PRE "Dan Ryan Expressway" (current development version):
 
-*   Renamed the internal tests to have more descriptive names (in progress.)
+*   Renamed the internal tests to have descriptive names instead of
+    numbers.
 *   The first command-line argument being `test` for compatibility with
     previous versions of `falderal` has been removed.
+*   Massive internal refactor of block-parsing and test-extraction code.
 
 Version 0.10 "Shedd Aquarium" (current released version):
 
