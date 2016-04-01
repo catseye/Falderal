@@ -180,7 +180,7 @@ class Block(object):
     >>> b.append(u'| Test body here.')
     >>> b.append(u'= Expected result here.')
     >>> print b.classify(ParseState(current_functionality=f))
-    Test(body_block=TestBody(line_num=1), input_block=None,
+    Test(body_block=Block(line_num=1), input_block=None,
          expectation=OutputOutcome(u'Expected result here.'),
          functionality=Functionality('foo'), desc_block=None,
          body=u'Test body here.', input=None)
@@ -189,12 +189,30 @@ class Block(object):
     >>> b.append(u'| Test body here.')
     >>> b.append(u'? Expected error here.')
     >>> print b.classify(ParseState(current_functionality=f))
-    Test(body_block=TestBody(line_num=1), input_block=None,
+    Test(body_block=Block(line_num=1), input_block=None,
          expectation=ErrorOutcome(u'Expected error here.'),
          functionality=Functionality('foo'), desc_block=None,
          body=u'Test body here.', input=None)
 
     """
+
+    PREFIXES = [
+        u'| ',
+        u'+ ',
+        u'? ',
+        u'= ',
+        u'->',
+    ]
+    VALID_PATTERNS = [
+        [u'->'],
+        [u'> '],
+        [u'| ', u'= '],
+        [u'| ', u'? '],
+        [u'| ', u'+ ', u'= '],
+        [u'| ', u'+ ', u'? '],
+        [u'+ ', u'= '],
+        [u'+ ', u'? '],
+    ]
 
     def __init__(self, line_num=1, filename=None, lines=None):
         if lines is None:
@@ -202,23 +220,6 @@ class Block(object):
         self.lines = lines
         self.line_num = line_num
         self.filename = filename
-        self.PREFIXES = [
-            u'| ',
-            u'+ ',
-            u'? ',
-            u'= ',
-            u'->',
-        ]
-        self.VALID_PATTERNS = [
-            [u'->'],
-            [u'> '],
-            [u'| ', u'= '],
-            [u'| ', u'? '],
-            [u'| ', u'+ ', u'= '],
-            [u'| ', u'+ ', u'? '],
-            [u'+ ', u'= '],
-            [u'+ ', u'? '],
-        ]
 
     def __repr__(self):
         filename_repr = '' if self.filename is None else ', filename=%r' % self.filename
@@ -278,7 +279,10 @@ class Block(object):
     def classify(self, state):
         """Return the Test or Pragma that this Block represents."""
 
-        def make_block_from_pattern(cls, pattern, prefix):
+        pattern = self.deconstruct()
+        pattern_prefixes = [p[0] for p in pattern]
+
+        def make_block_from_pattern(prefix):
             lines = None
             for (candidate_prefix, candidate_lines) in pattern:
                 if candidate_prefix == prefix:
@@ -286,10 +290,9 @@ class Block(object):
                     break
             if lines is None:
                 return None
-            return cls(line_num=self.line_num, filename=self.filename, lines=lines)
-
-        pattern = self.deconstruct()
-        pattern_prefixes = [p[0] for p in pattern]
+            return Block(
+                line_num=self.line_num, filename=self.filename, lines=lines
+            )
 
         if '' in pattern_prefixes:
             # There is plain, non-prefixed text embedded somewhere in this Block.
@@ -320,15 +323,13 @@ class Block(object):
                     ("line %d: " % self.line_num) +
                     "functionality under test not specified")
         
-            body_block = make_block_from_pattern(TestBody, pattern, u'| ') or state.last_test_body_block
-            input_block = make_block_from_pattern(TestInput, pattern, u'+ ') or state.last_test_input_block
+            body_block = make_block_from_pattern(u'| ') or state.last_test_body_block
+            input_block = make_block_from_pattern(u'+ ') or state.last_test_input_block
 
             if pattern_prefixes[-1] == u'= ':
-                expectation_block = make_block_from_pattern(Block, pattern, u'= ')
-                expectation = OutputOutcome(expectation_block.text())
+                expectation = OutputOutcome(make_block_from_pattern(u'= ').text())
             elif pattern_prefixes[-1] == u'? ':
-                expectation_block = make_block_from_pattern(Block, pattern, u'? ')
-                expectation = ErrorOutcome(expectation_block.text())
+                expectation = ErrorOutcome(make_block_from_pattern(u'? ').text())
             else:
                 raise NotImplementedError
 
@@ -339,7 +340,6 @@ class Block(object):
                         desc_block=state.last_desc_block)
 
             state.last_test_body_block = body_block
-            #state.last_test_input_block = input_block
 
             return test
         else:
@@ -368,14 +368,6 @@ class Pragma(Block):
             )
             implementation = ShellImplementation(command)
             functionality.add_implementation(implementation)
-
-
-class TestBody(Block):
-    pass
-
-
-class TestInput(Block):
-    pass
 
 
 class InterveningText(Block):
@@ -528,7 +520,7 @@ class Document(object):
         >>> d.append(u"    | This is some test body.")
         >>> d.append(u'    = Expected result')
         >>> d.extract_tests(functionalities)
-        [Test(body_block=TestBody(line_num=4), input_block=None,
+        [Test(body_block=Block(line_num=4), input_block=None,
               expectation=OutputOutcome(u'Expected result'),
               functionality=Functionality(u'Parse Thing'),
               desc_block=InterveningText(line_num=1),
@@ -558,7 +550,7 @@ class Document(object):
         [u'This is some test body.\nIt extends over two lines.',
          u'Test with input', u'Test with input', u'Thing']
         >>> [t.input_block for t in tests]
-        [None, TestInput(line_num=8), TestInput(line_num=12), None]
+        [None, Block(line_num=8), Block(line_num=12), None]
         >>> tests[1].input_block.text()
         u'input-for-test'
         >>> tests[2].input_block.text()
@@ -839,18 +831,18 @@ class ShellImplementation(Implementation):
 class Test(object):
     """An object representing a Falderal test.
 
-    Normally a TestBody block is given as the body_block argument,
-    and possibly a TestInput block is given as input_block,
+    Normally a test body Block is given as the body_block argument,
+    and possibly a test input Block is given as input_block,
     and the body and input attributes are derived from it.  However
     in the absence of these blocks (as in many of the internal tests)
     a body and/or input may be passed alone.
     
     TODO: maybe write a helper function for that instead.
 
-    >>> b = TestBody()
+    >>> b = Block()
     >>> b.append(u'foo')
     >>> b.append(u'bar')
-    >>> i = TestInput()
+    >>> i = Block()
     >>> i.append(u'green')
     >>> t = Test(body_block=b, input_block=i)
     >>> print t.body
