@@ -2,7 +2,7 @@ FAILED  :
 
 Demonstrate error expectation (Intentional fail.)
 
-Location: test-pass-fail.markdown, line 55
+Location: test-new-format.markdown, line 55
 Function: Cat
 Impl    : shell command "python cat.py"
 Body    : meow
