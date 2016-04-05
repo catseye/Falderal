@@ -17,14 +17,21 @@ anything except a draft until it is described as "version 1.0".
 Overview
 --------
 
-A Falderal Literate Test Suite is a text file where some of the lines
+A Falderal Literate Test Suite is a plain text file where some of the lines
 have special meaning to the Falderal Literate Test Format.  Certain
-groupings of the lines defined by this format are intended to denote tests.
+groupings of the lines defined by this format are intended to denote tests,
+while others denote pragmas which specify how those tests should be run.
+Outside of these groupings, lines have no meaning to the Falderal Literate
+Test Format other than that they are presumed to be mainly descriptive text.
 
-A tool which claims to understand this format may choose to extract these
-tests, run them, and report which and how many of those tests passed or
-failed.  That would be a typical application for this format.  However, it is
-not required to do this with the tests; it may, for example, reformat the
+The plain text file may also be formatted in some other format, such as
+Markdown, although this is not required.
+
+A tool which claims to understand the Falderal Literate Test Format may
+choose to extract the tests from such a document, run them, and report which
+and how many of them passed or failed.  That would be a typical application
+for this format.  However, no tool is strictly required to do this with the
+tests found in a document; a tool may, for example, simply reformat the
 tests to produce an output file in a different format.
 
 In the syntax templates below, words in `/slashes/` indicate a variable
@@ -33,34 +40,36 @@ rather than literal text.
 Syntax
 ------
 
-Lines which have special meaning to the Falderal Literate Test Format
-always begin with an indent of four (4) spaces from the leftmost column
-followed immediately by a series of distinguished characters, called an
-_introducer_.  The introducers which have meaning to the Falderal Literate
-Test Format are as follows:
+Each grouping of lines which has special meaning to the Falderal Literate
+Test Format always begins with an indent of four (4) spaces from the
+leftmost column, preceded by non-indented text, and followed by either
+non-indented text or the end of the file.  Such a grouping of lines is
+called a _block_.
 
-* `->` (hyphen, greater-than sign): pragma
-* `| ` (vertical bar, space): test body text
-* `+ ` (plus sign, space): test input text
-* `= ` (equals sign, space): expected output text
-* `? ` (question mark, space): expected error text
-* `> ` (greater-than sign, space): Bird-style embedded code
+There are two general formats to any block.  In the first, "verbose" format,
+each indent of 4 spaces is followed immediately on that line by distinguished
+sequence of characters, called an _introducer_.  The introducers which have
+meaning to the Falderal Literate Test Format are as follows:
+
+*   `->` (hyphen, greater-than sign): pragma
+*   `| ` (vertical bar, space): test body text
+*   `+ ` (plus sign, space): test input text
+*   `= ` (equals sign, space): expected output text
+*   `? ` (question mark, space): expected error text
 
 If the same introducer occurs on multiple adjacent lines, the text after
 each introducer is concatenated to form one chunk of relevant text.  This
 allows, for example, multi-line text to be given as the body, the input,
-or the expected output of a test.  Lines without introducers are called
-_intervening text_.
+or the expected output of a test.
 
 There are some restrictions on the order in which introducers can sensibly
-occur:
-    
-*   Test body text should occur after intervening text.
+occur in a block:
+
+*   Test body text should occur at the start of a block.
 *   Test body test may be optionally followed by test input text.
-*   The first test input text must be immediately preceded by test body text,
-    with no intervening text.
+*   The first test input text must be immediately preceded by test body text.
 *   Subsequent test input texts need not be preceded by a test body text;
-    in this case, the previously-defined test body text will be used again.
+    in this case, the previously-appearing test body text will be used again.
 *   Test body text must be followed by either test input text, expected
     output text, or expected error text, with no intervening text.
 *   Either expected output or error text must follow either test body
@@ -68,10 +77,24 @@ occur:
 
 See the sections for these introducers, below, for more details.
 
-Bird-style embedded code is not considered part of a test by the Falderal
-Literate Test Format, but may be recognized as such by a formatting tool,
-for purposes of formatting.
+In the other, "freestyle" format, not all lines in a block require
+introducers.  A freestyle format block is indentified as such if one or
+more of the final lines of the block begin with any of the following
+introducers:
 
+*   `=> `: expected output text
+*   `==> `: expected output text
+*   `===> `: expected output text
+*   `?> `: expected error text
+*   `??> `: expected error text
+*   `???> `: expected error text
+
+If a block is identified as a freestyle block, all lines preceding the
+final lines with one of these introducers, are interpreted as having
+no introducer at all (even if they begin with `| ` or some other sequence
+already mentioned) and are used as the test body block.
+
+Lines without introducers are called _intervening text_.
 Lines of intervening text are classified as either blank or non-blank.  A
 line is blank if it contains no characters, or if it contains only whitespace.
 A group of non-blank lines is referred to as a _paragraph_.
@@ -217,7 +240,7 @@ Each section of test body text may or may not be followed by a section of
 test input text; either way it must then be followed immediately by either
 and expected output section or expected error section.
 
-Valid examples:
+Valid examples in the "verbose" format:
     
     | thing to test
     = output to expect
@@ -235,6 +258,26 @@ Valid examples:
 
     + different input to give the immediately previously defined test body
     ? different error to expect
+
+Valid examples in the "freestyle" format:
+
+    thing to test
+    => output to expect
+
+    thing to test
+    ==> output to expect
+
+    thing to test
+    ===> output to expect
+
+    thing to test
+    ?> error to expect
+
+    thing to test
+    ??> error to expect
+
+    thing to test
+    ???> error to expect
 
 Invalid examples:
 
