@@ -219,20 +219,6 @@ For example:
 
     -> Tests for 'Reversing a string'
 
-Alternatively, the following direct way of associating tests with an
-implementation of a functionality, may be used.  However, this direct way
-of specifying a functionality is discouraged when there may be conceivably
-be multiple implementation of the functionality.
-
-    -> Tests for _functionality-type_ _functionality-specifier_
-
-_functionality-type_ and _functionality-specifier_ have the same meaning
-as given in the description of the Functionality-definition pragma.
-
-For example:
-
-    -> Tests for Haskell function Data.Backwards:reverseString
-
 Test Body, Test Input and Expected Text
 ---------------------------------------
 
@@ -323,13 +309,3 @@ prefix to denote preformatted plain text.
 The format of pragmas was chosen such that they could be read literately,
 and as such, a formatting tool could format them in the output document
 with little if any change.
-
-Here is why directly specifying the functionality implementation in a
-Tests-for pragma is discouraged.  Saying `-> Tests for shell command
-"flang %(test-body-text)"` ties a set of tests to a particular executable,
-that is to say a particular *implementation* of a language, which is being
-tested, but a large part of the point of Falderal is to let you write
-tests for a *language*, and that language might have *many* implementations.
-Decoupling them allows you to change what actual functions or programs
-are being tested, and basically allow you to have multiple implementations
-of a language and use the same tests for all of them.
