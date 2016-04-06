@@ -196,9 +196,16 @@ class Block(object):
 
     """
 
-    PREFIXES = [
-        u'==> ',
-        u'??> ',
+    FREESTYLE_MAP = {
+        u'=> ':   u'= ',
+        u'==> ':  u'= ',
+        u'===> ': u'= ',
+        u'?> ':   u'? ',
+        u'??> ':  u'? ',
+        u'???> ': u'? ',
+    }
+    FREESTYLE_PREFIXES = FREESTYLE_MAP.keys()
+    PREFIXES = FREESTYLE_PREFIXES + [
         u'| ',
         u'+ ',
         u'? ',
@@ -306,13 +313,10 @@ class Block(object):
                     lines.extend([candidate_prefix + line for line in candidate_lines])
             return [(default_prefix, lines)] + new_pattern
 
-        # This block ends with a new-style expectation.
-        # We interpret this according to the new, not-yet-written rules.
-        if pattern_prefixes[-1] in [u'==> ', u'??> ']:
-            pattern = reconstruct(pattern, u'| ', {
-                u'==> ': u'= ',
-                u'??> ': u'? ',
-            })
+        if pattern_prefixes[-1] in self.FREESTYLE_PREFIXES:
+            # This block ends with an expectation indicating a freestyle block.
+            # We re-interpret this block according to the freestyle block rules.
+            pattern = reconstruct(pattern, u'| ', self.FREESTYLE_MAP)
             pattern_prefixes = [p[0] for p in pattern]
 
         if '' in pattern_prefixes:

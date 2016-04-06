@@ -13,7 +13,7 @@ test-utf8 test-crlf
 test-bad-indentation
 test-input-sections test-shared-body
 test-stdout-stderr test-err-no-stderr
-test-new-format
+test-freestyle-format
 "
 for TEST in ${FIRST_TESTS}; do
     echo ${TEST}...

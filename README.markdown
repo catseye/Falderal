@@ -4,7 +4,11 @@ Falderal
 Version 0.11-PRE "Dan Ryan Expressway"
 
 This is the reference distribution of Falderal, a file format for literate
-test suites.  Falderal is particularly suited for:
+test suites.  What sets Falderal apart from most other test frameworks is
+that it recognizes that **your tests are for a functionality, not a particular
+implementation of that functionality**.
+
+Falderal is particularly suited for:
 
 *   documenting programming languages with prose and examples
 *   testing multiple implementations of a programming language

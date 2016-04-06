@@ -1,0 +1,43 @@
+FAILED  : 
+
+Demonstrate error expectation (Intentional fail.)
+
+Location: test-freestyle-format.markdown, line 62
+Function: Cat
+Impl    : shell command "python cat.py"
+Body    : meow
+Expected: error:
+woof
+Actual  : output:
+meow
+
+FAILED  : 
+
+Demonstrate error expectation (Intentional fail.)
+
+Location: test-freestyle-format.markdown, line 65
+Function: Cat
+Impl    : shell command "python cat.py"
+Body    : meow
+Expected: error:
+woof
+Actual  : output:
+meow
+
+FAILED  : 
+
+Demonstrate error expectation (Intentional fail.)
+
+Location: test-freestyle-format.markdown, line 68
+Function: Cat
+Impl    : shell command "python cat.py"
+Body    : meow
+Expected: error:
+bow
+wow
+Actual  : output:
+meow
+
+--------------------------------
+Total test runs: 10, failures: 3
+--------------------------------
