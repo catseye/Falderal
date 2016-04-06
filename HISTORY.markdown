@@ -8,6 +8,11 @@ Version 0.11-PRE "Dan Ryan Expressway" (current development version):
 *   The first command-line argument being `test` for compatibility with
     previous versions of `falderal` has been removed.
 *   Massive internal refactor of block-parsing and test-extraction code.
+*   Supports a new format for test blocks, called "freestyle", where if
+    the last few lines of a block are prefixed with `=> ` or `==> ` or 
+    `===> ` or `?> ` or `??> ` or `???> `, the preceding part of the
+    block needs no prefixes at all, and it is simply treated as one
+    verbatim test body.
 
 Version 0.10 "Shedd Aquarium" (current released version):
 
