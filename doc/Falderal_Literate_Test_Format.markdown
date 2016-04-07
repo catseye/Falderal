@@ -6,8 +6,8 @@ This document describes the proposed Falderal Literate Test Format.
 Status
 ------
 
-This document is a *draft*.  It is nominally "version 0.11-PRE" because it
-describes something that version 0.11-PRE of `py-falderal` mostly implements.
+This document is a *draft*.  It is nominally "version 0.11" because it
+describes something that version 0.11 of `py-falderal` mostly implements.
 We will deign to note which sections of this document the current released
 version of `py-falderal` implements, and which it does not.  However,
 this document is a work in progress, subject to change, and subject to get

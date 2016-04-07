@@ -1,7 +1,7 @@
 History
 =======
 
-Version 0.11-PRE "Dan Ryan Expressway" (current development version):
+Version 0.11 "Dan Ryan Expressway" (current released version):
 
 *   Renamed the internal tests to have descriptive names instead of
     numbers.
@@ -14,7 +14,7 @@ Version 0.11-PRE "Dan Ryan Expressway" (current development version):
     block needs no prefixes at all, and it is simply treated as one
     verbatim test body.
 
-Version 0.10 "Shedd Aquarium" (current released version):
+Version 0.10 "Shedd Aquarium" (previous released version):
 
 *   Removed the old, bitrotting Haskell implementation.
 *   Removed deprecated `%(test-text)` and `%(test-file)` variables
@@ -27,8 +27,7 @@ Version 0.10 "Shedd Aquarium" (current released version):
     there was a previous test, and the test body of the previous test will
     be re-used with the new input in the new test.
 
-Version 0.9-2014.0525 "Municipal Pier #2, May 25th 2014" (previous released
-version):
+Version 0.9-2014.0525 "Municipal Pier #2, May 25th 2014":
 
 *   Shell implementations assume input and output is encoded UTF-8; any
     malformed UTF-8 is simply ignored (for better or worse, for now.)

@@ -1,7 +1,7 @@
 Falderal
 ========
 
-Version 0.11-PRE "Dan Ryan Expressway"
+Version 0.11 "Dan Ryan Expressway"
 
 This is the reference distribution of Falderal, a file format for literate
 test suites.  What sets Falderal apart from most other test frameworks is
