@@ -33,6 +33,14 @@ without these, shell chaos is likely to result.
     = hi
     = hi
 
+Note that when variables are expanded, backslash sequences in the
+replacement string ("\n", etc) are not expanded.
+
+    -> Tests for functionality "Echo"
+
+    | he\nl\tl\\o
+    = he\nl\tl\\o
+
 Note that single quotes needn't be supplied around `%(test-body-file)`
 or `%(output-file)`.
 

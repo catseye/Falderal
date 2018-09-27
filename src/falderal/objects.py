@@ -773,14 +773,14 @@ class ShellImplementation(Implementation):
                 file.close()
             os.close(fd)
             # replace all occurrences in command
-            command = re.sub(r'\%\(test-body-file\)', test_filename, command)
+            command = command.replace('%(test-body-file)', test_filename)
             command_contained_test_body_file = True
 
         if '%(test-body-text)' in self.command:
             # escape all single quotes in body
             body = re.sub(r"'", r"\'", body)
             # replace all occurrences in command
-            command = re.sub(r'\%\(test-body-text\)', body, command)
+            command = command.replace('%(test-body-text)', body)
             command_contained_test_body_text = True
 
         if '%(test-input-file)' in self.command:
@@ -792,14 +792,14 @@ class ShellImplementation(Implementation):
                 file.close()
             os.close(fd)
             # replace all occurrences in command
-            command = re.sub(r'\%\(test-input-file\)', test_input_filename, command)
+            command = command.replace('%(test-input-file)', test_input_filename)
             command_contained_test_input_file = True
 
         if '%(test-input-text)' in self.command:
             # escape all single quotes in input
             body = re.sub(r"'", r"\'", body)
             # replace all occurrences in command
-            command = re.sub(r'\%\(test-input-text\)', input, command)
+            command = command.replace('%(test-input-text)', input)
             command_contained_test_input_text = True
 
         if '%(output-file)' in self.command:
@@ -807,7 +807,7 @@ class ShellImplementation(Implementation):
             fd, output_filename = mkstemp()
             os.close(fd)
             # replace all occurrences in command
-            command = re.sub(r'\%\(output-file\)', output_filename, command)
+            command = command.replace('%(output-file)', output_filename)
 
         # subshell the command and return the output
         pipe = Popen(command, shell=True,
