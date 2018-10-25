@@ -281,9 +281,6 @@ Valid examples in the "freestyle" format:
     <=== input to give it
     ???> error to expect
 
-    <=== different input to give the immediately previously defined test body
-    ???> different error to expect
-
 Invalid examples:
 
     | thing to test
@@ -293,7 +290,12 @@ Invalid examples:
     + input to give it
     = output to expect
 
-...test input must be preceded by a test body (if this is the first test.)
+...test input must be preceded by a test body, if this is the first test.
+
+    <=== input to give it
+    ???> output to expect
+
+...test input must be preceded by a test body always, in freestyle format.
 
     ? error to expect
 
