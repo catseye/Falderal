@@ -59,7 +59,9 @@ class BlockTestCase(TestCase):
         b.append(u'= Expected result here.')
         result = b.classify(ParseState(current_functionality=f))
         self.assertIsInstance(result, Test)
-        #self.assertEqual(result.body_block, None)
+        self.assertEqual(result.body_block.lines, [u'Test body here.'])
+        self.assertEqual(result.body_block.line_num, 1)
+        self.assertEqual(result.body_block.filename, None)
         self.assertEqual(result.input_block, None)
         self.assertEqual(result.expectation, OutputOutcome(u'Expected result here.'))
         self.assertEqual(result.functionality, f)
@@ -74,7 +76,9 @@ class BlockTestCase(TestCase):
         b.append(u'? Expected error here.')
         result = b.classify(ParseState(current_functionality=f))
         self.assertIsInstance(result, Test)
-        #self.assertEqual(result.body_block, None)
+        self.assertEqual(result.body_block.lines, [u'Test body here.'])
+        self.assertEqual(result.body_block.line_num, 1)
+        self.assertEqual(result.body_block.filename, None)
         self.assertEqual(result.input_block, None)
         self.assertEqual(result.expectation, ErrorOutcome(u'Expected error here.'))
         self.assertEqual(result.functionality, f)
@@ -125,14 +129,20 @@ class DocumentTestCase(TestCase):
         d.append(u"    | This is some test body.")
         d.append(u'    = Expected result')
         functionalities = {}
-        self.assertEqual(
-            repr(d.extract_tests(functionalities)),
-            "[Test(body_block=Block(line_num=4), input_block=None, "
-            "expectation=OutputOutcome(u'Expected result'), "
-            "functionality=Functionality(u'Parse Thing'), "
-            "desc_block=InterveningText(line_num=1), "
-             "body=u'This is some test body.', input=None)]"
-        )
+        tests = d.extract_tests(functionalities)
+        self.assertEqual(len(tests), 1)
+        result = tests[0]
+        self.assertIsInstance(result, Test)
+        self.assertEqual(result.body_block.lines, [u'This is some test body.'])
+        self.assertEqual(result.body_block.line_num, 4)
+        self.assertEqual(result.body_block.filename, None)
+        self.assertEqual(result.input_block, None)
+        self.assertEqual(result.expectation, OutputOutcome(u'Expected result'))
+        self.assertEqual(result.functionality, functionalities['Parse Thing'])
+        self.assertEqual(result.desc_block.__class__, InterveningText)
+        self.assertEqual(result.desc_block.lines, [u'This is a test file.'])
+        self.assertEqual(result.body, u'This is some test body.')
+        self.assertEqual(result.input, None)
 
     def test_extract_tests_more(self):
         d = Document()
@@ -161,17 +171,13 @@ class DocumentTestCase(TestCase):
             [u'This is some test body.\nIt extends over two lines.',
              u'Test with input', u'Test with input', u'Thing']
         )
-        #self.assertEqual(
-        #    [t.input_block for t in tests],
-        #    [None, Block(line_num=8), Block(line_num=12), None]
-        #)
         self.assertEqual(
-            tests[1].input_block.text(),
-            u'input-for-test'
+            [t.input_block.__class__ for t in tests],
+            [None.__class__, Block, Block, None.__class__]
         )
         self.assertEqual(
-            tests[2].input_block.text(),
-            u'Other input-for-test'
+            [t.input_block.text() for t in tests if t.input_block is not None],
+            [u'input-for-test', u'Other input-for-test']
         )
         self.assertEqual(
             [t.expectation for t in tests],
@@ -240,8 +246,8 @@ class DocumentTestCase(TestCase):
         tests = d.extract_tests(funs)
         self.assertEqual(list(funs.keys()), ['Parse Stuff'])
         self.assertEqual(
-            [repr(i) for i in funs["Parse Stuff"].implementations],
-            ["ShellImplementation(u'parse')", "ShellImplementation(u'pxxxy')"]
+            [i for i in funs["Parse Stuff"].implementations],
+            [ShellImplementation(u'parse'), ShellImplementation(u'pxxxy')]
         )
 
 
