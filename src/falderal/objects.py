@@ -197,6 +197,9 @@ class Block(object):
     """
 
     FREESTYLE_MAP = {
+        u'<= ':   u'+ ',
+        u'<== ':  u'+ ',
+        u'<=== ': u'+ ',
         u'=> ':   u'= ',
         u'==> ':  u'= ',
         u'===> ': u'= ',
