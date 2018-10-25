@@ -31,12 +31,15 @@ Demonstrate error expectation (Intentional fail.)
 Location: test-freestyle-format.markdown, line 68
 Function: Cat
 Impl    : shell command "python cat.py"
-Body    : meow
+Body    : 
+| meow
+? rreoww
 Expected: error:
 bow
 wow
 Actual  : output:
-meow
+| meow
+? rreoww
 
 --------------------------------
 Total test runs: 10, failures: 3
