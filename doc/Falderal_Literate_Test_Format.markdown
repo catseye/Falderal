@@ -95,7 +95,7 @@ used to end a block):
 
 *   `<= `: test input text
 *   `<== `: test input text
-*   `>=== `: test input text
+*   `<=== `: test input text
 
 If a block is identified as a freestyle block, all lines preceding the
 first final line appearing with one of these introducers, are interpreted
