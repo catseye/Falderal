@@ -4,7 +4,13 @@ import re
 from subprocess import Popen, PIPE
 from tempfile import mkstemp
 
-# Note: the __unicode__ method of all the classes defined herein should
+# Python 2/3
+try:
+    unicode = unicode
+except NameError:
+    unicode = str
+
+# Note: the __str__ method of all the classes defined herein should
 # produce a short, human-readable summary of the contents of the object,
 # suitable for displaying in the test results but not necessarily
 # complete.  __repr__ should produce something complete, when it is
@@ -55,12 +61,12 @@ class Outcome(object):
 
 
 class OutputOutcome(Outcome):
-    def __unicode__(self):
+    def __str__(self):
         return u'output:\n' + self.text
 
 
 class ErrorOutcome(Outcome):
-    def __unicode__(self):
+    def __str__(self):
         return u'error:\n' + self.text
 
 
@@ -122,17 +128,25 @@ class Failure(TestResult):
     def short_description(self):
         return 'expected %r, got %r' % (self.test.expectation, self.actual)
 
+    def fmt(self, field, contents):
+        if str == unicode:  # Python 3
+            if isinstance(contents, bytes):
+                contents = contents.decode('utf-8')
+            s = field + contents
+            print(s)
+        else:               # Python 2
+            s = field + contents
+            print(s)
+
     def report(self):
-        print "FAILED  : " + self.format_text_block(self.test.description)
-        print "Location: " + self.test.body_block.location()
-        print "Function: " + self.format_text_block(self.test.functionality.name)
-        print "Impl    : " + self.format_text_block(self.implementation)
-        print "Body    : " + self.format_text_block(self.test.body)
-        #if input is not None:
-        #print "Input   : " + self.format_text_block(self.test.input)
-        print "Expected: " + self.format_text_block(self.test.expectation)
-        print "Actual  : " + self.format_text_block(self.actual)
-        print
+        self.fmt("FAILED  : ", self.format_text_block(self.test.description))
+        self.fmt("Location: ", self.test.body_block.location())
+        self.fmt("Function: ", self.format_text_block(self.test.functionality.name))
+        self.fmt("Impl    : ", self.format_text_block(self.implementation))
+        self.fmt("Body    : ", self.format_text_block(self.test.body))
+        self.fmt("Expected: ", self.format_text_block(self.test.expectation))
+        self.fmt("Actual  : ", self.format_text_block(self.actual))
+        print("")
 
     def is_successful(self):
         return False
@@ -157,7 +171,7 @@ class Block(object):
         u'??> ':  u'? ',
         u'???> ': u'? ',
     }
-    FREESTYLE_PREFIXES = FREESTYLE_MAP.keys()
+    FREESTYLE_PREFIXES = list(FREESTYLE_MAP.keys())
     PREFIXES = FREESTYLE_PREFIXES + [
         u'| ',
         u'+ ',
@@ -189,7 +203,7 @@ class Block(object):
             self.__class__.__name__, self.line_num, filename_repr
         )
 
-    def __unicode__(self):
+    def __str__(self):
         return unicode(repr(self))
 
     def location(self):
@@ -488,7 +502,7 @@ class Functionality(object):
     def __repr__(self):
         return "Functionality(%r)" % self.name
 
-    def __unicode__(self):
+    def __str__(self):
         return unicode(repr(self))
 
     def add_implementation(self, implementation):
@@ -523,7 +537,7 @@ class CallableImplementation(Implementation):
     def __repr__(self):
         return '%s(%r)' % (self.__class__.__name__, self.callable)
 
-    def __unicode__(self):
+    def __str__(self):
         return u'callable "%r"' % self.callable
 
     def run(self, body=None, input=None):
@@ -541,7 +555,7 @@ class ShellImplementation(Implementation):
     def __repr__(self):
         return '%s(%r)' % (self.__class__.__name__, self.command)
 
-    def __unicode__(self):
+    def __str__(self):
         return u'shell command "%s"' % self.command
 
     def __eq__(self, other):
@@ -639,7 +653,10 @@ class ShellImplementation(Implementation):
         return result
 
     def normalize_output(self, text):
-        text = text.decode('UTF-8', errors='ignore')
+        try:
+            text = text.decode('UTF-8', errors='ignore')
+        except AttributeError:
+            pass
         text = re.sub(r'\r\n', '\n', text)
         return text.strip('\r\n')
 
