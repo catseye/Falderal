@@ -5,10 +5,12 @@ import unittest
 from unittest import TestCase
 
 from falderal.objects import (
-    Block, InterveningText,
+    Block, Pragma,
+    ParseState, InterveningText,
     Document,
     Functionality, ShellImplementation,
-    Test, OutputOutcome,
+    Test, OutputOutcome, ErrorOutcome,
+    FalderalSyntaxError,
 )
 
 
@@ -41,30 +43,44 @@ class BlockTestCase(TestCase):
             [u'->', u'| ', u'? ', '', u'| ', u'+ ', u'= ']
         )
 
-    #>>> b = Block()
-    #>>> b.append(u'-> This is a pragma.')
-    #>>> b.append(u'-> which extends over two lines')
-    #>>> print b.classify(ParseState())
-    #Pragma(line_num=1)
-    #
-    #>>> f = Functionality('foo')
-    #>>> b = Block()
-    #>>> b.append(u'| Test body here.')
-    #>>> b.append(u'= Expected result here.')
-    #>>> print b.classify(ParseState(current_functionality=f))
-    #Test(body_block=Block(line_num=1), input_block=None,
-    #     expectation=OutputOutcome(u'Expected result here.'),
-    #     functionality=Functionality('foo'), desc_block=None,
-    #     body=u'Test body here.', input=None)
-    #
-    #>>> b = Block()
-    #>>> b.append(u'| Test body here.')
-    #>>> b.append(u'? Expected error here.')
-    #>>> print b.classify(ParseState(current_functionality=f))
-    #Test(body_block=Block(line_num=1), input_block=None,
-    #     expectation=ErrorOutcome(u'Expected error here.'),
-    #     functionality=Functionality('foo'), desc_block=None,
-    #     body=u'Test body here.', input=None)
+    def test_classify_block_pragma(self):
+        b = Block()
+        b.append(u'-> This is a pragma.')
+        b.append(u'-> which extends over two lines')
+        result = b.classify(ParseState())
+        self.assertIsInstance(result, Pragma)
+        self.assertEqual(result.lines, [u' This is a pragma.', u' which extends over two lines'])
+        self.assertEqual(result.line_num, 1)
+
+    def test_classify_block_success_test(self):
+        f = Functionality('foo')
+        b = Block()
+        b.append(u'| Test body here.')
+        b.append(u'= Expected result here.')
+        result = b.classify(ParseState(current_functionality=f))
+        self.assertIsInstance(result, Test)
+        #self.assertEqual(result.body_block, None)
+        self.assertEqual(result.input_block, None)
+        self.assertEqual(result.expectation, OutputOutcome(u'Expected result here.'))
+        self.assertEqual(result.functionality, f)
+        self.assertEqual(result.desc_block, None)
+        self.assertEqual(result.body, u'Test body here.')
+        self.assertEqual(result.input, None)
+
+    def test_classify_block_error_test(self):
+        f = Functionality('foo')
+        b = Block()
+        b.append(u'| Test body here.')
+        b.append(u'? Expected error here.')
+        result = b.classify(ParseState(current_functionality=f))
+        self.assertIsInstance(result, Test)
+        #self.assertEqual(result.body_block, None)
+        self.assertEqual(result.input_block, None)
+        self.assertEqual(result.expectation, ErrorOutcome(u'Expected error here.'))
+        self.assertEqual(result.functionality, f)
+        self.assertEqual(result.desc_block, None)
+        self.assertEqual(result.body, u'Test body here.')
+        self.assertEqual(result.input, None)
 
 
 class DocumentTestCase(TestCase):
@@ -145,74 +161,88 @@ class DocumentTestCase(TestCase):
             [u'This is some test body.\nIt extends over two lines.',
              u'Test with input', u'Test with input', u'Thing']
         )
-        #>>> [t.input_block for t in tests]
-        #[None, Block(line_num=8), Block(line_num=12), None]
-        #>>> tests[1].input_block.text()
-        #u'input-for-test'
-        #>>> tests[2].input_block.text()
-        #u'Other input-for-test'
-        #>>> [t.expectation for t in tests]
-        #[ErrorOutcome(u'Expected Error'),
-        # OutputOutcome(u'Expected result on output'),
-        # OutputOutcome(u'Other Expected result on output'),
-        # ErrorOutcome(u'Oops')]
-        #>>> [t.functionality.name for t in tests]
-        #[u'Parse Thing', u'Parse Thing', u'Parse Thing', u'Run Thing']
-        #>>> sorted(functionalities.keys())
-        #[u'Parse Thing', u'Run Thing']
+        #self.assertEqual(
+        #    [t.input_block for t in tests],
+        #    [None, Block(line_num=8), Block(line_num=12), None]
+        #)
+        self.assertEqual(
+            tests[1].input_block.text(),
+            u'input-for-test'
+        )
+        self.assertEqual(
+            tests[2].input_block.text(),
+            u'Other input-for-test'
+        )
+        self.assertEqual(
+            [t.expectation for t in tests],
+            [ErrorOutcome(u'Expected Error'),
+             OutputOutcome(u'Expected result on output'),
+             OutputOutcome(u'Other Expected result on output'),
+             ErrorOutcome(u'Oops')]
+        )
+        self.assertEqual(
+            [t.functionality.name for t in tests],
+            [u'Parse Thing', u'Parse Thing', u'Parse Thing', u'Run Thing']
+        )
+        self.assertEqual(
+            sorted(functionalities.keys()),
+            [u'Parse Thing', u'Run Thing']
+        )
 
-        #>>> d = Document()
-        #>>> d.append(u"    | This is some test body.")
-        #>>> d.append(u'    = Expected')
-        #>>> d.extract_tests({})
-        #Traceback (most recent call last):
-        #...
-        #FalderalSyntaxError: line 1: functionality under test not specified
-        #
-        #>>> d = Document()
-        #>>> d.append(u'This is a test file.')
-        #>>> d.append(u'    ? Expected Error')
-        #>>> d.extract_tests({})
-        #Traceback (most recent call last):
-        #...
-        #FalderalSyntaxError: line 2: expectation must be preceded by test body or test input
-        #
-        #>>> d = Document()
-        #>>> d.append(u'    -> Hello, this is pragma')
-        #>>> d.append(u'    = Expected')
-        #>>> d.extract_tests({})
-        #Traceback (most recent call last):
-        #...
-        #FalderalSyntaxError: line 1: incorrectly formatted test block
-        #
-        #>>> d = Document()
-        #>>> d.append(u'    | This is test')
-        #>>> d.append(u'This is text')
-        #>>> d.extract_tests({})
-        #Traceback (most recent call last):
-        #...
-        #FalderalSyntaxError: line 1: test body must be followed by expectation or test input
-        #
-        #>>> d = Document()
-        #>>> d.append(u'    -> Hello, this is pragma')
-        #>>> d.append(u'    + Input to where exactly?')
-        #>>> d.extract_tests({})
-        #Traceback (most recent call last):
-        #...
-        #FalderalSyntaxError: line 1: incorrectly formatted test block
-        #
-        #>>> d = Document()
-        #>>> funs = {}
-        #>>> d.append(u'    -> Functionality "Parse Stuff" is implemented by '
-        #...          u'shell command "parse"')
-        #>>> d.append(u'')
-        #>>> d.append(u'    -> Functionality "Parse Stuff" is')
-        #>>> d.append(u'    -> implemented by shell command "pxxxy"')
-        #>>> tests = d.extract_tests(funs)
-        #>>> len(funs.keys())
-        #1
-        #>>> [i for i in funs["Parse Stuff"].implementations]
-        #[ShellImplementation(u'parse'), ShellImplementation(u'pxxxy')]
+    def test_no_functionality_under_test(self):
+        d = Document()
+        d.append(u"    | This is some test body.")
+        d.append(u'    = Expected')
+        with self.assertRaises(FalderalSyntaxError) as ar:
+            d.extract_tests({})
+        self.assertEqual(str(ar.exception), "line 1: functionality under test not specified")
+
+    def test_expectation_in_bad_place(self):
+        d = Document()
+        d.append(u'This is a test file.')
+        d.append(u'    ? Expected Error')
+        with self.assertRaises(FalderalSyntaxError) as ar:
+            d.extract_tests({})
+        self.assertEqual(str(ar.exception), "line 2: expectation must be preceded by test body or test input")
+
+    def test_badly_formatted_test_block(self):
+        d = Document()
+        d.append(u'    -> Hello, this is pragma')
+        d.append(u'    = Expected')
+        with self.assertRaises(FalderalSyntaxError) as ar:
+            d.extract_tests({})
+        self.assertEqual(str(ar.exception), "line 1: incorrectly formatted test block")
+
+    def test_body_not_followed_by_anything_sensible(self):
+        d = Document()
+        d.append(u'    | This is test')
+        d.append(u'This is text')
+        with self.assertRaises(FalderalSyntaxError) as ar:
+            d.extract_tests({})
+        self.assertEqual(str(ar.exception), "line 1: test body must be followed by expectation or test input")
+
+    def test_another_badly_formatted_block(self):
+        d = Document()
+        d.append(u'    -> Hello, this is pragma')
+        d.append(u'    + Input to where exactly?')
+        with self.assertRaises(FalderalSyntaxError) as ar:
+            d.extract_tests({})
+        self.assertEqual(str(ar.exception), "line 1: incorrectly formatted test block")
+
+    def test_parse_functionalities(self):
+        d = Document()
+        funs = {}
+        d.append(u'    -> Functionality "Parse Stuff" is implemented by '
+                 u'shell command "parse"')
+        d.append(u'')
+        d.append(u'    -> Functionality "Parse Stuff" is')
+        d.append(u'    -> implemented by shell command "pxxxy"')
+        tests = d.extract_tests(funs)
+        self.assertEqual(list(funs.keys()), ['Parse Stuff'])
+        self.assertEqual(
+            [repr(i) for i in funs["Parse Stuff"].implementations],
+            ["ShellImplementation(u'parse')", "ShellImplementation(u'pxxxy')"]
+        )
 
 
 class ShellImplementationTestCase(TestCase):
@@ -220,34 +250,33 @@ class ShellImplementationTestCase(TestCase):
         i = ShellImplementation('cat')
         self.assertEqual(i.run(body=u'text'), OutputOutcome(u'text'))
 
-        #>>> i = ShellImplementation('cat fhofhofhf')
-        #>>> i.run(body=u'text')
-        #ErrorOutcome(u'cat: fhofhofhf: No such file or directory')
-        #
-        #>>> i = ShellImplementation('cat %(test-body-file)')
-        #>>> i.run(body=u'text')
-        #OutputOutcome(u'text')
-        #
-        #>>> i = ShellImplementation("echo '%(test-body-text)'")
-        #>>> i.run(body=u'text')
-        #OutputOutcome(u'text')
-        #
-        #>>> i = ShellImplementation('cat >%(output-file)')
-        #>>> i.run(body=u'text')
-        #OutputOutcome(u'text')
-        #
-        #>>> i = ShellImplementation("echo '%(test-body-text)' '%(test-input-text)'")
-        #>>> i.run(body=u'text', input=u'zzrk')
-        #OutputOutcome(u'text zzrk')
-        #
-        #Here the body is sent to cat's stdin, but cat ignores it.
-        #
-        #>>> i = ShellImplementation('cat >%(output-file) <%(test-input-file)')
-        #>>> i.run(body=u'text', input=u'zzrk')
-        #OutputOutcome(u'zzrk')
+    def test_cat_file(self):
+        i = ShellImplementation('cat fhofhofhf')
+        self.assertEqual(i.run(body=u'text'), ErrorOutcome(u'cat: fhofhofhf: No such file or directory'))
+
+    def test_cat_test_body_file(self):
+        i = ShellImplementation('cat %(test-body-file)')
+        self.assertEqual(i.run(body=u'text'), OutputOutcome(u'text'))
+
+    def test_cat_test_body_text(self):
+        i = ShellImplementation("echo '%(test-body-text)'")
+        self.assertEqual(i.run(body=u'text'), OutputOutcome(u'text'))
+
+    def test_cat_output_file(self):
+        i = ShellImplementation('cat >%(output-file)')
+        self.assertEqual(i.run(body=u'text'), OutputOutcome(u'text'))
+
+    def test_echo(self):
+        i = ShellImplementation("echo '%(test-body-text)' '%(test-input-text)'")
+        self.assertEqual(i.run(body=u'text', input=u'zzrk'), OutputOutcome(u'text zzrk'))
+
+    def test_cat_stdin(self):
+        # Here the body is sent to cat's stdin, but cat ignores it.
+        i = ShellImplementation('cat >%(output-file) <%(test-input-file)')
+        self.assertEqual(i.run(body=u'text', input=u'zzrk'), OutputOutcome(u'zzrk'))
 
 
-def TestsTestCase(TestCase):
+def TestTestCase(TestCase):
     def test_test_contents(self):
         b = Block()
         b.append(u'foo')
@@ -267,70 +296,91 @@ def TestsTestCase(TestCase):
             ['success']
         )
 
-        #>>> f = Functionality('Cat File')
-        #>>> f.add_implementation(CallableImplementation(lambda x, y: x))
-        #>>> t = Test(body=u'foo', expectation=OutputOutcome(u'bar'),
-        #...          functionality=f)
-        #>>> [r.short_description() for r in t.run()]
-        #["expected OutputOutcome(u'bar'), got OutputOutcome(u'foo')"]
-        #
-        #>>> f = Functionality('Cat File')
-        #>>> f.add_implementation(CallableImplementation(lambda x, y: x))
-        #>>> t = Test(body=u'foo', expectation=ErrorOutcome(u'foo'),
-        #...          functionality=f)
-        #>>> [r.short_description() for r in t.run()]
-        #["expected ErrorOutcome(u'foo'), got OutputOutcome(u'foo')"]
-        #
-        #>>> f = Functionality('Cat File')
-        #>>> def e(x, y):
-        #...     raise ValueError(x)
-        #>>> f.add_implementation(CallableImplementation(e))
-        #>>> t = Test(body=u'foo', expectation=ErrorOutcome(u'foo'),
-        #...          functionality=f)
-        #>>> [r.short_description() for r in t.run()]
-        #['success']
-        #
-        #>>> f = Functionality('Cat File')
-        #>>> def e(x, y):
-        #...     raise ValueError(x)
-        #>>> f.add_implementation(CallableImplementation(e))
-        #>>> t = Test(body=u'foo', expectation=ErrorOutcome(u'bar'),
-        #...          functionality=f)
-        #>>> [r.short_description() for r in t.run()]
-        #["expected ErrorOutcome(u'bar'), got ErrorOutcome(u'foo')"]
-        #
-        #>>> f = Functionality('Cat File')
-        #>>> def e(x, y):
-        #...     raise ValueError(x)
-        #>>> f.add_implementation(CallableImplementation(e))
-        #>>> t = Test(body=u'foo', expectation=OutputOutcome(u'foo'),
-        #...          functionality=f)
-        #>>> [r.short_description() for r in t.run()]
-        #["expected OutputOutcome(u'foo'), got ErrorOutcome(u'foo')"]
-        #
-        #>>> f = Functionality('Cat File with Input')
-        #>>> f.add_implementation(CallableImplementation(lambda x, y: x + y))
-        #>>> t = Test(body=u'foo', input=u'bar', expectation=OutputOutcome(u'foobar'),
-        #...          functionality=f)
-        #>>> [r.short_description() for r in t.run()]
-        #['success']
-        #
-        #A functionality can have multiple implementations.  We test them all.
-        #
-        #>>> f = Functionality('Cat File')
-        #>>> def c1(body, input):
-        #...     return body
-        #>>> def c2(body, input):
-        #...     return body + '...'
-        #>>> def c3(body, input):
-        #...     raise ValueError(body)
-        #>>> for c in (c1, c2, c3):
-        #...     f.add_implementation(CallableImplementation(c))
-        #>>> t = Test(body=u'foo', expectation=OutputOutcome(u'foo'),
-        #...          functionality=f)
-        #>>> [r.short_description() for r in t.run()]
-        #['success', "expected OutputOutcome(u'foo'), got OutputOutcome(u'foo...')",
-        # "expected OutputOutcome(u'foo'), got ErrorOutcome(u'foo')"]
+    def test_tests_2(self):
+        f = Functionality('Cat File')
+        f.add_implementation(CallableImplementation(lambda x, y: x))
+        t = Test(body=u'foo', expectation=OutputOutcome(u'bar'),
+                  functionality=f)
+        self.assertEqual(
+            [r.short_description() for r in t.run()],
+            ["expected OutputOutcome(u'bar'), got OutputOutcome(u'foo')"]
+        )
+
+    def test_tests_3(self):
+        f = Functionality('Cat File')
+        f.add_implementation(CallableImplementation(lambda x, y: x))
+        t = Test(body=u'foo', expectation=ErrorOutcome(u'foo'),
+                 functionality=f)
+        self.assertEqual(
+            [r.short_description() for r in t.run()],
+            ["expected ErrorOutcome(u'foo'), got OutputOutcome(u'foo')"]
+        )
+
+    def test_tests_4(self):
+        f = Functionality('Cat File')
+        def e(x, y):
+            raise ValueError(x)
+        f.add_implementation(CallableImplementation(e))
+        t = Test(body=u'foo', expectation=ErrorOutcome(u'foo'),
+                 functionality=f)
+        self.assertEqual(
+            [r.short_description() for r in t.run()],
+            ['success']
+        )
+
+    def test_tests_5(self):
+        f = Functionality('Cat File')
+        def e(x, y):
+            raise ValueError(x)
+        f.add_implementation(CallableImplementation(e))
+        t = Test(body=u'foo', expectation=ErrorOutcome(u'bar'),
+                 functionality=f)
+        self.assertEqual(
+            [r.short_description() for r in t.run()],
+            ["expected ErrorOutcome(u'bar'), got ErrorOutcome(u'foo')"]
+        )
+
+    def test_tests_6(self):
+        f = Functionality('Cat File')
+        def e(x, y):
+            raise ValueError(x)
+        f.add_implementation(CallableImplementation(e))
+        t = Test(body=u'foo', expectation=OutputOutcome(u'foo'),
+                 functionality=f)
+        self.assertEqual(
+            [r.short_description() for r in t.run()],
+            ["expected OutputOutcome(u'foo'), got ErrorOutcome(u'foo')"]
+        )
+
+    def test_tests_7(self):
+        f = Functionality('Cat File with Input')
+        f.add_implementation(CallableImplementation(lambda x, y: x + y))
+        t = Test(body=u'foo', input=u'bar', expectation=OutputOutcome(u'foobar'),
+                 functionality=f)
+        self.assertEqual(
+            [r.short_description() for r in t.run()],
+            ['success']
+        )
+
+    def test_functionality_with_multiple_implementations(self):
+        # A functionality can have multiple implementations.  We test them all.
+
+        f = Functionality('Cat File')
+        def c1(body, input):
+            return body
+        def c2(body, input):
+            return body + '...'
+        def c3(body, input):
+            raise ValueError(body)
+        for c in (c1, c2, c3):
+            f.add_implementation(CallableImplementation(c))
+        t = Test(body=u'foo', expectation=OutputOutcome(u'foo'),
+                 functionality=f)
+        self.assertEqual(
+            [r.short_description() for r in t.run()],
+            ['success', "expected OutputOutcome(u'foo'), got OutputOutcome(u'foo...')",
+             "expected OutputOutcome(u'foo'), got ErrorOutcome(u'foo')"]
+         )
 
 
 if __name__ == '__main__':

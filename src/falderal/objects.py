@@ -192,6 +192,14 @@ class Block(object):
     def __unicode__(self):
         return unicode(repr(self))
 
+    def __eq__(self, other):
+        return (
+            self.__class__ == other.__class__ and
+            self.lines == other.lines and
+            self.line_num == other.line_num and
+            self.filename == other.filename
+        )
+
     def location(self):
         filename = self.filename
         if filename is None:
