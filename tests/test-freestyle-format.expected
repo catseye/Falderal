@@ -41,6 +41,22 @@ Actual  : output:
 | meow
 ? rreoww
 
+FAILED  : 
+
+The trick of re-using the previous test body with a different
+test input if the test body is omitted doesn't work with
+freestyle-format test input sections (i.e., this will fail.)
+
+Location: test-freestyle-format.markdown, line 111
+Function: Silly Interpreter
+Impl    : shell command "python silly-interpreter.py %(test-body-file)"
+Body    : 
+Expected: output:
+zang
+zing
+Actual  : output:
+
+
 --------------------------------
-Total test runs: 13, failures: 3
+Total test runs: 14, failures: 4
 --------------------------------

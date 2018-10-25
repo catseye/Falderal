@@ -6,8 +6,8 @@ This document describes the proposed Falderal Literate Test Format.
 Status
 ------
 
-This document is a *draft*.  It is nominally "version 0.11" because it
-describes something that version 0.11 of `py-falderal` mostly implements.
+This document is a *draft*.  It is nominally "version 0.12" because it
+describes something that version 0.12 of `py-falderal` mostly implements.
 We will deign to note which sections of this document the current released
 version of `py-falderal` implements, and which it does not.  However,
 this document is a work in progress, subject to change, and subject to get
@@ -89,10 +89,18 @@ introducers:
 *   `??> `: expected error text
 *   `???> `: expected error text
 
+In addition, the following introducers may be used to mark a section
+of test input text on the first of the final lines (but may not be
+used to end a block):
+
+*   `<= `: test input text
+*   `<== `: test input text
+*   `>=== `: test input text
+
 If a block is identified as a freestyle block, all lines preceding the
-final lines with one of these introducers, are interpreted as having
-no introducer at all (even if they begin with `| ` or some other sequence
-already mentioned) and are used as the test body block.
+first final line appearing with one of these introducers, are interpreted
+as having no introducer at all (even if they begin with `| ` or some other
+sequence already mentioned) and are used as the test body block.
 
 Lines without introducers are called _intervening text_.
 Lines of intervening text are classified as either blank or non-blank.  A
@@ -264,6 +272,17 @@ Valid examples in the "freestyle" format:
 
     thing to test
     ???> error to expect
+
+    thing to test
+    <=== input to give it
+    ===> output to expect
+
+    thing to test
+    <=== input to give it
+    ???> error to expect
+
+    <=== different input to give the immediately previously defined test body
+    ???> different error to expect
 
 Invalid examples:
 

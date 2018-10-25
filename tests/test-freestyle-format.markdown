@@ -103,3 +103,12 @@ Freestyle-format tests can also contain input sections.
     <=== purr
     ===> purr
     ===> meow
+
+The trick of re-using the previous test body with a different
+test input if the test body is omitted doesn't work with
+freestyle-format test input sections (i.e., this will fail.)
+
+    <== zing
+    <== zang
+    ==> zang
+    ==> zing

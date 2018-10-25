@@ -7,6 +7,9 @@ Version 0.12 "Schoenhofen Brewery" (current development version):
     `string.replace` instead of `re.sub` so that backslash-escaping
     is not perfomed on the replacement string.  (Thanks to
     James Holderness for bug report and patch.)
+*   In "freestyle" format, lines beginning with `<= `, `<== `, or
+    `<=== ` can supply a section of test input text (Thanks to
+    James Holderness for feature suggestion and patch.)
 
 Version 0.11 "Dan Ryan Expressway" (current released version):
 
