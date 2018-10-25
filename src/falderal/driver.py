@@ -27,25 +27,11 @@ def main(args):
     parser.add_option("-d", "--dump",
                       action="store_true", default=False,
                       help="print out info about parsed tests, don't run them")
-    parser.add_option("-t", "--test",
-                      action="store_true", default=False,
-                      help="run internal tests only and exit")
     parser.add_option("-v", "--verbose",
                       action="store_true", default=False,
                       help="print out info about each test as it is run")
 
     (options, args) = parser.parse_args(args[1:])
-
-    if options.test:
-        import doctest
-        import falderal.objects
-        (failure_count, test_count) = \
-            doctest.testmod(falderal.objects,
-                            optionflags=doctest.NORMALIZE_WHITESPACE)
-        if failure_count > 0:
-            return 1
-        else:
-            return 0
 
     # load Documents and create Falderal Tests from them
     documents = []

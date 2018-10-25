@@ -2,7 +2,7 @@
 
 # Really crude test harness for py-falderal itself...
 
-bin/falderal -v -t || exit 1
+PYTHONPATH=src python src/falderal/tests.py -v || exit 1
 
 cd tests
 
