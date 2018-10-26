@@ -10,6 +10,8 @@ Version 0.12 "Schoenhofen Brewery" (current development version):
 *   In "freestyle" format, lines beginning with `<= `, `<== `, or
     `<=== ` can supply a section of test input text (Thanks to
     James Holderness for feature suggestion and patch.)
+*   `py-falderal` can now run under both Python 2 and Python 3
+    (tested with 2.7, 3.4, and 3.5.)
 
 Version 0.11 "Dan Ryan Expressway" (current released version):
 
