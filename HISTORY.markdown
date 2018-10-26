@@ -12,6 +12,10 @@ Version 0.12 "Schoenhofen Brewery" (current development version):
     James Holderness for feature suggestion and patch.)
 *   `py-falderal` can now run under both Python 2 and Python 3
     (tested with 2.7, 3.4, and 3.5.)
+*   The doctests that were previously distributed throughout the
+    source code have been converted to a suite of unit tests in
+    the `falderal.tests` module.  The `-t` command-line option has
+    been removed; to run internal tests, run this module instead.
 
 Version 0.11 "Dan Ryan Expressway" (current released version):
 
