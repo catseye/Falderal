@@ -27,25 +27,11 @@ def main(args):
     parser.add_option("-d", "--dump",
                       action="store_true", default=False,
                       help="print out info about parsed tests, don't run them")
-    parser.add_option("-t", "--test",
-                      action="store_true", default=False,
-                      help="run internal tests only and exit")
     parser.add_option("-v", "--verbose",
                       action="store_true", default=False,
                       help="print out info about each test as it is run")
 
     (options, args) = parser.parse_args(args[1:])
-
-    if options.test:
-        import doctest
-        import falderal.objects
-        (failure_count, test_count) = \
-            doctest.testmod(falderal.objects,
-                            optionflags=doctest.NORMALIZE_WHITESPACE)
-        if failure_count > 0:
-            return 1
-        else:
-            return 0
 
     # load Documents and create Falderal Tests from them
     documents = []
@@ -82,14 +68,14 @@ def main(args):
         return 1
 
     if options.dump:
-        print "Functionalities:"
+        print("Functionalities:")
         for name in functionalities:
-            print "  " + name
+            print("  " + name)
             for implementation in functionalities[name].implementations:
-                print "  +-" + str(implementation)
-        print "Tests:"
+                print("  +-" + str(implementation))
+        print("Tests:")
         for test in tests:
-            print "  " + str(test)
+            print("  " + str(test))
         return 0
 
     # run tests
@@ -99,7 +85,7 @@ def main(args):
     try:
         for test in tests:
             if options.verbose:
-                print str(test)
+                print(str(test))
             these_results = test.run(options=options)
             if options.verbose:
                 for result in these_results:
@@ -116,9 +102,9 @@ def main(args):
     if options.verbose:
         for key in dup_check:
             if len(dup_check[key]) != 1:
-                print "WARNING: test/impl combination %s was run %d times %r" % (
+                print("WARNING: test/impl combination %s was run %d times %r" % (
                     key, len(dup_check[key]), dup_check[key]
-                )
+                ))
 
     # report on results
     for result in results:
@@ -126,13 +112,13 @@ def main(args):
     num_results = len(results)
     num_failures = len([x for x in results if not x.is_successful()])
     if not all_ran:
-        print '**************************************************************'
-        print '** TESTING TERMINATED PREMATURELY -- NOT ALL TESTS WERE RUN **'
-        print '**************************************************************'
+        print('**************************************************************')
+        print('** TESTING TERMINATED PREMATURELY -- NOT ALL TESTS WERE RUN **')
+        print('**************************************************************')
 
-    print '--------------------------------'
-    print 'Total test runs: %d, failures: %d' % (num_results, num_failures)
-    print '--------------------------------'
+    print('--------------------------------')
+    print('Total test runs: %d, failures: %d' % (num_results, num_failures))
+    print('--------------------------------')
 
     if num_failures == 0:
         return 0
