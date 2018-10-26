@@ -38,3 +38,11 @@ Test tests that have test input sections.
     + purr
     = purr
     = meow
+
+If the input section appears first (i.e. there is no test body),
+the previous test body is re-used.
+
+    + zing
+    + zang
+    = zang
+    = zing
