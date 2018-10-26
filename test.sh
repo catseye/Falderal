@@ -12,6 +12,7 @@ PYTHONPATH=src $PYTHON src/falderal/tests.py -v || exit 1
 cd tests
 
 FIRST_TESTS="
+test-body-text-input-text
 test-pass-fail test-no-functionality test-ill-formed test-no-test-body
 test-var-subst-no-eol
 test-utf8 test-crlf
