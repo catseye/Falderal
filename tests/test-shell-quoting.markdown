@@ -1,8 +1,9 @@
-Falderal Test: test-body-text and test-input-text
--------------------------------------------------
+Falderal Test: shell quoting
+----------------------------
 
 The test body and the test input can be passed as
-strings to the shell command.
+strings to the shell command.  They don't need quotes
+around them.
 
     -> Functionality "Echo Body" is implemented by shell command
     -> "python echo.py %(test-body-text)"

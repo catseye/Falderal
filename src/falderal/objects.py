@@ -564,8 +564,22 @@ class ShellImplementation(Implementation):
     def __eq__(self, other):
         return self.__class__ == other.__class__ and self.command == other.command
 
+    def subst(self, command, var_name, value):
+        """Replace all occurrences of `var_name` in `command` with
+        `value`, but make sure `value` is properly shell-escaped first."""
+        # We could do this with shlex.quote, but that only appeared in 3.3.
+        # To support Python 2.7, we just take every character that is a
+        # shell metacharacter, and escape it.  Note that we have to handle
+        # backslashes first, lest we escape backslashes we just added in.
+        value = value.replace('\\', '\\\\')
+        for c in """><*?[]'"`$()|;&#""":
+            value = value.replace(c, '\\' + c)
+        return command.replace(var_name, value)
+
     def run(self, body=None, input=None):
-        # expand variables in the command
+        # expand variables in the command.  we always ensure the substitution text
+        # is shell-quoted using shlex.quote, so that no quotes need be used in the
+        # command template string.
         test_filename = None
         output_filename = None
         command = self.command
@@ -583,14 +597,12 @@ class ShellImplementation(Implementation):
                 file.close()
             os.close(fd)
             # replace all occurrences in command
-            command = command.replace('%(test-body-file)', test_filename)
+            command = self.subst(command, '%(test-body-file)', test_filename)
             command_contained_test_body_file = True
 
         if '%(test-body-text)' in self.command:
-            # escape all single quotes in body
-            body = re.sub(r"'", r"\'", body)
             # replace all occurrences in command
-            command = command.replace('%(test-body-text)', body)
+            command = self.subst(command, '%(test-body-text)', body)
             command_contained_test_body_text = True
 
         if '%(test-input-file)' in self.command:
@@ -602,14 +614,12 @@ class ShellImplementation(Implementation):
                 file.close()
             os.close(fd)
             # replace all occurrences in command
-            command = command.replace('%(test-input-file)', test_input_filename)
+            command = self.subst(command, '%(test-input-file)', test_input_filename)
             command_contained_test_input_file = True
 
         if '%(test-input-text)' in self.command:
-            # escape all single quotes in input
-            input = re.sub(r"'", r"\'", input)
             # replace all occurrences in command
-            command = command.replace('%(test-input-text)', input)
+            command = self.subst(command, '%(test-input-text)', input)
             command_contained_test_input_text = True
 
         if '%(output-file)' in self.command:
@@ -617,7 +627,7 @@ class ShellImplementation(Implementation):
             fd, output_filename = mkstemp()
             os.close(fd)
             # replace all occurrences in command
-            command = command.replace('%(output-file)', output_filename)
+            command = self.subst(command, '%(output-file)', output_filename)
 
         # subshell the command and return the output
         pipe = Popen(command, shell=True,

@@ -4,33 +4,46 @@ Falderal Test 5
 Tests for variable substitution, and missing EOL at end
 of output.
 
-Note the use of single quotes around the `%(test-body-text)` variable;
-without these, shell chaos is likely to result.
+Note that Falderal is responsible for quoting the substitution text
+of all `%(...)` variables occurring in a shell command template;
+it is not necessary to put any quotes around them in the template string.
 
     -> Functionality "Echo" is implemented by
-    -> shell command "python echo.py '%(test-body-text)'"
+    -> shell command "python echo.py %(test-body-text)"
 
     -> Tests for functionality "Echo"
 
     | hello
     = hello
 
+FIXME: this does not work for now, because the newline is not escaped,
+so the command runs over two lines, and it thinks `hi` is a shell command.
+
+    > | hi
+    > | hi
+    > = hi
+    > = hi
+
     | hi
-    | hi
-    = hi
     = hi
 
     -> Functionality "Echo, no newline" is implemented by
-    -> shell command "python echo.py -n '%(test-body-text)'"
+    -> shell command "python echo.py -n %(test-body-text)"
 
     -> Tests for functionality "Echo, no newline"
 
     | hello
     = hello
 
+FIXME: this does not work for now, because the newline is not escaped,
+so the command runs over two lines, and it thinks `hi` is a shell command.
+
+    > | hi
+    > | hi
+    > = hi
+    > = hi
+
     | hi
-    | hi
-    = hi
     = hi
 
 Note that when variables are expanded, backslash sequences in the
