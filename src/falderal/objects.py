@@ -588,9 +588,7 @@ class ShellImplementation(Implementation):
         return command.replace(var_name, value)
 
     def run(self, body=None, input=None):
-        # expand variables in the command.  we always ensure the substitution text
-        # is shell-quoted using shlex.quote, so that no quotes need be used in the
-        # command template string.
+        # first, expand all known variables in the command, using subst().
         test_filename = None
         output_filename = None
         command = self.command
