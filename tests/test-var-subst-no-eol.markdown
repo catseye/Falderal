@@ -16,15 +16,9 @@ it is not necessary to put any quotes around them in the template string.
     | hello
     = hello
 
-FIXME: this does not work for now, because the newline is not escaped,
-so the command runs over two lines, and it thinks `hi` is a shell command.
-
-    > | hi
-    > | hi
-    > = hi
-    > = hi
-
     | hi
+    | hi
+    = hi
     = hi
 
     -> Functionality "Echo, no newline" is implemented by
@@ -35,15 +29,9 @@ so the command runs over two lines, and it thinks `hi` is a shell command.
     | hello
     = hello
 
-FIXME: this does not work for now, because the newline is not escaped,
-so the command runs over two lines, and it thinks `hi` is a shell command.
-
-    > | hi
-    > | hi
-    > = hi
-    > = hi
-
     | hi
+    | hi
+    = hi
     = hi
 
 Note that when variables are expanded, backslash sequences in the

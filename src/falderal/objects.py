@@ -572,7 +572,7 @@ class ShellImplementation(Implementation):
         # shell metacharacter, and escape it.  Note that we have to handle
         # backslashes first, lest we escape backslashes we just added in.
         value = value.replace('\\', '\\\\')
-        for c in """><*?[]'"`$()|;&#""":
+        for c in """ ><*?[]'"`$()|;&#""":
             value = value.replace(c, '\\' + c)
         return command.replace(var_name, value)
 
