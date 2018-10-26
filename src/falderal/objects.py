@@ -607,7 +607,7 @@ class ShellImplementation(Implementation):
 
         if '%(test-input-text)' in self.command:
             # escape all single quotes in input
-            body = re.sub(r"'", r"\'", body)
+            input = re.sub(r"'", r"\'", input)
             # replace all occurrences in command
             command = command.replace('%(test-input-text)', input)
             command_contained_test_input_text = True
