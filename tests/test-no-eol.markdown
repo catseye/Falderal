@@ -1,4 +1,4 @@
-Missing EOL at end of output
+Falderal Test: Missing EOL at end of output
 ----------------------------
 
 It makes no difference whether there is an EOL at the end of
