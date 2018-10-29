@@ -10,6 +10,11 @@ try:
 except NameError:
     unicode = str
 
+try:
+    from shlex import quote as shlex_quote
+except ImportError:
+    from pipes import quote as shlex_quote
+
 # Note: the __str__ method of all the classes defined herein should
 # produce a short, human-readable summary of the contents of the object,
 # suitable for displaying in the test results but not necessarily
@@ -567,25 +572,7 @@ class ShellImplementation(Implementation):
     def subst(self, command, var_name, value):
         """Replace all occurrences of `var_name` in `command` with
         `value`, but make sure `value` is properly shell-escaped first."""
-
-        # We could do this with shlex.quote, but that only appeared in 3.3.
-        # To support Python 2.7, we just take every character that is a
-        # shell metacharacter, and escape it.  Note that we have to handle
-        # backslashes first, lest we escape backslashes we just added in.
-
-        value = value.replace('\\', '\\\\')
-        for c in """ ><*?[]'"`$()|;&#""":
-            value = value.replace(c, '\\' + c)
-
-        # Note that, to handle putting multi-line strings into a single
-        # command line, we need to escape newlines.  Note, however, that
-        # shells don't understand escape sequence like "\n"!  Instead, we
-        # put an actual newline in single quotes.  We do this for tabs too.
-
-        value = value.replace("\n", "'\n'")
-        value = value.replace("\t", "'\t'")
-
-        return command.replace(var_name, value)
+        return command.replace(var_name, shlex_quote(value))
 
     def run(self, body=None, input=None):
         # first, expand all known variables in the command, using subst().
