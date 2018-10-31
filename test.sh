@@ -13,7 +13,7 @@ cd tests
 
 FIRST_TESTS="
 test-pass-fail test-no-functionality test-ill-formed test-no-test-body
-test-var-subst-no-eol
+test-var-subst test-no-eol
 test-utf8 test-crlf
 test-bad-indentation
 test-input-sections test-shared-body

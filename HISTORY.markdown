@@ -10,6 +10,11 @@ Version 0.12 "Schoenhofen Brewery" (current development version):
 *   In "freestyle" format, lines beginning with `<= `, `<== `, or
     `<=== ` can supply a section of test input text (Thanks to
     James Holderness for feature suggestion and patch.)
+*   Falderal is now responsible for quoting all shell metacharacters
+    in the substituion text of `%(...)` variables when command line
+    templates are expanded, so that no quotes need be placed around
+    the variable in the template. (Again, thanks to James Holderness
+    for spotting the bug in the code that led to this improvement.)
 *   `py-falderal` can now run under both Python 2 and Python 3
     (tested with 2.7, 3.4, and 3.5.)
 *   The doctests that were previously distributed throughout the
