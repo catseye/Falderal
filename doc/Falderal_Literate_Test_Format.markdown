@@ -6,8 +6,8 @@ This document describes the proposed Falderal Literate Test Format.
 Status
 ------
 
-This document is a *draft*.  It is nominally "version 0.11" because it
-describes something that version 0.11 of `py-falderal` mostly implements.
+This document is a *draft*.  It is nominally "version 0.12" because it
+describes something that version 0.12 of `py-falderal` mostly implements.
 We will deign to note which sections of this document the current released
 version of `py-falderal` implements, and which it does not.  However,
 this document is a work in progress, subject to change, and subject to get
@@ -89,10 +89,18 @@ introducers:
 *   `??> `: expected error text
 *   `???> `: expected error text
 
+In addition, the following introducers may be used to mark a section
+of test input text on the first of the final lines (but may not be
+used to end a block):
+
+*   `<= `: test input text
+*   `<== `: test input text
+*   `<=== `: test input text
+
 If a block is identified as a freestyle block, all lines preceding the
-final lines with one of these introducers, are interpreted as having
-no introducer at all (even if they begin with `| ` or some other sequence
-already mentioned) and are used as the test body block.
+first final line appearing with one of these introducers, are interpreted
+as having no introducer at all (even if they begin with `| ` or some other
+sequence already mentioned) and are used as the test body block.
 
 Lines without introducers are called _intervening text_.
 Lines of intervening text are classified as either blank or non-blank.  A
@@ -154,6 +162,18 @@ will be expanded before execution, and will alter how the command reads the
 text of the test and produces its output, to be compared with the expected
 output.
 
+When a variable is expanded, it is Falderal's responsibility to escape any
+shell metacharacters that occur as part of the substitution text so that
+it appears to the shell as a single token, and cannot otherwise affect the
+meaning of the instantiated shell command.  It is not necessary for a
+variable to be enclosed in any kind of quotes in the command line template.
+It is also not possible for the substitution text to e.g. expand to two
+arguments, or to form a pipe or redirection specifier, etc.
+
+The exact method by which the Falderal implementation escapes or quotes
+the substitution text so that it appears unambiguously as a single argument
+is left up to the implementation.
+
 ##### `%(test-body-file)` #####
 
 The variable `%(test-body-file)` will be replaced by the name of a file which
@@ -163,9 +183,7 @@ solely for this purpose by the Falderal implementation.
 ##### `%(test-body-text)` #####
 
 The variable `%(test-body-text)` will be replaced by the actual text of the
-test body.  It is assumed that `%(test-body-text)` will appear inside single
-quotes in the command string, so any single quotes in the text of the test will
-be escaped by the Falderal implementation by preceding them with backslashes.
+test body.
 
 ##### `%(test-input-file)` #####
 
@@ -176,9 +194,7 @@ solely for this purpose by the Falderal implementation.
 ##### `%(test-input-text)` #####
 
 The variable `%(test-input-text)` will be replaced by the actual text of the
-test input.  It is assumed that `%(test-input-text)` will appear inside single
-quotes in the command string, so any single quotes in the text of the test will
-be escaped by the Falderal implementation by preceding them with backslashes.
+test input.
 
 If neither of the variables `%(test-body-file)` nor `%(test-body-text)` appear
 in the command string, the test body text will be provided on the standard
@@ -265,6 +281,14 @@ Valid examples in the "freestyle" format:
     thing to test
     ???> error to expect
 
+    thing to test
+    <=== input to give it
+    ===> output to expect
+
+    thing to test
+    <=== input to give it
+    ???> error to expect
+
 Invalid examples:
 
     | thing to test
@@ -274,7 +298,12 @@ Invalid examples:
     + input to give it
     = output to expect
 
-...test input must be preceded by a test body (if this is the first test.)
+...test input must be preceded by a test body, if this is the first test.
+
+    <=== input to give it
+    ???> output to expect
+
+...test input must be preceded by a test body always, in freestyle format.
 
     ? error to expect
 

@@ -1,7 +1,28 @@
 History
 =======
 
-Version 0.11 "Dan Ryan Expressway" (current released version):
+Version 0.12 "Schoenhofen Brewery":
+
+*   When expanding variables in declaration strings, use
+    `string.replace` instead of `re.sub` so that backslash-escaping
+    is not perfomed on the replacement string.  (Thanks to
+    James Holderness for bug report and patch.)
+*   In "freestyle" format, lines beginning with `<= `, `<== `, or
+    `<=== ` can supply a section of test input text (Thanks to
+    James Holderness for feature suggestion and patch.)
+*   Falderal is now responsible for quoting all shell metacharacters
+    in the substituion text of `%(...)` variables when command line
+    templates are expanded, so that no quotes need be placed around
+    the variable in the template. (Again, thanks to James Holderness
+    for spotting the bug in the code that led to this improvement.)
+*   `py-falderal` can now run under both Python 2 and Python 3
+    (tested with 2.7, 3.4, and 3.5.)
+*   The doctests that were previously distributed throughout the
+    source code have been converted to a suite of unit tests in
+    the `falderal.tests` module.  The `-t` command-line option has
+    been removed; to run internal tests, run this module instead.
+
+Version 0.11 "Dan Ryan Expressway":
 
 *   Renamed the internal tests to have descriptive names instead of
     numbers.
@@ -14,7 +35,7 @@ Version 0.11 "Dan Ryan Expressway" (current released version):
     block needs no prefixes at all, and it is simply treated as one
     verbatim test body.
 
-Version 0.10 "Shedd Aquarium" (previous released version):
+Version 0.10 "Shedd Aquarium":
 
 *   Removed the old, bitrotting Haskell implementation.
 *   Removed deprecated `%(test-text)` and `%(test-file)` variables

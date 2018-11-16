@@ -124,17 +124,19 @@ This distribution contains:
 Development
 -----------
 
-Falderal development is
-[hosted on Bitbucket](https://bitbucket.org/catseye/falderal/) with a
-[git mirror of the repository on Github](https://github.com/catseye/Falderal).
+The git repository for the Falderal distribution can be found on GitHub at
+[https://github.com/catseye/Falderal](https://github.com/catseye/Falderal).
 
-Official release distfiles are available on the
+Official release distfiles are available via the
 [Falderal project page](http://catseye.tc/node/Falderal) at
 [Cat's Eye Technologies](http://catseye.tc/).
 
 Projects using Falderal
 -----------------------
 
+*   [ALPACA](http://catseye.tc/node/ALPACA)
+*   [Castile](http://catseye.tc/node/Castile)
+*   [Equipage](http://catseye.tc/node/Equipage)
 *   [Exanoke](http://catseye.tc/node/Exanoke)
 *   [Flobnar](http://catseye.tc/node/Flobnar)
 *   [Hev](http://catseye.tc/node/Hev)
@@ -143,8 +145,11 @@ Projects using Falderal
 *   [Pail](http://catseye.tc/node/Pail)
 *   [Pixley](http://catseye.tc/node/Pixley)
 *   [PL-{GOTO}.NET](http://catseye.tc/node/PL-{GOTO}.NET)
-*   [Robin](http://catseye.tc/node/Robin)
 *   [Quylthulg](http://catseye.tc/node/Quylthulg)
+*   [Robin](http://catseye.tc/node/Robin)
+*   [Samovar](http://catseye.tc/node/Samovar)
+*   [SixtyPical](http://catseye.tc/node/SixtyPical)
+*   [Tamsin](http://catseye.tc/node/Tamsin)
 *   [Velo](http://catseye.tc/node/Velo)
 *   [Yolk](http://catseye.tc/node/Yolk)
 *   [Xoomonk](http://catseye.tc/node/Xoomonk)

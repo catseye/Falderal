@@ -31,13 +31,32 @@ Demonstrate error expectation (Intentional fail.)
 Location: test-freestyle-format.markdown, line 68
 Function: Cat
 Impl    : shell command "python cat.py"
-Body    : meow
+Body    : 
+| meow
+? rreoww
 Expected: error:
 bow
 wow
 Actual  : output:
-meow
+| meow
+? rreoww
+
+FAILED  : 
+
+The trick of re-using the previous test body with a different
+test input if the test body is omitted doesn't work with
+freestyle-format test input sections (i.e., this will fail.)
+
+Location: test-freestyle-format.markdown, line 111
+Function: Silly Interpreter
+Impl    : shell command "python silly-interpreter.py %(test-body-file)"
+Body    : 
+Expected: output:
+zang
+zing
+Actual  : output:
+
 
 --------------------------------
-Total test runs: 10, failures: 3
+Total test runs: 14, failures: 4
 --------------------------------

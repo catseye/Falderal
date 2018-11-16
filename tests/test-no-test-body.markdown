@@ -1,4 +1,4 @@
-Falderal Test 4
+Falderal Test: no test body
 ---------------
 
 Another Falderal document which is ill-formed.
