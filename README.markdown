@@ -135,6 +135,8 @@ Projects using Falderal
 -----------------------
 
 *   [ALPACA](http://catseye.tc/node/ALPACA)
+*   [Castile](http://catseye.tc/node/Castile)
+*   [Equipage](http://catseye.tc/node/Equipage)
 *   [Exanoke](http://catseye.tc/node/Exanoke)
 *   [Flobnar](http://catseye.tc/node/Flobnar)
 *   [Hev](http://catseye.tc/node/Hev)
