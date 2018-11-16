@@ -1,7 +1,7 @@
 History
 =======
 
-Version 0.12 "Schoenhofen Brewery" (current development version):
+Version 0.12 "Schoenhofen Brewery":
 
 *   When expanding variables in declaration strings, use
     `string.replace` instead of `re.sub` so that backslash-escaping
@@ -22,7 +22,7 @@ Version 0.12 "Schoenhofen Brewery" (current development version):
     the `falderal.tests` module.  The `-t` command-line option has
     been removed; to run internal tests, run this module instead.
 
-Version 0.11 "Dan Ryan Expressway" (current released version):
+Version 0.11 "Dan Ryan Expressway":
 
 *   Renamed the internal tests to have descriptive names instead of
     numbers.
@@ -35,7 +35,7 @@ Version 0.11 "Dan Ryan Expressway" (current released version):
     block needs no prefixes at all, and it is simply treated as one
     verbatim test body.
 
-Version 0.10 "Shedd Aquarium" (previous released version):
+Version 0.10 "Shedd Aquarium":
 
 *   Removed the old, bitrotting Haskell implementation.
 *   Removed deprecated `%(test-text)` and `%(test-file)` variables
