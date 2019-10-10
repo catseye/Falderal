@@ -3,6 +3,7 @@ History
 
 Version 0.13 "Merchandise Mart":
 
+*   Use `ArgumentParser` instead of `OptionParser` internally.
 *   `--substring-error` is now the default behaviour, and if this
     option is given, it will be ignored.  After a long time
     considering the problem, we finally determined that it does
