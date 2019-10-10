@@ -1,6 +1,17 @@
 History
 =======
 
+Version 0.13 "Merchandise Mart":
+
+*   `--substring-error` is now the default behaviour, and if this
+    option is given, it will be ignored.  After a long time
+    considering the problem, we finally determined that it does
+    not make sense to insist that different implementations
+    produce the exact same error message.
+*   `--verbose` option now prints out commands for each test as it
+    is run.
+*   Planned to be the last 0.x series release before 1.0.
+
 Version 0.12 "Schoenhofen Brewery":
 
 *   When expanding variables in declaration strings, use

@@ -20,7 +20,7 @@ def main(args):
     parser = OptionParser()
     parser.add_option("-b", "--substring-error",
                       action="store_true", default=False,
-                      help="match expected errors as substrings")
+                      help="no effect (provided for backwards compatibility)")
     parser.add_option("--cavalier",
                       action="store_true", default=False,
                       help="don't perform sanity linting before running tests")
@@ -32,6 +32,11 @@ def main(args):
                       help="print out info about each test as it is run")
 
     (options, args) = parser.parse_args(args[1:])
+
+    if not options.substring_error:
+        if options.verbose:
+            print("NOTE: --substring-error is now default, option has no effect")
+        options.substring_error = True
 
     # load Documents and create Falderal Tests from them
     documents = []
