@@ -11,6 +11,7 @@ Version 0.13 "Merchandise Mart":
     produce the exact same error message.
 *   `--verbose` option now prints out commands for each test as it
     is run.
+*   Added conventional `--version` option.
 *   Planned to be the last 0.x series release before 1.0.
 
 Version 0.12 "Schoenhofen Brewery":

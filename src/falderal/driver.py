@@ -32,6 +32,7 @@ def main(args):
     argparser.add_argument("-v", "--verbose",
                            action="store_true", default=False,
                            help="print out info about each test as it is run")
+    argparser.add_argument('--version', action='version', version="%(prog)s 0.13")
 
     options = argparser.parse_args(args[1:])
 
