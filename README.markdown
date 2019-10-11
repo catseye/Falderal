@@ -133,10 +133,10 @@ on your executable search path, and run it as `falderal` anywhere.
 
 Or you can install it using `pip`:
 
-    pip install -e git://github.com/catseye/Falderal.git@0.13#egg=falderal
+    pip install -e git://github.com/catseye/Falderal.git@rel_0_13#egg=falderal
 
-Depending on your needs, you may wish to establish a virtual environment
-first.  Describing how to do so is outside the scope of this document.
+(Depending on your needs, you may wish to establish a virtual environment
+first.  Describing how to do so is outside the scope of this document.)
 
 The implementation is (somewhat) documented in `doc/py-falderal.markdown`.
 
