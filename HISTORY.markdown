@@ -13,6 +13,8 @@ Version 0.13 "Merchandise Mart":
     is run.
 *   Added conventional `--version` option.
 *   Planned to be the last 0.x series release before 1.0.
+*   Added `setup.py` so that Falderal can be treated as a Python
+    package.
 
 Version 0.12 "Schoenhofen Brewery":
 
