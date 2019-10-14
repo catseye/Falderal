@@ -1,7 +1,7 @@
 Falderal
 ========
 
-Version 0.12 "Schoenhofen Brewery"
+Version 0.13 "Merchandise Mart"
 
 This is the reference distribution of Falderal, a file format for literate
 test suites.  What sets Falderal apart from most other test frameworks is
@@ -16,6 +16,9 @@ Falderal is particularly suited for:
 *   being embedded in Markdown documents
 
 Falderal in three words: "Doctests for DSLs".
+
+If you're more interested in running the tools than learning about the format
+itself, skip down to [Implementation](#implementation).
 
 Motivation
 ----------
@@ -108,11 +111,8 @@ This distribution contains:
     [`doc/Falderal_Literate_Test_Format.markdown`](doc/Falderal_Literate_Test_Format.markdown).
     (Note that this specification should not be expected to remain stable
     through the 0.x version series.)  There are other documents in there too.
-*   `bin/falderal` — the reference implementation of Falderal, written in
-    Python and sometimes referred to as "py-falderal".  It imports the
-    sources in `src/falderal`.  You don't need to install it; just add
-    the `bin` directory of this distribution to your `$PATH`.  This
-    implementation is (somewhat) documented in `doc/py-falderal.markdown`.
+*   `bin/falderal` — the reference implementation of Falderal.
+    See "Implementation", below, for details.
 *   `script` — miscellaneous small tools intended to be used in tests.
 *   `src` — source code for py-falderal.
 *   `tests` — a set of tests for Falderal itself.  (Note that these are not
@@ -120,6 +120,25 @@ This distribution contains:
 *   `HISTORY.markdown` — changelog for releases of Falderal.
 *   `TODO.markdown` — areas where Falderal and its implementations could be
     improved.
+
+Implementation
+--------------
+
+This distribution contains `falderal`, which is the reference implementation
+of Falderal, written in Python and sometimes referred to as "py-falderal".
+
+To use it, you can clone this repository and run it as `bin/falderal`
+from the directory of your clone, or you can put the `bin` directory
+on your executable search path, and run it as `falderal` anywhere.
+
+Or you can install it using `pip`:
+
+    pip install -e Falderal==0.13
+
+(Depending on your needs, you may wish to establish a virtual environment
+first.  Describing how to do so is outside the scope of this document.)
+
+The implementation is (somewhat) documented in `doc/py-falderal.markdown`.
 
 Development
 -----------

@@ -525,7 +525,7 @@ class Implementation(object):
     def __init__(self):
         pass
 
-    def run(self, body=None, input=None):
+    def run(self, body=None, input=None, verbose=False):
         """Returns the RunResult of running this implementation on the
         given test body and input.
 
@@ -548,7 +548,7 @@ class CallableImplementation(Implementation):
     def __str__(self):
         return u'callable "%r"' % self.callable
 
-    def run(self, body=None, input=None):
+    def run(self, body=None, input=None, verbose=False):
         try:
             result = self.callable(body, input)
             return OutputOutcome(result)
@@ -574,7 +574,7 @@ class ShellImplementation(Implementation):
         `value`, but make sure `value` is properly shell-escaped first."""
         return command.replace(var_name, shlex_quote(value))
 
-    def run(self, body=None, input=None):
+    def run(self, body=None, input=None, verbose=False):
         # first, expand all known variables in the command, using subst().
         test_filename = None
         output_filename = None
@@ -624,6 +624,9 @@ class ShellImplementation(Implementation):
             os.close(fd)
             # replace all occurrences in command
             command = self.subst(command, '%(output-file)', output_filename)
+
+        if verbose:
+            print(self, command)
 
         # subshell the command and return the output
         pipe = Popen(command, shell=True,
@@ -718,7 +721,9 @@ class Test(object):
         """
         results = []
         for implementation in self.functionality.implementations:
-            result = implementation.run(body=self.body, input=self.input)
+            result = implementation.run(
+                body=self.body, input=self.input, verbose=options.verbose
+            )
             if self.judge(result, options):
                 results.append(Success(self, implementation))
             else:

@@ -2,7 +2,7 @@
 Usage: falderal [<option>...] <filename.markdown>...
 """
 
-from optparse import OptionParser
+from argparse import ArgumentParser
 import sys
 
 from falderal.objects import Document, FalderalSyntaxError
@@ -17,28 +17,36 @@ class FalderalLintingError(ValueError):
 ##### Main #####
 
 def main(args):
-    parser = OptionParser()
-    parser.add_option("-b", "--substring-error",
-                      action="store_true", default=False,
-                      help="match expected errors as substrings")
-    parser.add_option("--cavalier",
-                      action="store_true", default=False,
-                      help="don't perform sanity linting before running tests")
-    parser.add_option("-d", "--dump",
-                      action="store_true", default=False,
-                      help="print out info about parsed tests, don't run them")
-    parser.add_option("-v", "--verbose",
-                      action="store_true", default=False,
-                      help="print out info about each test as it is run")
+    argparser = ArgumentParser()
+    argparser.add_argument('input_files', nargs='+', metavar='FILENAME', type=str,
+                           help='Falderal files containing the tests to use')
+    argparser.add_argument("-b", "--substring-error",
+                           action="store_true", default=False,
+                           help="no effect (provided for backwards compatibility)")
+    argparser.add_argument("--cavalier",
+                           action="store_true", default=False,
+                           help="don't perform sanity linting before running tests")
+    argparser.add_argument("-d", "--dump",
+                           action="store_true", default=False,
+                           help="print out info about parsed tests, don't run them")
+    argparser.add_argument("-v", "--verbose",
+                           action="store_true", default=False,
+                           help="print out info about each test as it is run")
+    argparser.add_argument('--version', action='version', version="%(prog)s 0.13")
 
-    (options, args) = parser.parse_args(args[1:])
+    options = argparser.parse_args(args[1:])
+
+    if not options.substring_error:
+        if options.verbose:
+            print("NOTE: --substring-error is now default, option has no effect")
+        options.substring_error = True
 
     # load Documents and create Falderal Tests from them
     documents = []
     functionalities = {}
     tests = []
     try:
-        for filename in args:
+        for filename in options.input_files:
             documents.append(Document.load(filename))
         for document in documents:
             tests += document.extract_tests(functionalities)
