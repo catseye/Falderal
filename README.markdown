@@ -133,7 +133,7 @@ on your executable search path, and run it as `falderal` anywhere.
 
 Or you can install it using `pip`:
 
-    pip install -e git://github.com/catseye/Falderal.git@rel_0_13#egg=falderal
+    pip install -e Falderal==0.13
 
 (Depending on your needs, you may wish to establish a virtual environment
 first.  Describing how to do so is outside the scope of this document.)

@@ -3,3 +3,7 @@ impl/Test.Falderal/bin
 *.hi
 *.pyc
 *.actual
+/venv/
+/build/
+/dist/
+*.egg-info/
