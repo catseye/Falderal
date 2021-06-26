@@ -35,7 +35,7 @@ Features
 --------
 
 `py-falderal` implements a slightly different subset of the
-[Falderal Literate Test Format](Falderal_Literate_Test_Format.markdown) than
+[Falderal Literate Test Format](Falderal_Literate_Test_Format.md) than
 the Haskell implementation did.
 
 In particular,
