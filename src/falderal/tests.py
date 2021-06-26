@@ -250,6 +250,32 @@ class DocumentTestCase(TestCase):
             [ShellImplementation(u'parse'), ShellImplementation(u'pxxxy')]
         )
 
+    def test_parse_functionalities_with_gated_implementations(self):
+        d = Document()
+        funs = {}
+        d.append(u'    -> Functionality "Parse Stuff" is implemented by '
+                 u'shell command "parse"')
+        d.append(u'')
+        d.append(u'    -> Functionality "Parse Stuff" is')
+        d.append(u'    -> implemented by shell command "pxxxy"')
+        d.append(u'    -> but only if by shell command "command -v pxxxy"')
+        d.append(u'    -> is successful')
+        tests = d.extract_tests(funs)
+        self.assertEqual(list(funs.keys()), ['Parse Stuff'])
+        self.assertEqual(
+            funs["Parse Stuff"].implementations,
+            [ShellImplementation(u'parse'), ShellImplementation(u'pxxxy')]
+        )
+        implementations = funs["Parse Stuff"].implementations
+        self.assertEqual(implementations[0].gated_command, None)
+        self.assertEqual(implementations[1].gated_command, 'command -v pxxxy')
+        # TODO: mock is_available
+        funs["Parse Stuff"].filter_out_unavailable_implementations()
+        self.assertEqual(
+            funs["Parse Stuff"].implementations,
+            [ShellImplementation(u'parse'),]
+        )
+
 
 class ShellImplementationTestCase(TestCase):
     def test_cat(self):

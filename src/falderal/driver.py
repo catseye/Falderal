@@ -32,7 +32,7 @@ def main(args):
     argparser.add_argument("-v", "--verbose",
                            action="store_true", default=False,
                            help="print out info about each test as it is run")
-    argparser.add_argument('--version', action='version', version="%(prog)s 0.13")
+    argparser.add_argument('--version', action='version', version="%(prog)s 0.14")
 
     options = argparser.parse_args(args[1:])
 
@@ -60,6 +60,7 @@ def main(args):
                 )
             for name in functionalities:
                 functionality = functionalities[name]
+                functionality.filter_out_unavailable_implementations()
                 if not functionality.implementations:
                     raise FalderalLintingError(
                         "No implementations were found for the functionality '%s'" %
