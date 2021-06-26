@@ -1,6 +1,15 @@
 History
 =======
 
+Version 0.14 "Jean Baptiste Point DuSable Lake Shore Drive":
+
+*   (planned) Add a pragma "Functionality ... is available if
+    shell command ... can be successfully run".  If the command
+    cannot be successfully run, disable tests for the given
+    functionality.  (If no tests at all are run, it is an error.)
+*   (planned) Add a command-line option to require that the
+    version number of Falderal is at least a given version number.
+
 Version 0.13 "Merchandise Mart":
 
 *   Use `ArgumentParser` instead of `OptionParser` internally.

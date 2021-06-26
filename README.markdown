@@ -1,7 +1,7 @@
 Falderal
 ========
 
-Version 0.13 "Merchandise Mart"
+Version 0.14 "Jean Baptiste Point DuSable Lake Shore Drive"
 
 This is the reference distribution of Falderal, a file format for literate
 test suites.  What sets Falderal apart from most other test frameworks is
@@ -153,25 +153,28 @@ Official release distfiles are available via the
 Projects using Falderal
 -----------------------
 
-*   [ALPACA](http://catseye.tc/node/ALPACA)
-*   [Castile](http://catseye.tc/node/Castile)
-*   [Equipage](http://catseye.tc/node/Equipage)
-*   [Exanoke](http://catseye.tc/node/Exanoke)
-*   [Flobnar](http://catseye.tc/node/Flobnar)
-*   [Hev](http://catseye.tc/node/Hev)
-*   [Iphigeneia](http://catseye.tc/node/Iphigeneia)
-*   [Madison](http://catseye.tc/node/Madison)
-*   [Pail](http://catseye.tc/node/Pail)
-*   [Pixley](http://catseye.tc/node/Pixley)
-*   [PL-{GOTO}.NET](http://catseye.tc/node/PL-{GOTO}.NET)
-*   [Quylthulg](http://catseye.tc/node/Quylthulg)
-*   [Robin](http://catseye.tc/node/Robin)
-*   [Samovar](http://catseye.tc/node/Samovar)
-*   [SixtyPical](http://catseye.tc/node/SixtyPical)
-*   [Tamsin](http://catseye.tc/node/Tamsin)
-*   [Velo](http://catseye.tc/node/Velo)
-*   [Yolk](http://catseye.tc/node/Yolk)
-*   [Xoomonk](http://catseye.tc/node/Xoomonk)
+*   [ALPACA](https://catseye.tc/node/ALPACA)
+*   [Castile](https://catseye.tc/node/Castile)
+*   [Equipage](https://catseye.tc/node/Equipage)
+*   [Exanoke](https://catseye.tc/node/Exanoke)
+*   [Flobnar](https://catseye.tc/node/Flobnar)
+*   [Hev](https://catseye.tc/node/Hev)
+*   [hatoucan](https://catseye.tc/node/hatoucan)
+*   [Iphigeneia](https://catseye.tc/node/Iphigeneia)
+*   [Madison](https://catseye.tc/node/Madison)
+*   [Nhohnhehr](https://catseye.tc/node/Nhohnhehr)
+*   [Pail](https://catseye.tc/node/Pail)
+*   [Pixley](https://catseye.tc/node/Pixley)
+*   [PL-{GOTO}.NET](https://catseye.tc/node/PL-{GOTO}.NET)
+*   [Quylthulg](https://catseye.tc/node/Quylthulg)
+*   [Robin](https://catseye.tc/node/Robin)
+*   [Samovar](https://catseye.tc/node/Samovar)
+*   [SixtyPical](https://catseye.tc/node/SixtyPical)
+*   [Tamsin](https://catseye.tc/node/Tamsin)
+*   [Velo](https://catseye.tc/node/Velo)
+*   [Xoomonk](https://catseye.tc/node/Xoomonk)
+*   [Yolk](https://catseye.tc/node/Yolk)
+*   [ZOWIE](https://catseye.tc/node/ZOWIE)
 
 Xoomonk, Madison, Velo, and Exanoke are good examples of how a literate
 test suite can be useful in both describing a programming language through
