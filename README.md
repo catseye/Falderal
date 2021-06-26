@@ -108,7 +108,7 @@ This distribution contains:
 
 *   `doc` — contains documents about Falderal.  For the specification of
     the file format, see
-    [`doc/Falderal_Literate_Test_Format.markdown`](doc/Falderal_Literate_Test_Format.markdown).
+    [`doc/Falderal_Literate_Test_Format.md`](doc/Falderal_Literate_Test_Format.md).
     (Note that this specification should not be expected to remain stable
     through the 0.x version series.)  There are other documents in there too.
 *   `bin/falderal` — the reference implementation of Falderal.
@@ -117,8 +117,8 @@ This distribution contains:
 *   `src` — source code for py-falderal.
 *   `tests` — a set of tests for Falderal itself.  (Note that these are not
     written in Falderal, as that would just be too confusing.)
-*   `HISTORY.markdown` — changelog for releases of Falderal.
-*   `TODO.markdown` — areas where Falderal and its implementations could be
+*   `HISTORY.md` — changelog for releases of Falderal.
+*   `TODO.md` — areas where Falderal and its implementations could be
     improved.
 
 Implementation
@@ -133,12 +133,16 @@ on your executable search path, and run it as `falderal` anywhere.
 
 Or you can install it using `pip`:
 
-    pip install -e Falderal==0.13
+    pip install -e Falderal==0.14
 
 (Depending on your needs, you may wish to establish a virtual environment
 first.  Describing how to do so is outside the scope of this document.)
 
-The implementation is (somewhat) documented in `doc/py-falderal.markdown`.
+The implementation is (somewhat) documented in
+[`doc/py-falderal.md`](doc/py-falderal.md).
+
+The implementation has its own test suite (not written in Falderal, as
+that might be too confusing).  It can be run by running `./test.sh`.
 
 Development
 -----------

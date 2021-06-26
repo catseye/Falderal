@@ -1,12 +1,12 @@
 import setuptools
 
 
-with open("README.markdown", "r") as fh:
+with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setuptools.setup(
     name='Falderal',
-    version='0.13',
+    version='0.14',
     description='Definition of, and tools for using, the Falderal literate testing format',
     long_description=long_description,
     long_description_content_type="text/markdown",
