@@ -9,6 +9,11 @@ Version 0.14 "Jean Baptiste Point DuSable Lake Shore Drive":
     functionality.  (If no tests at all are run, it is an error.)
 *   (planned) Add a command-line option to require that the
     version number of Falderal is at least a given version number.
+*   `falderal`'s own test suite, `test.sh`, tests running `falderal`
+    under Python 2 if it is available, and under Python 3 if it is
+    available.  If neither is available, it aborts.  A particular
+    implementation of Python can also be supplied in the `PYTHON`
+    environment variable.
 
 Version 0.13 "Merchandise Mart":
 
