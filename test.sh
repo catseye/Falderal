@@ -59,7 +59,6 @@ if [ "x$PYTHON" != "x" ]; then
         echo "$PYTHON not found on executable search path. Aborting."
         exit 1
     fi
-    run_falderal_tests "$PYTHON"
 else
     MISSING=""
     if command -v python2 > /dev/null 2>&1; then
