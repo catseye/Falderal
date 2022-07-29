@@ -1,8 +1,12 @@
 #!/bin/sh
 
-if [ "$1" == "-f"]; then
-  cat <"$2"
-elif [ "$1" == "-o"]; then
+if [ "x$1" = "x-f" ]; then
+  if [ "x$3" = "x-o" ]; then
+    cat <"$2" >"$4"
+  else
+    cat <"$2"
+  fi
+elif [ "x$1" = "x-o" ]; then
   cat >"$2"
 else
   cat
