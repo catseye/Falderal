@@ -7,10 +7,6 @@ Version 0.14 "Jean Baptiste Point DuSable Lake Shore Drive":
     shell command ... can be successfully run".  If the command
     cannot be successfully run, disable tests for the given
     functionality.  (If no tests at all are run, it is an error.)
-*   (planned) Add a command-line option to require that the
-    version number of Falderal is at least a given version number.
-*   (planned) Update `fa-under-pty` to be more robust for when
-    the programming running under it segfaults (see Yolk).
 *   `falderal`'s own test suite, `test.sh`, tests running `falderal`
     under Python 2 if it is available, and under Python 3 if it is
     available.  If neither is available, it aborts.  A particular
