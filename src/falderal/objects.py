@@ -594,7 +594,7 @@ class ShellImplementation(Implementation):
     def is_available(self):
         if not self.gating_command:
             return True
-        raise NotImplementedError
+        raise NotImplementedError("Gating by gating command not implemented")
 
     def subst(self, command, var_name, value):
         """Replace all occurrences of `var_name` in `command` with

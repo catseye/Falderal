@@ -258,19 +258,17 @@ class DocumentTestCase(TestCase):
         d.append(u'')
         d.append(u'    -> Functionality "Parse Stuff" is')
         d.append(u'    -> implemented by shell command "pxxxy"')
-        d.append(u'    -> but only if by shell command "command -v pxxxy"')
+        d.append(u'    -> but only if shell command "command -v pxxxy"')
         d.append(u'    -> is successful')
         d.extract_tests(funs)
         self.assertEqual(list(funs.keys()), ['Parse Stuff'])
         self.assertEqual(
             funs["Parse Stuff"].implementations,
-            # [ShellImplementation(u'parse'), ShellImplementation(u'pxxxy')]
-            [ShellImplementation(u'parse')]
+            [ShellImplementation(u'parse'), ShellImplementation(u'pxxxy')]
         )
         implementations = funs["Parse Stuff"].implementations
-        return
-        self.assertEqual(implementations[0].gated_command, None)
-        self.assertEqual(implementations[1].gated_command, 'command -v pxxxy')
+        self.assertEqual(implementations[0].gating_command, None)
+        self.assertEqual(implementations[1].gating_command, 'command -v pxxxy')
         # TODO: mock is_available
         funs["Parse Stuff"].filter_out_unavailable_implementations()
         self.assertEqual(

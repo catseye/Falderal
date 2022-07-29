@@ -8,13 +8,13 @@ import sys
 from falderal.objects import Document, FalderalSyntaxError
 
 
-# ######   Exceptions   ###### #
+# ###### -*- Exceptions -*- ###### #
 
 class FalderalLintingError(ValueError):
     pass
 
 
-# ######     Main    ###### #
+# ###### -*-*- Main -*-*- ###### #
 
 def main(args):
     argparser = ArgumentParser()
