@@ -8,7 +8,7 @@ as long as it is written in a single indented block, and as long as
 the final line(s) of the test begin with one of the prefixes
 `=> ` or `==> ` or `===> ` or `?> ` or `??> `or `???> `.
 
-    -> Functionality "Cat" is implemented by shell command "python cat.py"
+    -> Functionality "Cat" is implemented by shell command "python3 cat.py"
 
     -> Tests for functionality "Cat"
 
@@ -73,7 +73,7 @@ Demonstrate error expectation (Intentional fail.)
 Freestyle-format tests can also contain input sections.
 
     -> Functionality "Silly Interpreter" is implemented by
-    -> shell command "python silly-interpreter.py %(test-body-file)"
+    -> shell command "python3 silly-interpreter.py %(test-body-file)"
 
     -> Tests for functionality "Silly Interpreter"
 

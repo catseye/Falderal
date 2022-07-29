@@ -6,7 +6,7 @@ exit code, but did not provide anything on `stderr`, expect the error message
 to be on `stdout`.
 
     -> Functionality "Error on stdout" is implemented by shell command
-    -> "python fail.py %(test-body-text) '' 1"
+    -> "python3 fail.py %(test-body-text) '' 1"
 
     -> Tests for functionality "Error on stdout"
 

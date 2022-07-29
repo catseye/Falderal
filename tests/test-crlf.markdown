@@ -6,7 +6,7 @@ can compare the result with the expected text, regardless
 of end-of-line convention (LF or CRLF).
 
     -> Functionality "CRLF" is implemented by
-    -> shell command "python crlf.py"
+    -> shell command "python3 crlf.py"
 
     -> Tests for functionality "CRLF"
 

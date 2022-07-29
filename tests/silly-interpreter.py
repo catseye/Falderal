@@ -1,10 +1,5 @@
 import sys
 
-try:
-    input = raw_input
-except:
-    pass
-
 program = open(sys.argv[1]).read().split('\n')
 
 vars = {}

@@ -5,7 +5,7 @@ It makes no difference whether there is an EOL at the end of
 the test output or not.
 
     -> Functionality "Echo" is implemented by
-    -> shell command "python echo.py %(test-body-text)"
+    -> shell command "python3 echo.py %(test-body-text)"
 
     -> Tests for functionality "Echo"
 
@@ -18,7 +18,7 @@ the test output or not.
     = hi
 
     -> Functionality "Echo, no newline" is implemented by
-    -> shell command "python echo.py -n %(test-body-text)"
+    -> shell command "python3 echo.py -n %(test-body-text)"
 
     -> Tests for functionality "Echo, no newline"
 

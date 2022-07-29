@@ -4,7 +4,7 @@ Demonstrate error expectation (Intentional fail.)
 
 Location: test-freestyle-format.markdown, line 62
 Function: Cat
-Impl    : shell command "python cat.py"
+Impl    : shell command "python3 cat.py"
 Body    : meow
 Expected: error:
 woof
@@ -17,7 +17,7 @@ Demonstrate error expectation (Intentional fail.)
 
 Location: test-freestyle-format.markdown, line 65
 Function: Cat
-Impl    : shell command "python cat.py"
+Impl    : shell command "python3 cat.py"
 Body    : meow
 Expected: error:
 woof
@@ -30,7 +30,7 @@ Demonstrate error expectation (Intentional fail.)
 
 Location: test-freestyle-format.markdown, line 68
 Function: Cat
-Impl    : shell command "python cat.py"
+Impl    : shell command "python3 cat.py"
 Body    : 
 | meow
 ? rreoww
@@ -49,7 +49,7 @@ freestyle-format test input sections (i.e., this will fail.)
 
 Location: test-freestyle-format.markdown, line 111
 Function: Silly Interpreter
-Impl    : shell command "python silly-interpreter.py %(test-body-file)"
+Impl    : shell command "python3 silly-interpreter.py %(test-body-file)"
 Body    : 
 Expected: output:
 zang

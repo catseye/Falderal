@@ -11,7 +11,9 @@ Version 0.14 "Jean Baptiste Point DuSable Lake Shore Drive":
     under Python 2 if it is available, and under Python 3 if it is
     available.  If neither is available, it aborts.  A particular
     implementation of Python can also be supplied in the `PYTHON`
-    environment variable.
+    environment variable.  Note however that Python 3 is still
+    required to be installed when running the tests (to run the
+    helper scripts.)
 
 Version 0.13 "Merchandise Mart":
 

@@ -4,7 +4,7 @@ Cat dogs, too. (Intentional fail.)
 
 Location: test-utf8.markdown, line 22
 Function: Cat
-Impl    : shell command "python cat.py"
+Impl    : shell command "python3 cat.py"
 Body    : n ← ★
 Expected: output:
 m ← ★
@@ -17,7 +17,7 @@ Cat (file) dogs, too. (Intentional fail.)
 
 Location: test-utf8.markdown, line 37
 Function: Cat (file)
-Impl    : shell command "python cat.py -f %(test-body-file) -o %(output-file)"
+Impl    : shell command "python3 cat.py -f %(test-body-file) -o %(output-file)"
 Body    : n ← ★
 Expected: output:
 m ← ★
@@ -30,7 +30,7 @@ Cat (input) dogs with its input, too. (Intentional fail.)
 
 Location: test-utf8.markdown, line 53
 Function: Cat (input)
-Impl    : shell command "python cat.py -f %(test-input-file) -o %(output-file)"
+Impl    : shell command "python3 cat.py -f %(test-input-file) -o %(output-file)"
 Body    : m ← ★
 Expected: output:
 m ← ★
