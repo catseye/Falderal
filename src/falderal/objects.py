@@ -594,7 +594,12 @@ class ShellImplementation(Implementation):
     def is_available(self):
         if not self.gating_command:
             return True
-        raise NotImplementedError("Gating by gating command not implemented")
+        pipe = Popen(
+            self.gating_command, shell=True,
+            stdin=PIPE, stdout=PIPE, stderr=PIPE
+        )
+        outputs = pipe.communicate()
+        return pipe.returncode == 0
 
     def subst(self, command, var_name, value):
         """Replace all occurrences of `var_name` in `command` with
