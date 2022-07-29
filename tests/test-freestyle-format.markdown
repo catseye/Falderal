@@ -73,7 +73,7 @@ Demonstrate error expectation (Intentional fail.)
 Freestyle-format tests can also contain input sections.
 
     -> Functionality "Silly Interpreter" is implemented by
-    -> shell command "python silly-interpreter.py %(test-body-file)"
+    -> shell command "./silly-interpreter.sh %(test-body-file)"
 
     -> Tests for functionality "Silly Interpreter"
 

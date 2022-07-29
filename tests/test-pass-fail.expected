@@ -4,7 +4,7 @@ Cat dogs, too. (Intentional fail.)
 
 Location: test-pass-fail.markdown, line 28
 Function: Cat
-Impl    : shell command "python cat.py"
+Impl    : shell command "./cat.sh"
 Body    : meow
 Expected: output:
 woof
@@ -17,7 +17,7 @@ Cat dogs, too. (Intentional fail.)
 
 Location: test-pass-fail.markdown, line 31
 Function: Cat
-Impl    : shell command "python cat.py"
+Impl    : shell command "./cat.sh"
 Body    : 
 purr
 prrr

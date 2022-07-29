@@ -4,7 +4,7 @@ Falderal Test: Input sections
 Test tests that have test input sections.
 
     -> Functionality "Silly Interpreter" is implemented by
-    -> shell command "python silly-interpreter.py %(test-body-file)"
+    -> shell command "./silly-interpreter.sh %(test-body-file)"
 
     -> Tests for functionality "Silly Interpreter"
 
