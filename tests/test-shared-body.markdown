@@ -4,7 +4,7 @@ Falderal test shared test bodies
 Test that tests with input sections can re-use the previous test's test body.
 
     -> Functionality "Silly Interpreter" is implemented by
-    -> shell command "./silly-interpreter.sh %(test-body-file)"
+    -> shell command "python silly-interpreter.py %(test-body-file)"
 
     -> Tests for functionality "Silly Interpreter"
 

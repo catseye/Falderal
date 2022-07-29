@@ -7,7 +7,7 @@ your Falderal implementation is, itself, not producing
 incorrect output.
 
     -> Functionality "Cat" is implemented by
-    ->   shell    command "./cat.sh"
+    ->   shell    command "python cat.py"
 
     -> Tests for functionality "Cat"
 
