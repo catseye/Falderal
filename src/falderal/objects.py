@@ -38,6 +38,7 @@ class FalderalSyntaxError(ValueError):
 class Options(object):
     def __init__(self):
         self.substring_error = False
+        self.verbose = False
 
 
 DEFAULT_OPTIONS = Options()
