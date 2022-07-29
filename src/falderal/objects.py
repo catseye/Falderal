@@ -60,7 +60,9 @@ class Outcome(object):
         self.text = text
 
     def __repr__(self):
-        return '%s(%r)' % (self.__class__.__name__, self.text)
+        reprtext = repr(self.text)
+        reprtext = 'u' + reprtext if not reprtext.startswith('u') else reprtext
+        return '%s(%s)' % (self.__class__.__name__, reprtext)
 
     def __eq__(self, other):
         return self.__class__ == other.__class__ and self.text == other.text
