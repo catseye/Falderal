@@ -108,7 +108,7 @@ This distribution contains:
 
 *   `doc` — contains documents about Falderal.  For the specification of
     the file format, see
-    [`doc/Falderal_Literate_Test_Format.md`](doc/Falderal_Literate_Test_Format.md).
+    [`doc/Falderal Literate Test Format.md`](doc/Falderal%20Literate%20Test%20Format.md).
     (Note that this specification should not be expected to remain stable
     through the 0.x version series.)  There are other documents in there too.
 *   `bin/falderal` — the reference implementation of Falderal.
