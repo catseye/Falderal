@@ -361,7 +361,7 @@ class Pragma(Block):
                 functionality_name,
                 Functionality(functionality_name)
             )
-        match = re.match(r'^\s*Functionality\s*\"(.*?)\"\s*is\s+implemented\s+by\s+shell\s+command\s*\"(.*?)\"\s*but\s+only\s+if\s+shell\s+command\s*\"(.*?)\"\s*is\s+successful\s*$', pragma_text)
+        match = re.match(r'^\s*Functionality\s*\"(.*?)\"\s*is\s+implemented\s+by\s+shell\s+command\s*\"(.*?)\"\s*but\s+only\s+if\s+shell\s+command\s*\"(.*?)\"\s*succeeds\s*$', pragma_text)
         if match:
             functionality_name = match.group(1)
             command = match.group(2)

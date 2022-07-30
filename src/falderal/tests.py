@@ -259,7 +259,7 @@ class DocumentTestCase(TestCase):
         d.append(u'    -> Functionality "Parse Stuff" is')
         d.append(u'    -> implemented by shell command "pxxxy"')
         d.append(u'    -> but only if shell command "command -v pxxxy"')
-        d.append(u'    -> is successful')
+        d.append(u'    -> succeeds')
         d.extract_tests(funs)
         self.assertEqual(list(funs.keys()), ['Parse Stuff'])
         self.assertEqual(

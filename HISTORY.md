@@ -3,9 +3,11 @@ History
 
 Version 0.14 "Jean Baptiste Point DuSable Lake Shore Drive":
 
-*   (planned) Add a pragma "Functionality ... is available if
-    shell command ... can be successfully run".  If the command
-    cannot be successfully run, disable tests for the given
+*   Add a pragma "Functionality ... is implemented by
+    shell command ... but only if shell command ... succeeds".
+    If the second shell command given in the pragma cannot be
+    run or exits with a non-zero exit code, the implementation
+    given by the first shell command is not registered for the given
     functionality.  (If no tests at all are run, it is an error.)
 *   `falderal`'s own test suite, `test.sh`, tests running `falderal`
     under Python 2 if it is available, and under Python 3 if it is
