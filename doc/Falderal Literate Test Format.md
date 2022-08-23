@@ -6,26 +6,26 @@ This document describes the proposed Falderal Literate Test Format.
 Status
 ------
 
-This document is a *draft*.  It is nominally "version 0.12" because it
-describes something that version 0.12 of `py-falderal` mostly implements.
-We will deign to note which sections of this document the current released
-version of `py-falderal` implements, and which it does not.  However,
-this document is a work in progress, subject to change, and subject to get
-out of sync with `py-falderal`.  It should not be considered to be
-anything except a draft until it is described as "version 1.0".
+This document is a *draft*.  It is nominally version 0.14.  It should
+not be considered to be anything except a draft until it is described
+as "version 1.0".
 
 Overview
 --------
 
-A Falderal Literate Test Suite is a plain text file where some of the lines
-have special meaning to the Falderal Literate Test Format.  Certain
-groupings of the lines defined by this format are intended to denote tests,
-while others denote pragmas which specify how those tests should be run.
-Outside of these groupings, lines have no meaning to the Falderal Literate
-Test Format other than that they are presumed to be mainly descriptive text.
+A Falderal Literate Test Suite is a plain text file (or a set of such
+files) where some of the lines have a special meaning in the Falderal Literate
+Test Format.  Certain groupings of the lines defined by this format are
+intended to denote _tests_, while others denote _pragmas_ which specify
+how those tests should be run.  Outside of these groupings, lines have
+no speical meaning in the Falderal Literate Test Format, other than that they are
+presumed to contain descriptive text -- more-or-less equivalent to
+_comments_ in a programming language source code file.
 
 The plain text file may also be formatted in some other format, such as
-Markdown, although this is not required.
+Markdown.  Although this is not required, the format of the lines which
+do have a special meaning in the Falderal Literate Test Format, has been designed
+to be compatible with Markdown.
 
 A tool which claims to understand the Falderal Literate Test Format may
 choose to extract the tests from such a document, run them, and report which
@@ -40,14 +40,15 @@ rather than literal text.
 Syntax
 ------
 
-Each grouping of lines which has special meaning to the Falderal Literate
-Test Format always begins with an indent of four (4) spaces from the
-leftmost column, preceded by non-indented text, and followed by either
+Every grouping of lines that has a special meaning to the Falderal Literate
+Test Format begins with an indent of four (4) spaces from the
+leftmost column, is preceded by non-indented text, and is followed by either
 non-indented text or the end of the file.  Such a grouping of lines is
 called a _block_.
 
-There are two general formats to any block.  In the first, "verbose" format,
-each indent of 4 spaces is followed immediately on that line by distinguished
+There are two general formats that any block can be formatted in.  In the first,
+so-called "verbose" format,
+each indent of 4 spaces is followed immediately on that line by a distinguished
 sequence of characters, called an _introducer_.  The introducers which have
 meaning to the Falderal Literate Test Format are as follows:
 
@@ -58,8 +59,8 @@ meaning to the Falderal Literate Test Format are as follows:
 *   `? ` (question mark, space): expected error text
 
 If the same introducer occurs on multiple adjacent lines, the text after
-each introducer is concatenated to form one chunk of relevant text.  This
-allows, for example, multi-line text to be given as the body, the input,
+each introducer is concatenated to form one coalesced chunk of relevant text.
+This allows, for example, multi-line text to be given as the body, the input,
 or the expected output of a test.
 
 There are some restrictions on the order in which introducers can sensibly
@@ -77,7 +78,7 @@ occur in a block:
 
 See the sections for these introducers, below, for more details.
 
-In the other, "freestyle" format, not all lines in a block require
+In the other, so-called "freestyle" format, not all lines in a block require
 introducers.  A freestyle format block is indentified as such if one or
 more of the final lines of the block begin with any of the following
 introducers:
@@ -124,14 +125,14 @@ Example:
 
 ### Functionality-definition ###
 
-The Functionality-definition pragma allows a Falderal file to describe
-ways in which a functionality being tested is implemented.  It has the
+The Functionality-definition pragma allows a Falderal file to define a
+way in which a functionality being tested is implemented.  It has the
 following syntax:
 
-    -> Functionality /functionality-name/ is implemented by /functionality-type/ /functionality-specifier/
+    -> Functionality /functionality-name/ is implemented by /implementation-type/ /implementation-specifier/
 
-_functionality-type_ must at present be `shell command`.  The format of the
-_functionality-specifier_ differs according to the functionality-type.
+_implementation-type_ must at present be `shell command`.  The format of the
+_implementation-specifier_ differs according to the _implementation-type_.
 The _functionality-name_ is arbitrary text enclosed within double quotes,
 which may be referenced in a later Tests-for pragma.
 
@@ -145,11 +146,12 @@ available or of interest to the user.)  Indeed, the functionality referred
 to by a _functionality-name_ in a Tests-for pragma need not be defined by any
 Functionality-definition pragma in the same Falderal file, and this
 situation requires the functionality to be specified to the tool in some
-other manner.
+other manner, such as the tool looking for the functionality in some other
+file provided to it.
 
 #### Shell commands ####
 
-For shell commands, the _functionality-specifier_ is in the format
+For shell commands, the _implementation-specifier_ is in the format
 `"command arg1 arg2 ... argn"`.  Any line of legal Bourne shell syntax may
 be used, so pipes, redirection, etc., are supported.  Note that the double
 quotation mark characters used to enclosed the command have meaning only to
@@ -219,6 +221,25 @@ How shell commands support error output is not yet standardized.
 For example:
 
     -> Functionality 'Prepending foo.txt' is implemented by shell command "cat foo.txt %(test-file) > %(output-file)"
+
+### Conditional-functionality-definition ###
+
+The Conditional-functionality-definition pragma is an extended version
+of the Functionality-definition pragma, in which the implementation is
+only associated with functionality under certain conditions.  It has the
+following syntax (shown here across multiple lines for convenience):
+
+    -> Functionality /functionality-name/ is implemented by /implementation-type/ /implementation-specifier/
+    -> but only if /implementation-type/ /implementation-specifier/ succeeds
+
+When a tool processes this pragma, it should first try executing the
+second implementation-specifier, in the manner required by the second
+implementation-type, without any particular input, and ascertain whether
+it succeeds or fails.  If it succeeds, the first implementation-type and
+implementation-specifier should be registered as a definition of the
+functionality-name, in the same manner as the Functionality-definition
+pragma.  If it does not succeed, this pragma should not change any
+any functionality definitions, and should be treated as a no-op.
 
 ### Tests-for ###
 
