@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# Really crude test harness for py-falderal itself...
+# Rather crude test harness for `falderal` itself.
 
 run_falderal_integration_tests() {
     FALDERAL="$1"

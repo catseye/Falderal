@@ -75,7 +75,8 @@ tools will want to, at the very least,
 *   Report the results, with some given level of detail.
 
 There is, of course, a reference implementation which does both of these
-things.  It is called py-falderal and it is written in Python 2.7.
+things.  It is called `falderal` and it is written in Python 3.x.  More
+about it can be read in the [`falderal` document](doc/falderal.md).
 
 Each Falderal test is for some abstract _functionality_, and each
 functionality may have multiple concrete _implementations_.  Thus the same
@@ -114,7 +115,7 @@ This distribution contains:
 *   `bin/falderal` — the reference implementation of Falderal.
     See "Implementation", below, for details.
 *   `script` — miscellaneous small tools intended to be used in tests.
-*   `src` — source code for py-falderal.
+*   `src` — source code for the `falderal` tool.
 *   `tests` — a set of tests for Falderal itself.  (Note that these are not
     written in Falderal, as that would just be too confusing.)
 *   `HISTORY.md` — changelog for releases of Falderal.
@@ -139,7 +140,7 @@ Or you can install it using `pip`:
 first.  Describing how to do so is outside the scope of this document.)
 
 The implementation is (somewhat) documented in
-[`doc/py-falderal.md`](doc/py-falderal.md).
+[`doc/falderal.md`](doc/falderal.md).
 
 The implementation has its own test suite (not written in Falderal, as
 that might be too confusing).  It can be run by running `./test.sh`.

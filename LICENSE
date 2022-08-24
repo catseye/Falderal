@@ -5,7 +5,7 @@ All documentation is covered by this license, modelled after the
 
 -----------------------------------------------------------------------------
 
-  Copyright (c)2011-2016 Chris Pressey, Cat's Eye Technologies.
+  Copyright (c)2011-2022 Chris Pressey, Cat's Eye Technologies.
   All rights reserved.
 
   The authors intend this Report to belong to the entire Falderal
@@ -18,13 +18,13 @@ All documentation is covered by this license, modelled after the
 
 -----------------------------------------------------------------------------
 
-All source code for the implementations of Falderal in this distribution
-(py-falderal) as well as the internal test suite itself is covered by this
+All source code for the implementations of Falderal in this distribution,
+as well as the internal test suite itself, is covered by this
 BSD 3-clause license:
 
 -----------------------------------------------------------------------------
 
-Copyright (c)2011-2016 Cat's Eye Technologies.  All rights reserved.
+Copyright (c)2011-2022 Cat's Eye Technologies.  All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions
