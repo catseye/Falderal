@@ -16,6 +16,11 @@ Version 0.14 "Jean Baptiste Point DuSable Lake Shore Drive":
     environment variable.  Note however that Python 3 is still
     required to be installed when running the tests (to run the
     helper scripts.)
+*   The `falderal` command and the helper utilities (such as
+    `fa-under-pty`) run under `python3` by default now.
+*   Some internal unit tests for `falderal` were accidentally
+    deactivated in some previous version; they are now restored.
+*   `py-falderal` is now generally referred to as `falderal`.
 
 Version 0.13 "Merchandise Mart":
 

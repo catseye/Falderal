@@ -1,4 +1,4 @@
-# Note: these are unit tests for py-falderal itself,
+# Note: these are unit tests for the `falderal` tool itself,
 # not tests that Falderal can understand.
 
 import unittest
