@@ -21,6 +21,7 @@ Version 0.14 "Jean Baptiste Point DuSable Lake Shore Drive":
 *   Some internal unit tests for `falderal` were accidentally
     deactivated in some previous version; they are now restored.
 *   `py-falderal` is now generally referred to as `falderal`.
+*   Specification edited for clarity and license text simplified.
 
 Version 0.13 "Merchandise Mart":
 
