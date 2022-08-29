@@ -133,3 +133,7 @@ def main(args):
         return 0
     else:
         return 1
+
+
+def sys_main():
+    return main(sys.argv)
