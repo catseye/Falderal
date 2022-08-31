@@ -1,6 +1,28 @@
 History
 =======
 
+Version 0.14 "Jean Baptiste Point DuSable Lake Shore Drive":
+
+*   Add a pragma "Functionality ... is implemented by
+    shell command ... but only if shell command ... succeeds".
+    If the second shell command given in the pragma cannot be
+    run or exits with a non-zero exit code, the implementation
+    given by the first shell command is not registered for the given
+    functionality.  (If no tests at all are run, it is an error.)
+*   `falderal`'s own test suite, `test.sh`, tests running `falderal`
+    under Python 2 if it is available, and under Python 3 if it is
+    available.  If neither is available, it aborts.  A particular
+    implementation of Python can also be supplied in the `PYTHON`
+    environment variable.  Note however that Python 3 is still
+    required to be installed when running the tests (to run the
+    helper scripts.)
+*   The `falderal` command and the helper utilities (such as
+    `fa-under-pty`) run under `python3` by default now.
+*   Some internal unit tests for `falderal` were accidentally
+    deactivated in some previous version; they are now restored.
+*   `py-falderal` is now generally referred to as `falderal`.
+*   Specification edited for clarity and license text simplified.
+
 Version 0.13 "Merchandise Mart":
 
 *   Use `ArgumentParser` instead of `OptionParser` internally.

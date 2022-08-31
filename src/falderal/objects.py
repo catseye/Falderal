@@ -38,6 +38,7 @@ class FalderalSyntaxError(ValueError):
 class Options(object):
     def __init__(self):
         self.substring_error = False
+        self.verbose = False
 
 
 DEFAULT_OPTIONS = Options()
@@ -59,7 +60,9 @@ class Outcome(object):
         self.text = text
 
     def __repr__(self):
-        return '%s(%r)' % (self.__class__.__name__, self.text)
+        reprtext = repr(self.text)
+        reprtext = 'u' + reprtext if not reprtext.startswith('u') else reprtext
+        return '%s(%s)' % (self.__class__.__name__, reprtext)
 
     def __eq__(self, other):
         return self.__class__ == other.__class__ and self.text == other.text
@@ -358,6 +361,17 @@ class Pragma(Block):
                 functionality_name,
                 Functionality(functionality_name)
             )
+        match = re.match(r'^\s*Functionality\s*\"(.*?)\"\s*is\s+implemented\s+by\s+shell\s+command\s*\"(.*?)\"\s*but\s+only\s+if\s+shell\s+command\s*\"(.*?)\"\s*succeeds\s*$', pragma_text)
+        if match:
+            functionality_name = match.group(1)
+            command = match.group(2)
+            gating_command = match.group(3)
+            functionality = state.functionalities.setdefault(
+                functionality_name,
+                Functionality(functionality_name)
+            )
+            implementation = ShellImplementation(command, gating_command=gating_command)
+            functionality.add_implementation(implementation)
         match = re.match(r'^\s*Functionality\s*\"(.*?)\"\s*is\s+implemented\s+by\s+shell\s+command\s*\"(.*?)\"\s*$', pragma_text)
         if match:
             functionality_name = match.group(1)
@@ -495,6 +509,7 @@ class Document(object):
 
 ##### Functionalities and their Implementations #####
 
+
 class Functionality(object):
     """An object representing a Falderal functionality.
 
@@ -516,6 +531,9 @@ class Functionality(object):
     def add_implementation(self, implementation):
         self.implementations.append(implementation)
 
+    def filter_out_unavailable_implementations(self):
+        self.implementations = [i for i in self.implementations if i.is_available()]
+
 
 class Implementation(object):
     """An object representing an implementation (something that is
@@ -524,6 +542,9 @@ class Implementation(object):
     """
     def __init__(self):
         pass
+
+    def is_available(self):
+        return True
 
     def run(self, body=None, input=None, verbose=False):
         """Returns the RunResult of running this implementation on the
@@ -557,8 +578,9 @@ class CallableImplementation(Implementation):
 
 
 class ShellImplementation(Implementation):
-    def __init__(self, command):
+    def __init__(self, command, gating_command=None):
         self.command = command
+        self.gating_command = gating_command
 
     def __repr__(self):
         return '%s(%r)' % (self.__class__.__name__, self.command)
@@ -568,6 +590,16 @@ class ShellImplementation(Implementation):
 
     def __eq__(self, other):
         return self.__class__ == other.__class__ and self.command == other.command
+
+    def is_available(self):
+        if not self.gating_command:
+            return True
+        pipe = Popen(
+            self.gating_command, shell=True,
+            stdin=PIPE, stdout=PIPE, stderr=PIPE
+        )
+        outputs = pipe.communicate()
+        return pipe.returncode == 0
 
     def subst(self, command, var_name, value):
         """Replace all occurrences of `var_name` in `command` with

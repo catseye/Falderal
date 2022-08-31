@@ -1,4 +1,4 @@
-# Note: these are unit tests for py-falderal itself,
+# Note: these are unit tests for the `falderal` tool itself,
 # not tests that Falderal can understand.
 
 import unittest
@@ -8,7 +8,7 @@ from falderal.objects import (
     Block, Pragma,
     ParseState, InterveningText,
     Document,
-    Functionality, ShellImplementation,
+    Functionality, ShellImplementation, CallableImplementation,
     Test, OutputOutcome, ErrorOutcome,
     FalderalSyntaxError,
 )
@@ -243,11 +243,37 @@ class DocumentTestCase(TestCase):
         d.append(u'')
         d.append(u'    -> Functionality "Parse Stuff" is')
         d.append(u'    -> implemented by shell command "pxxxy"')
-        tests = d.extract_tests(funs)
+        d.extract_tests(funs)
         self.assertEqual(list(funs.keys()), ['Parse Stuff'])
         self.assertEqual(
             [i for i in funs["Parse Stuff"].implementations],
             [ShellImplementation(u'parse'), ShellImplementation(u'pxxxy')]
+        )
+
+    def test_parse_functionalities_with_gated_implementations(self):
+        d = Document()
+        funs = {}
+        d.append(u'    -> Functionality "Parse Stuff" is implemented by '
+                 u'shell command "parse"')
+        d.append(u'')
+        d.append(u'    -> Functionality "Parse Stuff" is')
+        d.append(u'    -> implemented by shell command "pxxxy"')
+        d.append(u'    -> but only if shell command "command -v pxxxy"')
+        d.append(u'    -> succeeds')
+        d.extract_tests(funs)
+        self.assertEqual(list(funs.keys()), ['Parse Stuff'])
+        self.assertEqual(
+            funs["Parse Stuff"].implementations,
+            [ShellImplementation(u'parse'), ShellImplementation(u'pxxxy')]
+        )
+        implementations = funs["Parse Stuff"].implementations
+        self.assertEqual(implementations[0].gating_command, None)
+        self.assertEqual(implementations[1].gating_command, 'command -v pxxxy')
+        # TODO: mock is_available
+        funs["Parse Stuff"].filter_out_unavailable_implementations()
+        self.assertEqual(
+            funs["Parse Stuff"].implementations,
+            [ShellImplementation(u'parse')]
         )
 
 
@@ -282,7 +308,7 @@ class ShellImplementationTestCase(TestCase):
         self.assertEqual(i.run(body=u'text', input=u'zzrk'), OutputOutcome(u'zzrk'))
 
 
-def TestTestCase(TestCase):
+class TestTestCase(TestCase):
     def test_test_contents(self):
         b = Block()
         b.append(u'foo')
@@ -298,15 +324,16 @@ def TestTestCase(TestCase):
         f.add_implementation(CallableImplementation(lambda x, y: x))
         t = Test(body=u'foo', expectation=OutputOutcome(u'foo'), functionality=f)
         self.assertEqual(
-            [r.short_description() for r in t.run()]
+            [r.short_description() for r in t.run()],
             ['success']
         )
 
     def test_tests_2(self):
         f = Functionality('Cat File')
         f.add_implementation(CallableImplementation(lambda x, y: x))
-        t = Test(body=u'foo', expectation=OutputOutcome(u'bar'),
-                  functionality=f)
+        t = Test(
+            body=u'foo', expectation=OutputOutcome(u'bar'), functionality=f
+        )
         self.assertEqual(
             [r.short_description() for r in t.run()],
             ["expected OutputOutcome(u'bar'), got OutputOutcome(u'foo')"]
@@ -324,6 +351,7 @@ def TestTestCase(TestCase):
 
     def test_tests_4(self):
         f = Functionality('Cat File')
+
         def e(x, y):
             raise ValueError(x)
         f.add_implementation(CallableImplementation(e))
@@ -336,6 +364,7 @@ def TestTestCase(TestCase):
 
     def test_tests_5(self):
         f = Functionality('Cat File')
+
         def e(x, y):
             raise ValueError(x)
         f.add_implementation(CallableImplementation(e))
@@ -348,6 +377,7 @@ def TestTestCase(TestCase):
 
     def test_tests_6(self):
         f = Functionality('Cat File')
+
         def e(x, y):
             raise ValueError(x)
         f.add_implementation(CallableImplementation(e))
@@ -372,21 +402,28 @@ def TestTestCase(TestCase):
         # A functionality can have multiple implementations.  We test them all.
 
         f = Functionality('Cat File')
+
         def c1(body, input):
             return body
+
         def c2(body, input):
             return body + '...'
+
         def c3(body, input):
             raise ValueError(body)
+
         for c in (c1, c2, c3):
             f.add_implementation(CallableImplementation(c))
         t = Test(body=u'foo', expectation=OutputOutcome(u'foo'),
                  functionality=f)
         self.assertEqual(
             [r.short_description() for r in t.run()],
-            ['success', "expected OutputOutcome(u'foo'), got OutputOutcome(u'foo...')",
-             "expected OutputOutcome(u'foo'), got ErrorOutcome(u'foo')"]
-         )
+            [
+                "success",
+                "expected OutputOutcome(u'foo'), got OutputOutcome(u'foo...')",
+                "expected OutputOutcome(u'foo'), got ErrorOutcome(u'foo')"
+            ]
+        )
 
 
 if __name__ == '__main__':

@@ -1,0 +1,13 @@
+Falderal's documentation is covered by the following BSD-compatible license,
+modelled after the "Report on the Programming Language Haskell 98" license:
+
+    Copyright (c)2011-2022 Chris Pressey, Cat's Eye Technologies.
+    All rights reserved.
+
+    The authors intend this Report to belong to the entire Falderal
+    community, and so we grant permission to copy and distribute it for
+    any purpose, provided that it is reproduced in its entirety,
+    including this Notice.  Modified versions of this Report may also be
+    copied and distributed for any purpose, provided that the modified
+    version is clearly presented as such, and that it does not claim to
+    be a definition of the Falderal Literate Test Format.

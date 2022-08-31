@@ -1,7 +1,7 @@
 Falderal
 ========
 
-Version 0.13 "Merchandise Mart"
+Version 0.14 "Jean Baptiste Point DuSable Lake Shore Drive"
 
 This is the reference distribution of Falderal, a file format for literate
 test suites.  What sets Falderal apart from most other test frameworks is
@@ -75,7 +75,8 @@ tools will want to, at the very least,
 *   Report the results, with some given level of detail.
 
 There is, of course, a reference implementation which does both of these
-things.  It is called py-falderal and it is written in Python 2.7.
+things.  It is called `falderal` and it is written in Python 3.x.  More
+about it can be read in the [`falderal` document](doc/falderal.md).
 
 Each Falderal test is for some abstract _functionality_, and each
 functionality may have multiple concrete _implementations_.  Thus the same
@@ -108,17 +109,17 @@ This distribution contains:
 
 *   `doc` — contains documents about Falderal.  For the specification of
     the file format, see
-    [`doc/Falderal_Literate_Test_Format.markdown`](doc/Falderal_Literate_Test_Format.markdown).
+    [`doc/Falderal Literate Test Format.md`](doc/Falderal%20Literate%20Test%20Format.md).
     (Note that this specification should not be expected to remain stable
     through the 0.x version series.)  There are other documents in there too.
 *   `bin/falderal` — the reference implementation of Falderal.
     See "Implementation", below, for details.
 *   `script` — miscellaneous small tools intended to be used in tests.
-*   `src` — source code for py-falderal.
+*   `src` — source code for the `falderal` tool.
 *   `tests` — a set of tests for Falderal itself.  (Note that these are not
     written in Falderal, as that would just be too confusing.)
-*   `HISTORY.markdown` — changelog for releases of Falderal.
-*   `TODO.markdown` — areas where Falderal and its implementations could be
+*   `HISTORY.md` — changelog for releases of Falderal.
+*   `TODO.md` — areas where Falderal and its implementations could be
     improved.
 
 Implementation
@@ -133,12 +134,16 @@ on your executable search path, and run it as `falderal` anywhere.
 
 Or you can install it using `pip`:
 
-    pip install -e Falderal==0.13
+    pip install -e Falderal==0.14
 
 (Depending on your needs, you may wish to establish a virtual environment
 first.  Describing how to do so is outside the scope of this document.)
 
-The implementation is (somewhat) documented in `doc/py-falderal.markdown`.
+The implementation is (somewhat) documented in
+[`doc/falderal.md`](doc/falderal.md).
+
+The implementation has its own test suite (not written in Falderal, as
+that might be too confusing).  It can be run by running `./test.sh`.
 
 Development
 -----------
@@ -153,25 +158,28 @@ Official release distfiles are available via the
 Projects using Falderal
 -----------------------
 
-*   [ALPACA](http://catseye.tc/node/ALPACA)
-*   [Castile](http://catseye.tc/node/Castile)
-*   [Equipage](http://catseye.tc/node/Equipage)
-*   [Exanoke](http://catseye.tc/node/Exanoke)
-*   [Flobnar](http://catseye.tc/node/Flobnar)
-*   [Hev](http://catseye.tc/node/Hev)
-*   [Iphigeneia](http://catseye.tc/node/Iphigeneia)
-*   [Madison](http://catseye.tc/node/Madison)
-*   [Pail](http://catseye.tc/node/Pail)
-*   [Pixley](http://catseye.tc/node/Pixley)
-*   [PL-{GOTO}.NET](http://catseye.tc/node/PL-{GOTO}.NET)
-*   [Quylthulg](http://catseye.tc/node/Quylthulg)
-*   [Robin](http://catseye.tc/node/Robin)
-*   [Samovar](http://catseye.tc/node/Samovar)
-*   [SixtyPical](http://catseye.tc/node/SixtyPical)
-*   [Tamsin](http://catseye.tc/node/Tamsin)
-*   [Velo](http://catseye.tc/node/Velo)
-*   [Yolk](http://catseye.tc/node/Yolk)
-*   [Xoomonk](http://catseye.tc/node/Xoomonk)
+*   [ALPACA](https://catseye.tc/node/ALPACA)
+*   [Castile](https://catseye.tc/node/Castile)
+*   [Equipage](https://catseye.tc/node/Equipage)
+*   [Exanoke](https://catseye.tc/node/Exanoke)
+*   [Flobnar](https://catseye.tc/node/Flobnar)
+*   [Hev](https://catseye.tc/node/Hev)
+*   [hatoucan](https://catseye.tc/node/hatoucan)
+*   [Iphigeneia](https://catseye.tc/node/Iphigeneia)
+*   [Madison](https://catseye.tc/node/Madison)
+*   [Nhohnhehr](https://catseye.tc/node/Nhohnhehr)
+*   [Pail](https://catseye.tc/node/Pail)
+*   [Pixley](https://catseye.tc/node/Pixley)
+*   [PL-{GOTO}.NET](https://catseye.tc/node/PL-{GOTO}.NET)
+*   [Quylthulg](https://catseye.tc/node/Quylthulg)
+*   [Robin](https://catseye.tc/node/Robin)
+*   [Samovar](https://catseye.tc/node/Samovar)
+*   [SixtyPical](https://catseye.tc/node/SixtyPical)
+*   [Tamsin](https://catseye.tc/node/Tamsin)
+*   [Velo](https://catseye.tc/node/Velo)
+*   [Xoomonk](https://catseye.tc/node/Xoomonk)
+*   [Yolk](https://catseye.tc/node/Yolk)
+*   [ZOWIE](https://catseye.tc/node/ZOWIE)
 
 Xoomonk, Madison, Velo, and Exanoke are good examples of how a literate
 test suite can be useful in both describing a programming language through

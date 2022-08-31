@@ -8,7 +8,7 @@ characters, encoded in UTF-8 (this is the assumed encoding
 of all Falderal documents which go beyond mere ASCII.)
 
     -> Functionality "Cat" is implemented by
-    -> shell command "python cat.py"
+    -> shell command "python3 cat.py"
 
     -> Tests for functionality "Cat"
 
@@ -23,7 +23,7 @@ Cat dogs, too. (Intentional fail.)
     = m ← ★
 
     -> Functionality "Cat (file)" is implemented by
-    -> shell command "python cat.py -f %(test-body-file) -o %(output-file)"
+    -> shell command "python3 cat.py -f %(test-body-file) -o %(output-file)"
 
     -> Tests for functionality "Cat (file)"
 
@@ -38,7 +38,7 @@ Cat (file) dogs, too. (Intentional fail.)
     = m ← ★
 
     -> Functionality "Cat (input)" is implemented by
-    -> shell command "python cat.py -f %(test-input-file) -o %(output-file)"
+    -> shell command "python3 cat.py -f %(test-input-file) -o %(output-file)"
 
     -> Tests for functionality "Cat (input)"
 
