@@ -148,8 +148,8 @@ that might be too confusing).  It can be run by running `./test.sh`.
 Development
 -----------
 
-The git repository for the Falderal distribution can be found on GitHub at
-[https://github.com/catseye/Falderal](https://github.com/catseye/Falderal).
+The git repository for the Falderal distribution can be found on Codeberg at
+[https://codeberg.org/catseye/Falderal](https://codeberg.org/catseye/Falderal).
 
 Official release distfiles are available via the
 [Falderal project page](http://catseye.tc/node/Falderal) at
